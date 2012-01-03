@@ -26,8 +26,8 @@
 #                                                                      #
 ########################################################################
 
-import app.kernel
+import app.cli
 
 NAME  = "*audio"
 TIP   = "Tools to hide data in audio files."
-TYPE  = app.kernel.Node.CATEGORY
+TYPE  = app.cli.Node.CATEGORY

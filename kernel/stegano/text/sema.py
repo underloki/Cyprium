@@ -36,7 +36,7 @@ def do_hide(txt, data, marker, delta):
     needed_c = set(data)
     available_c = set(txt)
     if not needed_c <= available_c:
-        raise Exception("ERROR: Letters '{}' were not found in the text!" \
+        raise Exception("Letters '{}' were not found in the text!" \
                         "".format("', '".join(sorted(needed_c - available_c))))
 
     # Now, we have all needed letters.
@@ -71,14 +71,14 @@ def do_hide(txt, data, marker, delta):
             idx = txt.find(c, cur) + 1
             # If no letter was found, error.
             if idx == 0:
-                raise Exception("ERROR: Could not hide \"{}\" in the input " \
+                raise Exception("Could not hide \"{}\" in the input " \
                                 "text (letter '{}' was not found in " \
                                 "remaining text)!".format(data, c))
             cur = idx+1
             idx += delta
             # If delta is to high, error.
             if idx >= len_txt + i:
-                raise Exception("ERROR: Could not hide \"{}\" in the input " \
+                raise Exception("Could not hide \"{}\" in the input " \
                                 "text (delta ({}) is to high for letter '{}' " \
                                 "in remaining text)!".format(delta, data, c))
             txt = txt[:idx] + marker + txt[idx:]
@@ -90,17 +90,17 @@ def hide(txt, data, marker, delta):
     """Just a wrapper around do_hide, with some checks."""
     import string
     if not data:
-        raise Exception("ERROR: no data given!")
+        raise Exception("no data given!")
     # Remove all unallowed chars…
     if not (set(data) <= set(string.ascii_lowercase)):
-        raise Exception("ERROR: data contains unallowed chars (only lowercase strict ASCII chars are allowed)!")
+        raise Exception("Data contains unallowed chars (only lowercase strict ASCII chars are allowed)!")
     if len(data) / len(txt) > 0.025:
-        raise Exception("ERROR: the hiding text should be at least 40 times "
+        raise Exception("The hiding text should be at least 40 times "
                         "longer than the data to hide into it (data: {} "
                         "chars, input text: {} chars)!"
                         "".format(len(data), len(txt)))
     if delta > len(data) * 2:
-        raise Exception("ERROR: the obfuscating delta is too high, it " \
+        raise Exception("The obfuscating delta is too high, it " \
                         "should not be higher than twice the data length.")
     return do_hide(txt, data, marker, delta)
 
@@ -116,7 +116,7 @@ def do_unhide(txt, marker, delta):
         if delta >= 0:
             idx -= 1
         if max_idx < idx < 0:
-            raise Exception("ERROR: got a letter idx out of range, your "
+            raise Exception("Got a letter idx out of range, your "
                             "delta value is probably wrong!")
             return ""
         ret.append(txt[idx])

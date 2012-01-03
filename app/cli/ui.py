@@ -30,7 +30,7 @@ import app.ui
 import sys
 
 class UI(app.ui.UI):
-    """Base, "None" UI class (also used as "interface").
+    """CLI UI class.
        NOTE: All those functions might return None, in addition
              to some expected data...
     """

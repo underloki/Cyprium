@@ -26,8 +26,8 @@
 #                                                                      #
 ########################################################################
 
-import app.kernel
+import app.cli
 
 NAME  = ""
 TIP   = "Root of Cyprium!"
-TYPE  = app.kernel.Node.CATEGORY
+TYPE  = app.cli.Node.CATEGORY

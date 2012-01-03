@@ -28,15 +28,10 @@
 #                                                                      #
 ########################################################################
 
-import app, app.kernel, app.cli, app.cli.ui
-
-import app.cli.root
-import app.cli.root.stegano
-
-import time
+import app, app.cli, app.cli.ui, app.cli.root
 
 
-tree = app.kernel.Tree(app.cli.root)
+tree = app.cli.Tree(app.cli.root)
 
 ui = app.cli.ui.UI()
 

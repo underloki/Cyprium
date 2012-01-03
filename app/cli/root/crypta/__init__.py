@@ -26,8 +26,8 @@
 #                                                                      #
 ########################################################################
 
-import app.kernel
+import app.cli
 
 NAME  = "crypt*analysis"
 TIP   = "Tools to analyze cyphers."
-TYPE  = app.kernel.Node.CATEGORY
+TYPE  = app.cli.Node.CATEGORY

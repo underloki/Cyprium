@@ -26,8 +26,8 @@
 #                                                                      #
 ########################################################################
 
-import app.kernel
+import app.cli
 
 NAME  = "*cryptography"
 TIP   = "Tools to make some data unreadable."
-TYPE  = app.kernel.Node.CATEGORY
+TYPE  = app.cli.Node.CATEGORY

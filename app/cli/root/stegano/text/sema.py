@@ -26,10 +26,10 @@
 #                                                                      #
 ########################################################################
 
-import app.kernel
+import app.cli
 import kernel.stegano.text.sema as sema
 
-class Sema(app.kernel.Tool):
+class Sema(app.cli.Tool):
     marker = b"\xcc\xa3".decode("utf8")
 
     def main(self, ui):
@@ -218,6 +218,6 @@ class Sema(app.kernel.Tool):
 
 NAME  = "*sema"
 TIP   = "Tool to hide some text into a much bigger one, by placing small dots below some letters."
-TYPE  = app.kernel.Node.TOOL
+TYPE  = app.cli.Node.TOOL
 CLASS = Sema
 

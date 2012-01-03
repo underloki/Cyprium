@@ -26,8 +26,8 @@
 #                                                                      #
 ########################################################################
 
-import app.kernel
+import app.cli
 
 NAME  = "t*ext"
 TIP   = "Tools to hide data in text files."
-TYPE  = app.kernel.Node.CATEGORY
+TYPE  = app.cli.Node.CATEGORY

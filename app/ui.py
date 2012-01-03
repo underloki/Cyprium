@@ -33,17 +33,18 @@ class UI:
     """
 
     # "defines" of messages levels.
-    INFO = 0
-    WARNING = 1
-    ERROR = 2
-    FATAL = 3
+    INFO = 10
+    WARNING = 20
+    ERROR = 30
+    FATAL = 40
 
     # Sub-types of get_data.
-    STRING = None  # Default...
-    PATH = 1  # Check is format-valid, and autocompletion?
+    STRING  = None  # Default...
+    PATH    = 10    # Check is format-valid, and autocompletion?
+
 
     def __init__(self):
-        pass
+        self.status = OK
 
     def message(self, message="", level=INFO):
         """Print a message to the user, with some formatting given
@@ -59,6 +60,17 @@ class UI:
         """
         pass
 
-    def get_choice(self, message="", choices=[]):
-        """Gives some choices to the user, and get its answer."""
+    def get_choice(self, message="", choices=[], oneline=False):
+        """Give some choices to the user, and get its answer.
+           Message is printed once. Then, choices is a list of tuples:
+               (returned_key_str_or_obj, label, tip)
+               where:
+                   returned_key_str_or_obj: unique str or hashable object.
+                                            void string for separators.
+                   label: name of the entry, with a '*' before the key letter.
+                   tip: short help.
+               One choice a line.
+           If the optional oneline is True, all menu choices are concatenated
+           on a single line, e.g. "Go back to (M)enu or (T)ry again!".
+        """
         pass
