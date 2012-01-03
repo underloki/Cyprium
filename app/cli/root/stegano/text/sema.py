@@ -174,6 +174,7 @@ class Sema(app.kernel.Tool):
             answ =  ui.get_data("Choose an output text file: ")
             try:
                 with open(answ, 'w') as ofile:
+                    ofile.encoding = "utf-8"
                     ofile.write(txt)
                 break;
             except Exception as e:

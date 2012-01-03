@@ -27,6 +27,7 @@
 ########################################################################
 
 import app.ui
+import sys
 
 class UI(app.ui.UI):
     """Base, "None" UI class (also used as "interface").
@@ -36,6 +37,20 @@ class UI(app.ui.UI):
 
     def __init__(self):
         pass
+
+    @staticmethod
+    def cinput(msg):
+        sys.stdout.buffer.write(msg.encode(sys.stdout.encoding, "replace"))
+        sys.stdout.buffer.flush()
+        return input("")
+
+    @staticmethod
+    def cprint(*objs, sep=' ', end='\n', file=sys.stdout):
+        sep = sep.encode(file.encoding, "replace")
+        objs = [str(obj).encode(file.encoding, "replace") for obj in objs]
+        end = end.encode(file.encoding, "replace")
+        file.buffer.write(sep.join(objs)+end)
+        sys.stdout.buffer.flush()
 
     def message(self, message="", level=app.ui.UI.INFO):
         """Print a message to the user, with some formatting given
@@ -47,7 +62,7 @@ class UI(app.ui.UI):
             message = "".join(("ERROR: ", message))
         elif level == app.ui.UI.FATAL:
             message = "".join(("FATAL ERROR: ", message))
-        print(message, "\n")
+        self.cprint(message, "\n")
 
     def get_data(self, message="", sub_type=None, completion=None):
         """Get some data from the user.
@@ -55,8 +70,8 @@ class UI(app.ui.UI):
            completion callback if user hits <tab>.
            completion(data_already_entered=None)
         """
-        return input(message)
-        print("")
+        return self.cinput(message)
+        self.cprint("")
 
     def get_choice(self, message="", options=[], oneline=False):
         """Gives some choices to the user, and get its answer."""
@@ -93,9 +108,9 @@ class UI(app.ui.UI):
             message = "".join((message, "\n"))
 
         # TODO: use a getch()-like!
-        r = input(message)
+        r = self.cinput(message).lower()
         while r not in chc_map:
-            r = input("Invalid choice, please try again: ")
+            r = self.cinput("Invalid choice, please try again: ").lower()
 
-        print("")
-        return chc_map[r.lower()]
+        self.cprint("")
+        return chc_map[r]
