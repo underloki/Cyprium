@@ -141,7 +141,7 @@ class Tree:
 
     def print_tree(self, ui, mode=COMPACT):
         """Print the whole tree, with current node if set."""
-        if mode == COMPACT:
+        if mode == self.COMPACT:
             ui.message(self.breadcrumbs())
         else:
             def rec(tree, lines, lvl, node):
@@ -182,7 +182,7 @@ class Tree:
                 if answ == 'quit':
                     quit = True
                 elif answ == 'tree':
-                    self.print_tree(ui)
+                    self.print_tree(ui, mode=self.FULL)
                 elif answ == 'back':
                     if self._current.parent:
                         self._current = self._current.parent

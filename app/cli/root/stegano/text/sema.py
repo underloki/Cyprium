@@ -47,7 +47,7 @@ class Sema(app.cli.Tool):
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
-                self._tree.print_tree(ui)
+                self._tree.print_tree(ui, self._tree.FULL)
             elif answ == 'quit':
                 self._tree.current = self._tree.current.parent
                 quit = True
