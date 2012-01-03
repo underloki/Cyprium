@@ -84,14 +84,16 @@ class UI(app.ui.UI):
                 message = " ".join((message, " ".join(msg_chc)))
             else:
                 message = " ".join(msg_chc)
+            message = "".join((message, ": "))
         else:
             if message:
                 message = ":\n    ".join((message, "\n    ".join(msg_chc)))
             else:
                 message = "\n".join(msg_chc)
+            message = "".join((message, "\n"))
 
         # TODO: use a getch()-like!
-        r = input("".join((message, ": ")))
+        r = input(message)
         while r not in chc_map:
             r = input("Invalid choice, please try again: ")
 

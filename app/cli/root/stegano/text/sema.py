@@ -36,13 +36,15 @@ class Sema(app.kernel.Tool):
         ui.message("********** Welcome to Cyprium.Sema! **********")
         quit = False
         while not quit:
-            options = [("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Sema"),
-                       (self.about, "*about", "Show some help!"),
+            options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
                        (self.hide, "*hide", "Hide some data into a text"),
-                       (self.unhide, "*unhide", "Find the data hidden into the given text")]
-            answ = ui.get_choice("    ", options)
+                       (self.unhide, "*unhide", "Find the data hidden into the given text"),
+                       ("", "-----", ""),
+                       ("tree", "*tree", "Show the whole tree"),
+                       ("quit", "*quit", "Quit Cyprium.Sema")]
+            msg = "Cyprium.Sema"
+            answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
                 self._tree.print_tree(ui)

@@ -31,7 +31,6 @@ import sys, os, os.path
 import importlib
 
 
-#le BADPLATFORMS pour signaler les os sur lesquels un module ne tourne.
 class Node:
     """A category/tool."""
 
@@ -81,25 +80,35 @@ class Tree:
     COMPACT = 1
     FULL = 2
 
-    # Welcome
+    MSG_LOGO = "\n" \
+    "          01000   011  011  110010   111000   00111001 00    11 0      1        \n"\
+    "         00   10   11  10   10   10  11   01     10    10    01 00    00        \n"\
+    "        00     1    1000    10    01 11    10    01    00    10 000  001        \n"\
+    "        01           01     00   01  10   10     00    01    10 01 01 00        \n"\
+    "        10           00     00010    010000      11    00    00 10    11        \n"\
+    "        00     0     11     01       10    1     01    10    11 00    00        \n"\
+    "         10   11     00     10       00    11    00     1    0  10    11        \n"\
+    "          01101      01     11       10    01 00100000   0010   00    01        \n"
+
     MSG_WELCOME = "" \
-    "########################################################################\n"\
-    "#                                                                      #\n"\
-    "#   Cyprium is a multifunction cryptographic, steganographic and       #\n"\
-    "#   cryptanalysis tool developped by members of The Hackademy.         #\n"\
-    "#   French White Hat Hackers Community!                                #\n"\
-    "#   www.thehackademy.fr                                                #\n"\
-    "#   Copyright © 2012                                                   #\n"\
-    "#   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #\n"\
-    "#   afranck64, Tyrtamos.                                               #\n"\
-    "#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #\n"\
-    "#   madhatter@thehackademy.fr, mont29@thehackademy.fr,                 #\n"\
-    "#   irc.thehackademy.fr #cyprium, irc.thehackademy.fr #hackademy       #\n"\
-    "#                                                                      #\n"\
-    "#   This is free software under GNU GPL licence.                       #\n"\
-    "#   You are welcome to redistribute it under the GNU GPL conditions.   #\n"\
-    "#                                                                      #\n"\
-    "########################################################################\n"\
+    "################################################################################\n"\
+    "#                                                                              #\n"\
+    "#   Cyprium is a multifunction cryptographic, steganographic and               #\n"\
+    "#   cryptanalysis tool developped by members of The Hackademy.                 #\n"\
+    "#   French White Hat Hackers Community!                                        #\n"\
+    "#   www.thehackademy.fr                                                        #\n"\
+    "#   Copyright © 2012                                                           #\n"\
+    "#   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,           #\n"\
+    "#   afranck64, Tyrtamos.                                                       #\n"\
+    "#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,                 #\n"\
+    "#   madhatter@thehackademy.fr, mont29@thehackademy.fr,                         #\n"\
+    "#   irc.thehackademy.fr #cyprium, irc.thehackademy.fr #hackademy               #\n"\
+    "#                                                                              #\n"\
+    "#   This is free software under GNU GPL licence.                               #\n"\
+    "#   You are welcome to redistribute it under the GNU GPL conditions.           #\n"\
+    "#                                                                              #\n"\
+    "################################################################################\n"\
+
 
     def __init__(self, root):
         self._root = Node(self, None, root)
@@ -122,20 +131,32 @@ class Tree:
                        doc="Current Node (tool or category) in menu.")
 
 
+    def breadcrumbs(self):
+        """Return a one-line string with "path" to current node."""
+        chain = [self._current]
+        while chain[0].parent:
+            chain.insert(0, chain[0].parent)
+        return "/".join([el.name.replace('*', '') for el in chain])
+
+
     def print_tree(self, ui, mode=COMPACT):
         """Print the whole tree, with current node if set."""
         pass
 
     def main(self, ui):
         """Print a menu (choices) with current level nodes."""
+        import time
+
+        ui.message(self.MSG_LOGO)
+        time.sleep(1)
         ui.message(self.MSG_WELCOME)
+        time.sleep(1)
 
         quit = False
         while not quit:
             if self._current.obj:
                 self._current.obj.main(ui)
             else:
-                print("In Tree.main()!")
                 options = []
                 for n in self._current.children:
                     options.append((n, n.name, n.tip))
@@ -143,7 +164,8 @@ class Tree:
                             ("tree", "*tree", "Show the whole tree"),
                             ("back", "*back", "Go back one level"),
                             ("quit", "*quit", "Quit Cyprium")]
-                answ = ui.get_choice("temp", options)
+                msg = "Cyprium -*- {}".format(self.breadcrumbs())
+                answ = ui.get_choice(msg, options)
                 if answ == 'quit':
                     quit = True
                 elif answ == 'tree':
@@ -153,7 +175,6 @@ class Tree:
                         self._current = self._current.parent
                 else:
                     self._current = answ
-                    print(self.current)
 
         ui.message("Goodbye !")
 
