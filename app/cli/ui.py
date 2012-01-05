@@ -40,17 +40,30 @@ class UI(app.ui.UI):
 
     @staticmethod
     def cinput(msg):
-        sys.stdout.buffer.write(msg.encode(sys.stdout.encoding, "replace"))
-        sys.stdout.buffer.flush()
-        return input("")
+        codec = sys.stdout.encoding
+        if not codec:
+            # Security check/fallback,
+            # some IDE give no encoding to their stdout. :(
+            codec = "ascii"
+        sys.stdout.buffer.write(msg.encode(codec, "replace"))
+        sys.stdout.flush()
+        ret = input("")
+        sys.stdout.buffer.write("\n".encode(codec, "replace"))
+        sys.stdout.flush()
+        return ret
 
     @staticmethod
     def cprint(*objs, sep=' ', end='\n', file=sys.stdout):
-        sep = sep.encode(file.encoding, "replace")
-        objs = [str(obj).encode(file.encoding, "replace") for obj in objs]
-        end = end.encode(file.encoding, "replace")
+        codec = file.encoding
+        if not codec:
+            # Security check/fallback,
+            # some IDE give no encoding to their stdout. :(
+            codec = "ascii"
+        sep = sep.encode(codec, "replace")
+        objs = [str(obj).encode(codec, "replace") for obj in objs]
+        end = end.encode(codec, "replace")
         file.buffer.write(sep.join(objs)+end)
-        sys.stdout.buffer.flush()
+        file.flush()
 
     def message(self, message="", level=app.ui.UI.INFO):
         """Print a message to the user, with some formatting given
@@ -127,5 +140,4 @@ class UI(app.ui.UI):
         while r not in chc_map:
             r = self.cinput("Invalid choice, please try again: ").lower()
 
-        self.cprint("")
         return chc_map[r]

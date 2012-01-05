@@ -179,7 +179,7 @@ class Binary(app.cli.Tool):
                 return
 
 
-NAME  = "*binary"
+NAME  = "b*inary"
 TIP   = "Tool to convert text to/from “binary” text."
 TYPE  = app.cli.Node.TOOL
 CLASS = Binary
