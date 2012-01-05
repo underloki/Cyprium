@@ -39,6 +39,7 @@ import app.cli
 import kernel.stegano.text.sema as sema
 
 class Sema(app.cli.Tool):
+    """CLI wrapper for sema stegano text tool."""
     marker = b"\xcc\xa3".decode("utf8")
 
     def main(self, ui):
