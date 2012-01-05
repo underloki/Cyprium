@@ -26,6 +26,15 @@
 #                                                                      #
 ########################################################################
 
+
+# In case we directly run that file, we need to add the whole cyprium to path,
+# to get access to CLI stuff!
+if __name__ == "__main__":
+    import sys, os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 "..", "..", "..", "..",
+                                                 "..")))
+
 import app.cli
 import kernel.stegano.text.sema as sema
 
@@ -79,7 +88,7 @@ class Sema(app.cli.Tool):
                "Obviously, the same goes for the output file.\n"
 
         ui.message(text)
-        ui.get_choice("", [("", "Go back to *menu", "")], True)
+        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -130,62 +139,48 @@ class Sema(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], True)
+        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
     def hide(self, ui):
         """Interactive version of hide()."""
         txt = ""
-        done = False
         ui.message("===== Hide Mode =====")
 
-        while not done:
-            while 1:
-                answ = ui.get_data("Choose an input text file: ")
-                try:
-                    with open(answ, 'r') as ifile:
-                        txt = ifile.read()
-                    break;
-                except Exception as e:
-                    print(e)
-                    options = [("retry", "*try again,", ""),
-                               ("menu", "or go back to *menu", "")]
-                    answ = ui.get_choice("Could not open that file, please", options, True)
-                    if answ != "retry":
-                        return
-
-            while 1:
-                answ = ui.get_data("Data to hide: ")
-                try:
-                    txt = sema.hide(txt, answ, self.marker, 0)
-                    done = True # Go out of parent loop too!
-                    break;
-                except Exception as e:
-                    print(e)
-                    options = [("retry", "*try again,", ""),
-                               ("file", "choose another *input file,", ""),
-                               ("menu", "or go back to *menu", "")]
-                    answ = ui.get_choice("Could not hide that data into the given text, please", options, True)
-                    if answ == "file":
-                        break; # Go back to input file selection.
-                    elif answ != "retry":
-                        return
-
         while 1:
-            answ =  ui.get_data("Choose an output text file: ")
-            try:
-                with open(answ, 'w') as ofile:
-                    ofile.encoding = "utf-8"
-                    ofile.write(txt)
-                break;
-            except Exception as e:
-                print(e)
-                options = [("retry", "*try again,", ""),
-                           ("menu", "or go back to *menu", "")]
-                answ = ui.get_choice("Could not open that file, please", options, True)
-                if answ != "retry":
-                    return
+            done = False
+            while not done:
+                txt = ui.text_input("Text into which hide data")
+                if txt is None:
+                    break  # Go back to main Hide menu.
 
-        ui.message("Data successfully hidden in file! Back to Sema menu…")
+                while 1:
+                    data = ui.text_input("Data to hide into the text")
+                    try:
+                        # Will also raise an exception if data is None.
+                        txt = sema.hide(txt, data, self.marker, 0)
+                        done = True  # Out of those loops, output result.
+                        break
+                    except Exception as e:
+                        print(e)
+                        options = [("retry", "*try again", ""),
+                                   ("file", "choose another *input file", ""),
+                                   ("menu", "or go back to *menu", "")]
+                        answ = ui.get_choice("Could not hide that data into the given text, please", options, oneline=True)
+                        if answ == "file":
+                            break  # Go back to input file selection.
+                        elif answ in {None, "menu"}:
+                            return  # Go back to main Sema menu.
+                        # Else, retry with another data to hide.
+
+            if done:
+                ui.text_output("Data successfully hidden", txt,
+                               "Text with hidden data")
+
+            options = [("redo", "*hide another data", ""),
+                       ("quit", "or go back to *menu", "")]
+            answ = ui.get_choice("Do you want to", options, oneline=True)
+            if answ in {None, "quit"}:
+                return
 
 
     def unhide(self, ui):
@@ -194,30 +189,31 @@ class Sema(app.cli.Tool):
         ui.message("===== Unhide Mode =====")
 
         while 1:
-            answ = ui.get_data("Choose an input text file: ")
+            txt = ui.text_input("Please choose some text with hidden data")
+
             try:
-                with open(answ, 'r') as ifile:
-                    txt = ifile.read()
-                break;
+                ui.text_output("Data successfully unhidden",
+                               sema.unhide(txt, self.marker, 0),
+                               "The hidden data is")
             except Exception as e:
-                print(e)
-                options = [("retry", "*try again,", ""),
-                           ("menu", "or go back to *menu", "")]
-                answ = ui.get_choice("Could not open that file, please", options, True)
-                if answ != "retry":
-                    return
+                ui.message(str(e), ui.ERROR)
 
-        try:
-            ui.message("The hidden data is: {}".format(sema.unhide(txt, self.marker, 0)))
-        except Exception as e:
-            ui.message(str(e), ui.ERROR)
-            return
-
-        ui.message("Data successfully unhidden from file! Back to Sema menu…")
+            options = [("redo", "*unhide another data", ""),
+                       ("quit", "or go back to *menu", "")]
+            answ = ui.get_choice("Do you want to", options, oneline=True)
+            if answ == "quit":
+                return
 
 
 NAME  = "*sema"
-TIP   = "Tool to hide some text into a much bigger one, by placing small dots below some letters."
+TIP   = "Tool to hide some text into a much bigger one, " \
+        "by placing small dots below some letters."
 TYPE  = app.cli.Node.TOOL
 CLASS = Sema
 
+# Allow tool to be used directly, without using Cyprium menu.
+if __name__ == "__main__":
+    import app.cli.ui
+    ui = app.cli.ui.UI()
+    tree = app.cli.NoTree("Sema")
+    Sema(tree).main(ui)

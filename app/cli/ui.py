@@ -73,20 +73,33 @@ class UI(app.ui.UI):
         return self.cinput(message)
         self.cprint("")
 
-    def get_choice(self, message="", options=[], oneline=False):
+    def get_choice(self, message="", options=[], start_opt="", end_opt="",
+                   oneline=False):
         """Gives some choices to the user, and get its answer."""
         # Parse the options...
         msg_chc = []
         chc_map = {}
+        do_default = False
         for c in options:
             name = c[1]
             key_idx = name.find('*')
-            # If no '*' found, considered as "static label".
+            if key_idx < 0:
+                key_idx = name.find('$')
+                if key_idx >= 0:
+                    do_default = True
+            # If no '*' or '$' found, considered as "static label".
             if key_idx >= 0:
                 key = name[key_idx + 1].lower()
                 name = name[:key_idx] + '(' + key.upper() + ')' + name[key_idx+2:]
+                if do_default:
+                    if "" in chc_map:
+                        self.message("Option {} wants to be default, while we already have one!".format(name), self.WARNING)
+                        continue
+                    chc_map[""] = c[0]
+                    name = " ".join((name, "[default]"))
+                    do_default = False
                 if key in chc_map:
-                    ui.message("Option {} wants the already used '{}' key!".format(name, key), ui.WARNING)
+                    self.message("Option {} wants the already used '{}' key!".format(name, key), self.WARNING)
                     continue
                 chc_map[key] = c[0]
             if c[2]:
@@ -95,16 +108,18 @@ class UI(app.ui.UI):
                 msg_chc.append(name)
 
         if oneline:
+            txt_msg = "".join((start_opt, ", ".join(msg_chc), end_opt))
             if message:
-                message = " ".join((message, " ".join(msg_chc)))
+                message = " ".join((message, txt_msg))
             else:
-                message = " ".join(msg_chc)
+                message = txt_msg
             message = "".join((message, ": "))
         else:
+            txt_msg = "".join((start_opt, "\n    ".join(msg_chc), end_opt))
             if message:
-                message = ":\n    ".join((message, "\n    ".join(msg_chc)))
+                message = ":\n    ".join((message, txt_msg))
             else:
-                message = "\n".join(msg_chc)
+                message = txt_msg
             message = "".join((message, "\n"))
 
         # TODO: use a getch()-like!

@@ -43,9 +43,14 @@ class Node:
         self.parent = parent
         self.children = []
         self.module = module
-        self.name = module.NAME
-        self.tip = module.TIP
-        self.type = module.TYPE
+        if hasattr(module, "NAME"):
+            self.name = module.NAME
+            self.tip = module.TIP
+            self.type = module.TYPE
+        else:
+            self.name = ""
+            self.tip = ""
+            self.type = None
         if hasattr(module, "CLASS"):
             self.obj = module.CLASS(self.tree)
         else:
@@ -72,13 +77,23 @@ class Node:
                     except Exception as e:
                         print(e)
 
+    def is_descendant(self, node):
+        """Check whether the given node is a descendant of self."""
+        for n in self.children:
+            if n is node or n.is_descendant(node):
+                return True
+        return False
+
 
 class Tree:
     """Class representing the whole tool tree."""
 
     # Print tree modes.
     COMPACT = 1
-    FULL = 2
+    FULL    = 2
+
+    # Print tree, current node marker.
+    CURR_MARKER = "  <<<"
 
     MSG_LOGO = "\n" \
     "          01000   011  011  110010   111000   00111001 00    11 0      1        \n"\
@@ -125,7 +140,8 @@ class Tree:
         return self._current
 
     def set_current(self, node):
-        self._current = node
+        if (self._root.is_descendant(node)):
+            self._current = node
 
     current = property(get_current, set_current,
                        doc="Current Node (tool or category) in menu.")
@@ -145,9 +161,12 @@ class Tree:
             ui.message(self.breadcrumbs())
         else:
             def rec(tree, lines, lvl, node):
-                elts = ["    "*lvl, "/", node.name.replace('*', '')]
+                if node.type == Node.CATEGORY:
+                    elts = ["    "*lvl, "/", node.name.replace('*', '')]
+                else:
+                    elts = ["    "*lvl, "* ", node.name.replace('*', '')]
                 if tree._current == node:
-                    elts.append("  <<<")
+                    elts.append(self.CURR_MARKER)
                 lines.append("".join(elts))
                 for child in node.children:
                     rec(tree, lines, lvl+1, child)
@@ -155,6 +174,7 @@ class Tree:
             lines = []
             rec(self, lines, 0, self.root)
             ui.message("\n".join(lines))
+
 
     def main(self, ui):
         """Print a menu (choices) with current level nodes."""
@@ -174,6 +194,7 @@ class Tree:
                 for n in self._current.children:
                     options.append((n, n.name, n.tip))
                 options += [("", "-----", ""),
+                            ("about", "*about", "Show Cyprium info"),
                             ("tree", "*tree", "Show the whole tree"),
                             ("back", "*back", "Go back one level"),
                             ("quit", "*quit", "Quit Cyprium")]
@@ -186,10 +207,40 @@ class Tree:
                 elif answ == 'back':
                     if self._current.parent:
                         self._current = self._current.parent
+                elif answ == 'about':
+                    ui.message(self.MSG_LOGO)
+                    ui.message(self.MSG_WELCOME)
                 else:
                     self._current = answ
 
         ui.message("Goodbye !")
+
+
+class NoTree(Tree):
+    """Fake Tree class used when a Tool is called directly."""
+
+    def __init__(self, name):
+        self._root = Node(self, None, None)
+        self._current = self._root
+        self._name = name
+
+
+    def breadcrumbs(self):
+        """Return a one-line string with "path" to current node."""
+        return "/{}".format(self._name)
+
+
+    def print_tree(self, ui, mode=Tree.COMPACT):
+        """Print the whole tree, with current node if set."""
+        if mode == self.COMPACT:
+            ui.message(self.breadcrumbs())
+        else:
+            ui.message("{}{}".format(self._name, self.CURR_MARKER))
+
+
+    def main(self, ui):
+        """Dummy void func."""
+        return
 
 
 class Tool:

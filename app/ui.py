@@ -46,6 +46,9 @@ class UI:
     def __init__(self):
         self.status = OK
 
+###############################################################################
+# UI itself.
+###############################################################################
     def message(self, message="", level=INFO):
         """Print a message to the user, with some formatting given
            the level value.
@@ -58,9 +61,9 @@ class UI:
            completion callback if user hits <tab>.
            completion(data_already_entered=None)
         """
-        pass
+        return None
 
-    def get_choice(self, message="", choices=[], oneline=False):
+    def get_choice(self, message="", choices=[], start_opt="", end_opt="", oneline=False):
         """Give some choices to the user, and get its answer.
            Message is printed once. Then, choices is a list of tuples:
                (returned_key_str_or_obj, label, tip)
@@ -68,9 +71,163 @@ class UI:
                    returned_key_str_or_obj: unique str or hashable object.
                                             void string for separators.
                    label: name of the entry, with a '*' before the key letter.
+                          You can specify ONE default option by using rather
+                          a '$' before the letter.
                    tip: short help.
                One choice a line.
+           opt_start and opt_end are optional string to put before/after the
+           option list.
            If the optional oneline is True, all menu choices are concatenated
            on a single line, e.g. "Go back to (M)enu or (T)ry again!".
         """
-        pass
+        for c in choices:
+            if '$' in c[1]:
+                return c[0]
+        return None
+
+
+###############################################################################
+# Util file functions.
+###############################################################################
+    def text_file_get_path(self, msg, codec):
+        """Get a text path (with codec)."""
+        msg = " ".join((msg, "(if not using the current encoding, “{}”, " \
+                             "add the desired one after a “;”, like this: " \
+                             "“my/file.txt;latin1”): ".format(codec)))
+        path = self.get_data(msg)
+        if ';' in path:
+            path, codec = path.split(';', 1)
+        return path, codec
+
+
+    def text_file_ropen(self, path=None, codec=None):
+        """Helper to open a text file in read mode."""
+        import os, locale
+        default_codec = locale.getpreferredencoding()
+        if not codec:
+            codec = default_codec
+        if not path:
+            path, codec = self.text_file_get_path("Choose an input text file",
+                                                  codec)
+            if path is None: # No user interaction, return.
+                return
+
+        while 1:
+            if not codec:
+                codec = default_codec
+            try:
+                return open(path, 'r', encoding=codec)
+            except Exception as e:
+                self.message(e)
+                options = [("retry", "$try again", ""),
+                           ("menu", "or go back to *menu", "")]
+                answ = self.get_choice("Could not open that file, please",
+                                       options, oneline=True)
+                if answ != "retry":
+                    return
+                path, codec = self.text_file_get_path("Choose an input text "
+                                                      "file", codec)
+
+    def text_file_read(self, path=None, codec=None):
+        """Helper to read the whole content of a text file."""
+        ifile = None
+        while 1:
+            try:
+                ifile = self.text_file_ropen(path, codec)
+                if ifile is None:
+                    return
+                return ifile.read()
+            except Exception as e:
+                self.message(e)
+                options = [("retry", "$try again", ""),
+                           ("menu", "or go back to *menu", "")]
+                answ = self.get_choice("Could not read that file, please",
+                                       options, online=True)
+                if answ != "retry":
+                    return
+            finally:
+                if ifile:
+                    ifile.close()
+
+    def text_input(self, msg):
+        """Helper to get some text, either from console or from a file."""
+        options = [("console", "directly from $console", ""),
+                   ("file", "or reading a *file", "")]
+        answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
+                               oneline=True)
+        if answ == "console":
+            return self.get_data("Please type the text: ")
+        elif answ == "file":
+            return self.text_file_read()
+        else:
+            return
+
+
+    def text_file_wopen(self, path=None, codec=None):
+        """Helper to open a text file in write mode."""
+        import os, locale
+        default_codec = locale.getpreferredencoding()
+        if not codec:
+            codec = default_codec
+        if not path:
+            path, codec = self.text_file_get_path("Choose an output text file", codec)
+            if path is None: # No user interaction, return.
+                return
+
+        while 1:
+            if not codec:
+                codec = default_codec
+            action = "replace"
+            if os.path.isfile(path):
+                options = [("replace", "$replace its content", ""),
+                           ("append", "*append to its content", ""),
+                           ("retry", "or choose an*other one", "")]
+                action = self.get_choice("This file already exists, "
+                                         "do you want to", options,
+                                         oneline=True)
+            try:
+                if action == "replace":
+                    return open(path, 'w', encoding=codec)
+                elif action == "append":
+                    return open(path, 'a', encoding=codec)
+            except Exception as e:
+                self.message(e)
+                options = [("retry", "$try again", ""),
+                           ("menu", "or go back to *menu", "")]
+                action = self.get_choice("Could not open that file, please", options, oneline=True)
+                if action != "retry":
+                    return
+            path, codec = self.text_file_get_path("Choose an input text file", codec)
+
+    def text_file_write(self, data, path=None, codec=None):
+        """Helper to write the whole content of a text file."""
+        ofile = None
+        while 1:
+            try:
+                ofile = self.text_file_wopen(path, codec)
+                if ofile is None:
+                    return
+                ofile.write(data)
+                return True
+            except Exception as e:
+                self.message(e)
+                options = [("retry", "$try again", ""),
+                           ("menu", "or go back to *menu", "")]
+                answ = self.get_choice("Could not write to that file, please", options, oneline=True)
+                if answ != "retry":
+                    return
+            finally:
+                if ofile:
+                    ofile.close()
+
+    def text_output(self, msg, data, print_msg=""):
+        """Helper to output some text, either into console or into a file."""
+        options = [("console", "print to $console", ""),
+                   ("file", "write into a *file", ""),
+                   ("both", "or *both", "")]
+        answ = self.get_choice(msg, options, start_opt="(", end_opt=")", oneline=True)
+        if answ in {"console", "both"}:
+            self.message(": ".join((print_msg, data)))
+        if answ in {"file", "both"}:
+            self.text_file_write(data)
+

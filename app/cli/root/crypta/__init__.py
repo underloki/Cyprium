@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME  = "crypt*analysis"
+NAME  = "cry*ptanalysis"
 TIP   = "Tools to analyze cyphers."
 TYPE  = app.cli.Node.CATEGORY
