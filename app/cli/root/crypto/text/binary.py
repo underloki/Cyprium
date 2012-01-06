@@ -82,12 +82,12 @@ class Binary(app.cli.Tool):
         ui.message("Running a small demo/testing!")
 
         ui.message("--- Encoding ---")
-        ui.message("Data to encode: {}\n".format("Hello Wolrd!"))
+        ui.message("Data to encode: {}\n".format("Hello World!"))
         ui.message("Binary encoded data: {}"
                    "".format(binary.encode("Hello World!")))
         ui.message("")
 
-        htext = "01100101011101110110110001100011011011110110110101100101" \
+        htext = "01110111011001010110110001100011011011110110110101100101" \
                 "00100001"
         ui.message("--- Decoding ---")
         ui.message("“Binary” text used as input: {}".format(htext))
@@ -95,7 +95,7 @@ class Binary(app.cli.Tool):
 
         ui.message("+ The input text to decode may have space-separated "
                    "octets:")
-        htext = "01100101 01110111 01101100 01100011 01101111 01101101 " \
+        htext = "01110111 01100101 01101100 01100011 01101111 01101101 " \
                 "01100101 00100001"
         ui.message("--- Decoding ---")
         ui.message("“Binary” text used as input: {}".format(htext))
@@ -104,7 +104,7 @@ class Binary(app.cli.Tool):
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to decode must be (0, 1) digits only:")
         htext = "011001010111211101101100015000110110111101101101011a" \
-                "0010100100001"
+                "001010010001"
         ui.message("“Binary” text used as input: {}".format(htext))
         try:
             ui.message("The decoded data is: {}"
@@ -140,7 +140,12 @@ class Binary(app.cli.Tool):
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = binary.encode(txt)
+                    codec = ui.get_data("Type the codec you want to use (e.g. "
+                                        "'utf-8'), or leave empty to use "
+                                        "default 'ascii' one: ")
+                    if not codec:
+                        codec = "ascii"
+                    txt = binary.encode(txt, codec)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -173,8 +178,15 @@ class Binary(app.cli.Tool):
         while 1:
             txt = ui.text_input("Please choose some binary text")
 
+            codec = ui.get_data("Type the codec you want to use (e.g. "
+                                "'utf-8'), or leave empty to use "
+                                "default 'ascii' one: ")
+            if not codec:
+                codec = "ascii"
+
             try:
-                ui.text_output("Data successfully decoded", binary.decode(txt),
+                ui.text_output("Data successfully decoded",
+                               binary.decode(txt, codec),
                                "The hidden data is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)

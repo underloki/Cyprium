@@ -29,5 +29,5 @@
 import app.cli
 
 NAME  = "*steganography"
-TIP   = "Tools to hide a small amount of data into a much bigger one."
+TIP   = "Tools to hide a small amount of data into a bigger one."
 TYPE  = app.cli.Node.CATEGORY
