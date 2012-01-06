@@ -47,7 +47,8 @@ class Binary(app.cli.Tool):
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
-                       (self.encode, "*encode", "Encode some textual data in binary"),
+                       (self.encode, "*encode",
+                                     "Encode some textual data in binary"),
                        (self.decode, "de*code", "Decode binary into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
@@ -73,7 +74,7 @@ class Binary(app.cli.Tool):
                "characters and accents."
 
         ui.message(text)
-        ui.get_choice("", [("", "Go back to *menu", "")], True)
+        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
 
     def demo(self, ui):
@@ -86,20 +87,24 @@ class Binary(app.cli.Tool):
                    "".format(binary.encode("Hello World!")))
         ui.message("")
 
-        htext = "0110010101110111011011000110001101101111011011010110010100100001"
+        htext = "01100101011101110110110001100011011011110110110101100101" \
+                "00100001"
         ui.message("--- Decoding ---")
         ui.message("“Binary” text used as input: {}".format(htext))
         ui.message("The decoded data is: {}".format(binary.decode(htext)))
 
-        ui.message("+ The input text to decode may have space-separated octets:")
-        htext = "01100101 01110111 01101100 01100011 01101111 01101101 01100101 00100001"
+        ui.message("+ The input text to decode may have space-separated "
+                   "octets:")
+        htext = "01100101 01110111 01101100 01100011 01101111 01101101 " \
+                "01100101 00100001"
         ui.message("--- Decoding ---")
         ui.message("“Binary” text used as input: {}".format(htext))
         ui.message("The decoded data is: {}".format(binary.decode(htext)))
 
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to decode must be (0, 1) digits only:")
-        htext = "011001010111211101101100015000110110111101101101011a0010100100001"
+        htext = "011001010111211101101100015000110110111101101101011a" \
+                "0010100100001"
         ui.message("“Binary” text used as input: {}".format(htext))
         try:
             ui.message("The decoded data is: {}"
@@ -107,8 +112,10 @@ class Binary(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decode must have a length multiple of 8 (once spaces have been striped):")
-        htext = "01100101 0110111 0110110 0110011 0110111 0101101 0110011 0000001"
+        ui.message("+ The input text to decode must have a length multiple "
+                   "of 8 (once spaces have been striped):")
+        htext = "01100101 0110111 0110110 0110011 0110111 0101101 0110011 " \
+                "0000001"
         ui.message("“Binary” text used as input: {}".format(htext))
         try:
             ui.message("The decoded data is: {}"
@@ -116,7 +123,7 @@ class Binary(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], True)
+        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
 
     def encode(self, ui):
@@ -151,7 +158,7 @@ class Binary(app.cli.Tool):
                 ui.text_output("Data successfully converted", txt,
                                "Binary form of data")
 
-            options = [("redo", "*convert another data", ""),
+            options = [("redo", "*encode another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:

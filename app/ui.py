@@ -44,7 +44,7 @@ class UI:
 
 
     def __init__(self):
-        self.status = OK
+        pass
 
 ###############################################################################
 # UI itself.
@@ -80,6 +80,7 @@ class UI:
            If the optional oneline is True, all menu choices are concatenated
            on a single line, e.g. "Go back to (M)enu or (T)ry again!".
         """
+        # Return the default element, if present.
         for c in choices:
             if '$' in c[1]:
                 return c[0]
@@ -102,7 +103,7 @@ class UI:
 
     def text_file_ropen(self, path=None, codec=None):
         """Helper to open a text file in read mode."""
-        import os, locale
+        import locale
         default_codec = locale.getpreferredencoding()
         if not codec:
             codec = default_codec

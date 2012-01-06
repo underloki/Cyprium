@@ -35,23 +35,6 @@ class UI(app.ui.UI):
              to some expected data...
     """
 
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def cinput(msg):
-        codec = sys.stdout.encoding
-        if not codec:
-            # Security check/fallback,
-            # some IDE give no encoding to their stdout. :(
-            codec = "ascii"
-        sys.stdout.buffer.write(msg.encode(codec, "replace"))
-        sys.stdout.flush()
-        ret = input("")
-        sys.stdout.buffer.write("\n".encode(codec, "replace"))
-        sys.stdout.flush()
-        return ret
-
     @staticmethod
     def cprint(*objs, sep=' ', end='\n', file=sys.stdout):
         codec = file.encoding
@@ -62,8 +45,19 @@ class UI(app.ui.UI):
         sep = sep.encode(codec, "replace")
         objs = [str(obj).encode(codec, "replace") for obj in objs]
         end = end.encode(codec, "replace")
-        file.buffer.write(sep.join(objs)+end)
+        if hasattr(file, "buffer"):
+            file.buffer.write(sep.join(objs)+end)
+        else:
+            file.write(sep.join(objs)+end)
         file.flush()
+
+    @staticmethod
+    def cinput(msg):
+        UI.cprint(msg, end="")
+        ret = input("")
+        UI.cprint("")
+        return ret
+
 
     def message(self, message="", level=app.ui.UI.INFO):
         """Print a message to the user, with some formatting given

@@ -28,16 +28,17 @@
 #                                                                      #
 ########################################################################
 
-# We assume txt/data length has already been checked, that marker is a valid utf8 char,
-# and that delta is low enough (I’d say len(data) * 2 at most…).
+# We assume txt/data length has already been checked, that marker is a valid
+# utf8 char, and that delta is low enough (I’d say len(data) * 2 at most…).
 def do_hide(txt, data, marker, delta):
-    """Hide data into txt, using marker, and optionally an obfuscating delta."""
+    """Hide data into txt, using marker, and optionally an obfuscating delta.
+    """
     # Be sure we have all needed chars in the text!
-    needed_c = set(data)
-    available_c = set(txt)
-    if not needed_c <= available_c:
-        raise Exception("Letters '{}' were not found in the text!" \
-                        "".format("', '".join(sorted(needed_c - available_c))))
+    c_needed = set(data)
+    c_available = set(txt)
+    if not c_needed <= c_available:
+        raise Exception("Letters '{}' were not found in the text!"
+                        "".format("', '".join(sorted(c_needed - c_available))))
 
     # Now, we have all needed letters.
     # But they might be not placed well!
@@ -71,15 +72,15 @@ def do_hide(txt, data, marker, delta):
             idx = txt.find(c, cur) + 1
             # If no letter was found, error.
             if idx == 0:
-                raise Exception("Could not hide \"{}\" in the input " \
-                                "text (letter '{}' was not found in " \
+                raise Exception("Could not hide \"{}\" in the input "
+                                "text (letter '{}' was not found in "
                                 "remaining text)!".format(data, c))
             cur = idx+1
             idx += delta
             # If delta is to high, error.
             if idx >= len_txt + i:
-                raise Exception("Could not hide \"{}\" in the input " \
-                                "text (delta ({}) is to high for letter '{}' " \
+                raise Exception("Could not hide \"{}\" in the input "
+                                "text (delta ({}) is to high for letter '{}' "
                                 "in remaining text)!".format(delta, data, c))
             txt = txt[:idx] + marker + txt[idx:]
 
@@ -91,16 +92,20 @@ def hide(txt, data, marker, delta):
     import string
     if not data:
         raise Exception("no data given!")
-    # Remove all unallowed chars…
-    if not (set(data) <= set(string.ascii_lowercase)):
-        raise Exception("Data contains unallowed chars (only lowercase strict ASCII chars are allowed)!")
+    # Check for unallowed chars…
+    c_data = set(data)
+    c_allowed = set(string.ascii_lowercase)
+    if not (c_data <= c_allowed):
+        raise Exception("Data contains unallowed chars (only lowercase strict "
+                        "ASCII chars are allowed): '{}'!"
+                        "".format("', '".join(sorted(c_data - c_allowed))))
     if len(data) / len(txt) > 0.025:
         raise Exception("The hiding text should be at least 40 times "
                         "longer than the data to hide into it (data: {} "
                         "chars, input text: {} chars)!"
                         "".format(len(data), len(txt)))
     if delta > len(data) * 2:
-        raise Exception("The obfuscating delta is too high, it " \
+        raise Exception("The obfuscating delta is too high, it "
                         "should not be higher than twice the data length.")
     return do_hide(txt, data, marker, delta)
 
@@ -134,7 +139,7 @@ def do_test(txt, data, marker, delta):
 
     stega = hide(txt, data, marker, delta)
 
-    print("Hidden data (with '{}' as marker, and a delta of {}): « {} »\n" \
+    print("Hidden data (with '{}' as marker, and a delta of {}): « {} »\n"
           "".format(marker, delta, stega))
 
     result = unhide(stega, marker, delta)
@@ -150,7 +155,8 @@ def test():
            "représentent, ni si ce sont des souvenirs ou des fictions.” " \
            "– extrait de « La nausée » de Jean-Paul Sartre."
     marker = b"\xcc\xa3".decode("utf8")
-    tests = (("comix", 0, marker), ("htsdz", -1, marker), ("Hello World!", 3, marker), ("bonjour a tous", 6, marker))
+    tests = (("comix", 0, marker), ("htsdz", -1, marker),
+             ("Hello World!", 3, marker), ("bonjour a tous", 6, marker))
 
     print("Text used as source: {}.\n".format(text))
     for data, delta, mark in tests:
@@ -164,14 +170,14 @@ def main():
     # The argparse is much nicer than directly using sys.argv...
     # Try 'program.py -h' to see! ;)
     import argparse
-    parser = argparse.ArgumentParser(description="" \
-                                     "Hide/unhide a word or short sentence " \
-                                     "into a long text (which should be at " \
-                                     "least 40 times longer).\n" \
-                                     "Use it without any arg to go in " \
+    parser = argparse.ArgumentParser(description=""
+                                     "Hide/unhide a word or short sentence "
+                                     "into a long text (which should be at "
+                                     "least 40 times longer).\n"
+                                     "Use it without any arg to go in "
                                      "interactive mode.")
     parser.add_argument('-d', '--delta', type=int, default=0,
-                        help="An optional delta to add to marked letters, " \
+                        help="An optional delta to add to marked letters, "
                              "to further obfuscate hidden data.")
     parser.add_argument('-m', '--marker', default=b"\xcc\xa3".decode("utf8"),
                         help="The unicode char marker.")
@@ -179,7 +185,7 @@ def main():
 
     hide_parser = sparsers.add_parser('hide', help="Hide data in text.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                             help="A file containing the text into which " \
+                             help="A file containing the text into which "
                                   "hide the data.")
     hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
                              help="A file into which write the stegano text.")
@@ -192,7 +198,7 @@ def main():
     unhide_parser = sparsers.add_parser('unhide',
                                         help="Unhide data from text.")
     unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                               help="A file containing the text with " \
+                               help="A file containing the text with "
                                     "hidden data.")
 
     test_parser = sparsers.add_parser('test', help="Small auto-tests…")

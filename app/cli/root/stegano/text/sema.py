@@ -67,25 +67,25 @@ class Sema(app.cli.Tool):
 
     def about(self, ui):
         text = "===== About Sema =====\n\n" \
-               "Sema is a steganographic tool which can hide text datas in a " \
-               "file, by putting dots (or optionally, another sign) under " \
+               "Sema is a steganographic tool which can hide text datas in " \
+               "a file, by putting dots (or optionally, another sign) under " \
                "letters.\n" \
                "By this way, it allows you to hide a keychain (a word or a " \
-               "sentence) via semagrammas (dots) in a larger text file. This " \
-               "technique allows to confuse the reader who won’t see most of " \
-               "the dots and will believe that the few ones he sees are " \
-               "probably a bug.\n\n" \
-               "The max length of the hidden data must be 40 times less longer " \
-               "than the input text.\n\n" \
-               "Note that only strict ASCII alphanumeric chars are allowed in "\
-               "data to hide, any other char will be striped!\n\n" \
+               "sentence) via semagrammas (dots) in a larger text file. " \
+               "This technique allows to confuse the reader who won’t see " \
+               "most of the dots and will believe that the few ones he sees " \
+               "are probably a bug.\n\n" \
+               "The max length of the hidden data must be 40 times less " \
+               "longer than the input text.\n\n" \
+               "Note that only strict ASCII alphanumeric chars are allowed "\
+               "in data to hide, any other char will be striped!\n\n" \
                "Example:\n\n" \
                "input file size = 1000 char\n\n" \
                "max length of hidden data = 25 char\n\n" \
-               "The path of the input file can be absolute (e.g. for linux, if " \
-               "the input file is located on your desktop: " \
-               "'/home/admin_name/Desktop/your_input_file'), or relative to the " \
-               "dir from where you started Sema.\n\n" \
+               "The path of the input file can be absolute (e.g. for linux, " \
+               "if the input file is located on your desktop: " \
+               "'/home/admin_name/Desktop/your_input_file'), or relative to " \
+               "the dir from where you started Sema.\n\n" \
                "Obviously, the same goes for the output file.\n"
 
         ui.message(text)
@@ -97,8 +97,8 @@ class Sema(app.cli.Tool):
 
         text = "“Mes souvenirs sont comme les pistoles dans la bourse du " \
                "diable. Quand on l’ouvrit, on n’y trouva que des feuilles " \
-               "mortes. J’ai beau fouiller le passé je n’en retire plus que des " \
-               "bribes d’images et je ne sais pas très bien ce qu’elles " \
+               "mortes. J’ai beau fouiller le passé je n’en retire plus que " \
+               "des bribes d’images et je ne sais pas très bien ce qu’elles " \
                "représentent, ni si ce sont des souvenirs ou des fictions.” " \
                "– extrait de « La nausée » de Jean-Paul Sartre."
         marker = self.marker
@@ -112,14 +112,16 @@ class Sema(app.cli.Tool):
 
         htext = "“Mes s"+marker+"ouvenirs sont comme les pistoles dans la " \
                 "bourse du di"+marker+"able. Quand on l’ouvrit, on n’y " \
-                "trouva que des feuilles mo"+marker+"rtes. J’ai beau fouiller " \
-                "le passé je n’en retire plus que des bribes d’im"+marker+"ages " \
-                "et je ne sais pas très bien ce qu’elles représentent, ni si ce " \
-                "sont des sou"+marker+"venirs ou des fictions.” – extrait de " \
-                "« La nausée » de Jean-Paul Sar"+marker+"tre."
+                "trouva que des feuilles mo"+marker+"rtes. J’ai beau " \
+                "fouiller le passé je n’en retire plus que des bribes d’im" \
+                +marker+"ages et je ne sais pas très bien ce qu’elles " \
+                "représentent, ni si ce sont des sou"+marker+"venirs ou des " \
+                "fictions.” – extrait de « La nausée » de Jean-Paul Sar" \
+                +marker+"tre."
         ui.message("--- Unhiding ---")
         ui.message("Text used as source (input file): {}".format(htext))
-        ui.message("The hidden data is: {}".format(sema.unhide(htext, marker, 0)))
+        ui.message("The hidden data is: {}"
+                   "".format(sema.unhide(htext, marker, 0)))
 
         ui.message("--- Won’t work ---")
         ui.message("+ The letters to hide must be present in the input text:")
@@ -131,12 +133,14 @@ class Sema(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text must be long enough for the given data to "
-                   "hide (at least 40 times):")
-        ui.message("Data to hide: {}".format("This is quite a long boring sentence"))
+        ui.message("+ The input text must be long enough for the given data "
+                   "to hide (at least 40 times):")
+        ui.message("Data to hide: {}"
+                   "".format("This is quite a long boring sentence"))
         try:
             ui.message("Text with hidden data (output file): {}"
-                       "".format(sema.hide(text, "This is quite a long boring sentence", marker, 0)))
+                       "".format(sema.hide(text, "This is quite a long boring "
+                                           "sentence", marker, 0)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
@@ -166,7 +170,9 @@ class Sema(app.cli.Tool):
                         options = [("retry", "*try again", ""),
                                    ("file", "choose another *input file", ""),
                                    ("menu", "or go back to *menu", "")]
-                        answ = ui.get_choice("Could not hide that data into the given text, please", options, oneline=True)
+                        msg = "Could not hide that data into the given " \
+                              "text, please"
+                        answ = ui.get_choice(msg, options, oneline=True)
                         if answ == "file":
                             break  # Go back to input file selection.
                         elif answ in {None, "menu"}:
