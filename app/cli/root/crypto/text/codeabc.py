@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 ########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #
@@ -36,24 +38,25 @@ if __name__ == "__main__":
                                                  "..")))
 
 import app.cli
-import kernel.crypto.text.binary as binary
+import kernel.crypto.text.codeabc as codeabc
 
 
-class Binary(app.cli.Tool):
-    """CLI wrapper for binary crypto text tool."""
+class CodeABC(app.cli.Tool):
+    """CLI wrapper for codeABC crypto text tool."""
     def main(self, ui):
-        ui.message("********** Welcome to Cyprium.Binary! **********")
+        ui.message("********** Welcome to Cyprium.Cellphone! **********")
         quit = False
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
-                       (self.encode, "*encode",
-                                     "Encode some textual data in binary"),
-                       (self.decode, "de*code", "Decode binary into text"),
+                       (self.encrypt, "*encrypt",
+                                      "Encrypt some text in codeABC"),
+                       (self.decipher, "de*cipher",
+                                       "Decipher codeABC into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Sema")]
-            msg = "Cyprium.Binary"
+                       ("quit", "*quit", "Quit Cyprium.CodeABC")]
+            msg = "Cyprium.CodeABC"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
@@ -67,7 +70,7 @@ class Binary(app.cli.Tool):
 
 
     def about(self, ui):
-        ui.message(binary.__about__)
+        ui.message(codeabc.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
 
@@ -75,71 +78,55 @@ class Binary(app.cli.Tool):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
 
-        ui.message("--- Encoding ---")
-        ui.message("Data to encode: {}\n".format("Hello World!"))
-        ui.message("Binary encoded data: {}"
-                   "".format(binary.encode("Hello World!")))
-        ui.message("")
+        ui.message("--- Encrypting ---")
+        ui.message("Data to encrypt: {}\n".format("hello wolrd"))
+        ui.message("CodeABC encrypted data: {}"
+                   "".format(codeabc.encrypt("hello world")))
 
-        htext = "01110111011001010110110001100011011011110110110101100101" \
-                "00100001"
-        ui.message("--- Decoding ---")
-        ui.message("“Binary” text used as input: {}".format(htext))
-        ui.message("The decoded data is: {}".format(binary.decode(htext)))
-
-        ui.message("+ The input text to decode may have space-separated "
-                   "octets:")
-        htext = "01110111 01100101 01101100 01100011 01101111 01101101 " \
-                "01100101 00100001"
-        ui.message("--- Decoding ---")
-        ui.message("“Binary” text used as input: {}".format(htext))
-        ui.message("The decoded data is: {}".format(binary.decode(htext)))
+        htext = "66 444 222 33 0 222 666 3 33 0 44 33 44"
+        ui.message("--- Deciphering ---")
+        ui.message("CodeABC text used as input: {}".format(htext))
+        ui.message("The deciphered data is: {}"
+                   "".format(codeabc.decipher(htext)))
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to decode must be (0, 1) digits only:")
-        htext = "011001010111211101101100015000110110111101101101011a" \
-                "001010010001"
-        ui.message("“Binary” text used as input: {}".format(htext))
+        ui.message("+ The input text to encrypt must be space and acsii "
+                   "lowercase letters only:")
+        ui.message("Data to encrypt: {}\n".format("Hello Wolrd!"))
         try:
-            ui.message("The decoded data is: {}"
-                       "".format(binary.decode(htext)))
+            ui.message("CodeABC encrypted data: {}"
+                       "".format(codeabc.encrypt("Hello World!")))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decode must have a length multiple "
-                   "of 8 (once spaces have been striped):")
-        htext = "01100101 0110111 0110110 0110011 0110111 0101101 0110011 " \
-                "0000001"
-        ui.message("“Binary” text used as input: {}".format(htext))
+        ui.message("+ The input text to decipher must be valid abc codes "
+                   "only:")
+        htext = "66 444 222 3333 0 222 666 3 33 00 44 33 44"
+        ui.message("CodeABC text used as input: {}".format(htext))
         try:
-            ui.message("The decoded data is: {}"
-                       "".format(binary.decode(htext)))
+            ui.message("The deciphered data is: {}"
+                       "".format(codeabc.decipher(htext)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
 
-    def encode(self, ui):
-        """Interactive version of encode()."""
+    def encrypt(self, ui):
+        """Interactive version of encrypt()."""
         txt = ""
-        ui.message("===== Encode Mode =====")
+        ui.message("===== Encrypt Mode =====")
 
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to encode to binary")
+                txt = ui.text_input("Text to encrypt to codeABC")
                 if txt is None:
-                    break  # Go back to main Encode menu.
+                    break  # Go back to main Encrypt menu.
 
                 try:
                     # Will also raise an exception if data is None.
-                    codec = ui.get_data("Type the codec you want to use (e.g. "
-                                        "'utf-8'), or leave empty to use "
-                                        "default 'ascii' one: ")
-                    if not codec:
-                        codec = "ascii"
-                    txt = binary.encode(txt, codec)
+                    txt = codeabc.encrypt(txt)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -147,59 +134,53 @@ class Binary(app.cli.Tool):
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
-                                         "binary, please", options,
+                                         "codeABC, please", options,
                                          oneline=True)
                     if answ in {None, "menu"}:
                         return  # Go back to main Sema menu.
                     # Else, retry with another data to hide.
 
             if done:
-                ui.text_output("Data successfully converted", txt,
-                               "Binary form of data")
+                ui.text_output("Text successfully converted", txt,
+                               "CodeABC version of text")
 
-            options = [("redo", "*encode another data", ""),
+            options = [("redo", "*encrypt another text", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
 
 
-    def decode(self, ui):
-        """Interactive version of decode()."""
+    def decipher(self, ui):
+        """Interactive version of decipher()."""
         txt = ""
-        ui.message("===== Decode Mode =====")
+        ui.message("===== Decipher Mode =====")
 
         while 1:
-            txt = ui.text_input("Please choose some binary text")
-
-            codec = ui.get_data("Type the codec you want to use (e.g. "
-                                "'utf-8'), or leave empty to use "
-                                "default 'ascii' one: ")
-            if not codec:
-                codec = "ascii"
+            txt = ui.text_input("Please choose some codeABC text")
 
             try:
-                ui.text_output("Data successfully decoded",
-                               binary.decode(txt, codec),
-                               "The hidden data is")
+                ui.text_output("Text successfully deciphered",
+                               codeabc.decipher(txt),
+                               "The deciphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
 
-            options = [("redo", "*decode another data", ""),
+            options = [("redo", "*decipher another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":
                 return
 
 
-NAME  = "b*inary"
-TIP   = "Tool to convert text to/from “binary” text."
+NAME  = "*codeABC"
+TIP   = "Tool to convert text to/from codeABC code."
 TYPE  = app.cli.Node.TOOL
-CLASS = Binary
+CLASS = CodeABC
 
 # Allow tool to be used directly, without using Cyprium menu.
 if __name__ == "__main__":
     import app.cli.ui
     ui = app.cli.ui.UI()
-    tree = app.cli.NoTree("Binary")
-    Binary(tree).main(ui)
+    tree = app.cli.NoTree("CodeABC")
+    CodeABC(tree).main(ui)

@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 ########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #
@@ -39,16 +41,12 @@ __version__ = "0.5.0"
 __date__ = "2012/01/08"
 __python__ = "3.x" # Required Python version
 __about__ = "" \
-"===== About Cellphone =====\n\n" \
-"Cellphone encrypts/deciphers “cellphone” code.\n\n "\
-"This code only accepts lowercase ASCII letters, and represents them by\n" \
-"phone digits (#*0123456789), so that each code “draws” its letter on a\n" \
-"4×3 phone keyboard.\n\n" \
-"            2  \n" \
-"          4   6\n" \
-"          7 8 9\n" \
-"E.G.: A:  *   #\n\n" \
-"Cyprium.Cellphone version {} ({}).\n" \
+"===== About CodeABC =====\n\n" \
+"CodeABD encrypts/deciphers the phone keyboard code.\n\n" \
+"This code only accepts lowercase ASCII letters and space, and represents \n" \
+"them by phone codes like 0 for space, 111 for 'c', 5 for 'j', etc..\n\n" \
+"Cyprium.CodeABC version {} ({}).\n" \
+"Copyright Jean-Paul Vidal alias \"Tyrtamos\" 2012\n" \
 "Licence GPL3\n" \
 "software distributed on the site: http://thehackademy.fr\n\n" \
 "Current execution context:\n" \
@@ -57,117 +55,111 @@ __about__ = "" \
 "".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-EDICT = {"a": "*74269#8",
-         "b": "*741236589#0",
-         "c": "32470#",
-         "d": "*7412690",
-         "e": "321457*0#",
-         "f": "*741238",
-         "g": "32147*0#98",
-         "h": "147*369#8",
-         "i": "12358*0#",
-         "j": "123580*",
-         "k": "147*538#",
-         "l": "147*0#",
-         "m": "*7415369#",
-         "n": "*74158#963",
-         "o": "*7412369#0",
-         "p": "*74123698",
-         "q": "#96321478",
-         "r": "*7412368#",
-         "s": "324590*",
-         "t": "123580",
-         "u": "147*0#963",
-         "v": "1470963",
-         "w": "147*8#963",
-         "x": "158#*3",
-         "y": "15380",
-         "z": "12357*0#",
-         " ": ""}
+d_encrypt = {'a': '2',
+             'b': '22',
+             'c': '222',
+             'd': '3',
+             'e': '33',
+             'f': '333',
+             'g': '4',
+             'h': '44',
+             'i': '444',
+             'j': '5',
+             'k': '55',
+             'l': '555',
+             'm': '6',
+             'n': '66',
+             'o': '666',
+             'p': '7',
+             'q': '77',
+             'r': '777',
+             's': '7777',
+             't': '8',
+             'u': '88',
+             'v': '888',
+             'w': '9',
+             'x': '99',
+             'y': '999',
+             'z': '9999',
+             ' ': '0'}
 
-DDICT = {v: k for k, v in EDICT.items()}
+d_decipher = {v: k for k, v in d_encrypt.items()}
 
-
+#############################################################################
 def do_encrypt(text):
-    """Function to convert some text to "cellphone" text."""
-    return ' '.join([EDICT[c] for c in text])
+    """Encrypt text with codeABC allowed chars: [a..z] + space."""
+    return ' '.join([d_encrypt[c] for c in text])
 
 def encrypt(text):
-    """Just a wrapper around do_encrypt, with some checks."""
+    """Wrapper around do_encrypt, making some checks."""
     import string
     if not text:
-        raise Exception("no text given!")
+        raise Exception("No text given!")
     # Check for unallowed chars…
     c_text = set(text)
-    c_allowed = set(string.ascii_lowercase)
-    c_allowed.add(' ')
+    c_allowed = set(d_encrypt.keys())
     if not (c_text <= c_allowed):
-        raise Exception("Text contains unallowed chars (only lowercase strict "
-                        "ASCII chars are allowed): '{}'!"
+        raise Exception("Text contains unallowed chars (only space and "
+                        "lowercase strict ASCII chars are allowed): '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
     return do_encrypt(text)
 
 
+#############################################################################
 def do_decipher(text):
-    """Function to convert “cellphone” text into clear text."""
-    words = []
-    # Double spaces = word sep ("real" space).
-    for w in text.split('  '):
-        # Remove any additional "outside" spaces…
-        w.rstrip().lstrip()
-        chars = []
-        for c in w.split(' '):
-            if c not in DDICT:
-                raise Exception("The \"{}\" code is not a valid cellphone one"
-                                "".format(c))
-            chars.append(DDICT[c])
-        words.append(''.join(chars))
-    return ' '.join(words)
+    """Decipher text using codeABC"""
+    return ''.join([d_decipher[c] for c in text.split()])
 
 def decipher(text):
-    """Just a wrapper around do_decipher, with some checks."""
-    # Check for unallowed chars…
+    """Wrapper around do_decipher, making some checks."""
+    if not text:
+        raise Exception("No text given!")
+    # Check for unallowed chars...
     c_text = set(text)
-    c_allowed = {' ', '*', '#',
-                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+    c_allowed = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' '}
     if not (c_text <= c_allowed):
-        raise Exception("Text contains unallowed chars (only phone digits are "
-                        "allowed): '{}'!"
+        raise Exception("Text contains unallowed chars (only space and "
+                        "digits are allowed): '{}'!"
+                        "".format("', '".join(sorted(c_text - c_allowed))))
+    # Check for invalid codes...
+    c_text = set(text.split())
+    c_allowed = set(d_decipher.keys())
+    if not (c_text <= c_allowed):
+        raise Exception("Text contains invalid codeABC codes: '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
     return do_decipher(text)
 
 
 def main():
-    # The argparse is much nicer than directly using sys.argv...
-    # Try 'program.py -h' to see! ;)
+    # Treating direct script call with args
+    # Args retrieval
     import argparse
-    parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decipher some text in cellphone "
-                                     "code.")
+    parser = argparse.ArgumentParser(description=
+                                     "Encrypt/decipher a text according to "
+                                     "cell phones' keyboard.\n"
+                                     "Example: 'c' => '222'.\n"
+                                     "Allowed chars: a..z + space.")
+
     sparsers = parser.add_subparsers(dest="command")
 
-    hide_parser = sparsers.add_parser('encrypt', help="Encryptcode text in "
-                                                      "cellphone.")
-    hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                             help="A file containing the text to convert to "
-                                  "cellphone.")
-    hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                             help="A file into which write the cellphone "
-                                  "text.")
-    hide_parser.add_argument('-d', '--data',
-                             help="The text to encrypt in cellphone.")
+    encrypt_parser = sparsers.add_parser('encrypt', help="Encrypt text.")
+    encrypt_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                                help="A file containing the text to encrypt.")
+    encrypt_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                                help="A file into which write the encrypted "
+                                     "text.")
+    encrypt_parser.add_argument('-d', '--data', help="The text to encrypt.")
 
-    unhide_parser = sparsers.add_parser('decipher',
-                                        help="Decipher cellphone to text.")
-    unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                               help="A file containing the text to convert "
-                                    "from cellphone.")
-    unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                               help="A file into which write the deciphered "
-                                    "text.")
-    unhide_parser.add_argument('-d', '--data', help="The text to decipher.")
+    decipher_parser = sparsers.add_parser('decipher', help="Decipher text.")
+    decipher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                                 help="A file containing the text to "
+                                      "decipher.")
+    decipher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                                 help="A file into which write the deciphered "
+                                      "text.")
+    decipher_parser.add_argument('-d', '--data', help="The text to decipher.")
 
-    sparsers.add_parser('about', help="About Cellphone…")
+    sparsers.add_parser('about', help="About codeABC…")
 
 
     args = parser.parse_args()
@@ -190,7 +182,7 @@ def main():
                 args.ifile.close()
             if args.ofile:
                 args.ofile.close()
-        return 0
+        return
 
     elif args.command == "decipher":
         try:
@@ -209,7 +201,7 @@ def main():
                 args.ifile.close()
             if args.ofile:
                 args.ofile.close()
-        return 0
+        return
 
     elif args.command == "about":
         print(__about__)

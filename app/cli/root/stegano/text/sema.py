@@ -66,29 +66,7 @@ class Sema(app.cli.Tool):
         ui.message("Back to Cyprium menus! Bye.")
 
     def about(self, ui):
-        text = "===== About Sema =====\n\n" \
-               "Sema is a steganographic tool which can hide text datas in " \
-               "a file, by putting dots (or optionally, another sign) under " \
-               "letters.\n" \
-               "By this way, it allows you to hide a keychain (a word or a " \
-               "sentence) via semagrammas (dots) in a larger text file. " \
-               "This technique allows to confuse the reader who won’t see " \
-               "most of the dots and will believe that the few ones he sees " \
-               "are probably a bug.\n\n" \
-               "The max length of the hidden data must be 40 times less " \
-               "longer than the input text.\n\n" \
-               "Note that only strict ASCII alphanumeric chars are allowed "\
-               "in data to hide, any other char will be striped!\n\n" \
-               "Example:\n\n" \
-               "input file size = 1000 char\n\n" \
-               "max length of hidden data = 25 char\n\n" \
-               "The path of the input file can be absolute (e.g. for linux, " \
-               "if the input file is located on your desktop: " \
-               "'/home/admin_name/Desktop/your_input_file'), or relative to " \
-               "the dir from where you started Sema.\n\n" \
-               "Obviously, the same goes for the output file.\n"
-
-        ui.message(text)
+        ui.message(sema.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
     def demo(self, ui):

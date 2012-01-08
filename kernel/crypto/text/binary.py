@@ -26,15 +26,31 @@
 #                                                                      #
 ########################################################################
 
-import sys, itertools
 
+# In case we directly run that file, we need to add the kernel to path,
+# to get access to generic stuff in kernel.utils!
+if __name__ == '__main__':
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 "..", "..", "..")))
 
-def grouper(n, iterable, fillvalue=None):
-    """Return an iterator of n-length chunks of iterable.
-       grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
-    """
-    args = [iter(iterable)] * n
-    return itertools.zip_longest(fillvalue=fillvalue, *args)
+import kernel.utils as utils
+
+__version__ = "0.5.0"
+__date__ = "2012/01/08"
+__python__ = "3.x" # Required Python version
+__about__ = "" \
+"===== About Binary =====\n\n" \
+"Binary is a simple binary/text converter. It allows you to encode and\n" \
+"decode text to/from binary. It can also cut the output into binary\n" \
+"separated by bytes .You can use special characters and accents, if you\n" \
+"specify a compatible encoding (e.g. utf-8).\n\n" \
+"Cyprium.Binary version {} ({}).\n" \
+"Licence GPL3\n" \
+"software distributed on the site: http://thehackademy.fr\n\n" \
+"Current execution context:\n" \
+"    Operating System: {}\n" \
+"    Python version: {}" \
+"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
 def do_encode(text, codec):
@@ -60,7 +76,8 @@ def do_decode(text, codec):
     """Function to convert “binary” text into text."""
     # XXX Their might be a better way to create a bytes from ints, but
     #     for now it will do the trick!
-    hex_s = "".join(["{:0>2x}".format(int(''.join(p), 2)) for p in grouper(8, text, '')])
+    hex_s = "".join(["{:0>2x}".format(int(''.join(p), 2))
+                     for p in utils.grouper(8, text, '')])
     return bytes.fromhex(hex_s).decode(codec)
 
 def decode(text, codec="ascii"):
@@ -110,6 +127,9 @@ def main():
     unhide_parser.add_argument('-c', '--codec', default="ascii",
                                help="The codec to decode from binary.")
 
+    sparsers.add_parser('about', help="About Binary…")
+
+
     args = parser.parse_args()
 
 
@@ -130,7 +150,7 @@ def main():
                 args.ifile.close()
             if args.ofile:
                 args.ofile.close()
-        return 0
+        return
 
     elif args.command == "decode":
         try:
@@ -149,7 +169,11 @@ def main():
                 args.ifile.close()
             if args.ofile:
                 args.ofile.close()
-        return 0
+        return
+
+    elif args.command == "about":
+        print(__about__)
+        return
 
 
 if __name__ == "__main__":

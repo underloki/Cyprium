@@ -49,12 +49,12 @@ class Cellphone(app.cli.Tool):
                        (self.demo, "*demo", "Show some examples"),
                        (self.encrypt, "*encrypt",
                                       "Encrypt some text in cellphone"),
-                       (self.decypher, "de*cypher",
-                                       "Decypher cellphone into text"),
+                       (self.decipher, "de*cipher",
+                                       "Decipher cellphone into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Sema")]
-            msg = "Cyprium.Cypher"
+            msg = "Cyprium.cipher"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
@@ -68,17 +68,7 @@ class Cellphone(app.cli.Tool):
 
 
     def about(self, ui):
-        text = "===== About Cellphone =====\n\n" \
-               "Cellphone encrypts/decyphers “cellphone” code.\n\n "\
-               "This code only accepts lowercase ASCII letters, and " \
-               "represents them by phone digits (#*0123456789), so that " \
-               "each code “draws” its letter on a 4×3 phone keyboard.\n\n" \
-               "            2  \n" \
-               "          4   6\n" \
-               "          7 8 9\n" \
-               "E.G.: A:  *   #"
-
-        ui.message(text)
+        ui.message(cellphone.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
 
@@ -93,10 +83,10 @@ class Cellphone(app.cli.Tool):
 
         htext = "123580 147*369#8 321457*0#  147*369#8 *74269#8 32470# " \
                 "147*538# *74269#8 *7412690 321457*0# *7415369# 15380"
-        ui.message("--- Decyphering ---")
+        ui.message("--- Deciphering ---")
         ui.message("Cellphone text used as input: {}".format(htext))
-        ui.message("The decyphered data is: {}"
-                   "".format(cellphone.decypher(htext)))
+        ui.message("The deciphered data is: {}"
+                   "".format(cellphone.decipher(htext)))
 
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to encrypt must be acsii lowercase "
@@ -108,13 +98,13 @@ class Cellphone(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decypher must be phone digits only:")
+        ui.message("+ The input text to decipher must be phone digits only:")
         htext = "123580 147*369#8 321457*0#  1N7*369#8 *74269#8 32470# " \
                 "147*538# *74269#8 *7412690 321457*0# *741k369# 15380!"
         ui.message("Cellphone text used as input: {}".format(htext))
         try:
-            ui.message("The decyphered data is: {}"
-                       "".format(cellphone.decypher(htext)))
+            ui.message("The deciphered data is: {}"
+                       "".format(cellphone.decipher(htext)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
@@ -160,22 +150,22 @@ class Cellphone(app.cli.Tool):
                 return
 
 
-    def decypher(self, ui):
-        """Interactive version of decypher()."""
+    def decipher(self, ui):
+        """Interactive version of decipher()."""
         txt = ""
-        ui.message("===== Decypher Mode =====")
+        ui.message("===== Decipher Mode =====")
 
         while 1:
             txt = ui.text_input("Please choose some cellphone text")
 
             try:
-                ui.text_output("Text successfully decyphered",
-                               cellphone.decypher(txt),
-                               "The decyphered text is")
+                ui.text_output("Text successfully deciphered",
+                               cellphone.decipher(txt),
+                               "The deciphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
 
-            options = [("redo", "*decypher another data", ""),
+            options = [("redo", "*decipher another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":

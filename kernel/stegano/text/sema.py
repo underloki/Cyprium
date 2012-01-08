@@ -28,6 +28,46 @@
 #                                                                      #
 ########################################################################
 
+
+# In case we directly run that file, we need to add the kernel to path,
+# to get access to generic stuff in kernel.utils!
+if __name__ == '__main__':
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 "..", "..", "..")))
+
+import kernel.utils as utils
+
+__version__ = "0.5.0"
+__date__ = "2012/01/08"
+__python__ = "3.x" # Required Python version
+__about__ = "" \
+"===== About Sema =====\n\n" \
+"Sema is a steganographic tool which can hide text datas in a file, by\n" \
+"putting dots (or optionally, another sign) under letters.\n" \
+"By this way, it allows you to hide a keychain (a word or a sentence)\n" \
+"via semagrammas (dots) in a larger text file. This technique allows\n" \
+"to confuse the reader who won’t see most of the dots and will believe\n" \
+"that the few ones he sees are probably a bug.\n\n" \
+"The max length of the hidden data must be 40 times less longer than the\n" \
+"input text.\n\n" \
+"Note that only strict ASCII alphanumeric chars are allowed in data to\n" \
+"hide, any other char will be striped!\n\n" \
+"Example:\n\n" \
+"input file size = 1000 char\n\n" \
+"max length of hidden data = 25 char\n\n" \
+"The path of the input file can be absolute (e.g. for linux, if the input\n" \
+"file is on your desktop: '/home/admin_name/Desktop/your_input_file'), or\n" \
+"relative to the dir from where you started Sema.\n\n" \
+"Obviously, the same goes for the output file.\n\n" \
+"Cyprium.Sema version {} ({}).\n" \
+"Licence GPL3\n" \
+"software distributed on the site: http://thehackademy.fr\n\n" \
+"Current execution context:\n" \
+"    Operating System: {}\n" \
+"    Python version: {}" \
+"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+
+
 # We assume txt/data length has already been checked, that marker is a valid
 # utf8 char, and that delta is low enough (I’d say len(data) * 2 at most…).
 def do_hide(txt, data, marker, delta):
@@ -201,7 +241,9 @@ def main():
                                help="A file containing the text with "
                                     "hidden data.")
 
-    test_parser = sparsers.add_parser('test', help="Small auto-tests…")
+    sparsers.add_parser('test', help="Small auto-tests…")
+    sparsers.add_parser('about', help="About Sema…")
+
 
     args = parser.parse_args()
 
@@ -215,7 +257,7 @@ def main():
         finally:
             args.ifile.close()
             args.ofile.close()
-        return 0
+        return
 
     elif args.command == "unhide":
         try:
@@ -224,10 +266,14 @@ def main():
             print(e, "\n\n")
         finally:
             args.ifile.close()
-        return 0
+        return
 
     elif args.command == "test":
         test()
+        return
+
+    elif args.command == "about":
+        print(__about__)
         return
 
 
