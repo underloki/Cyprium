@@ -29,7 +29,8 @@
 ########################################################################
 
 
-import sys, os
+import sys
+import os
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -41,7 +42,7 @@ import kernel.utils as utils
 
 __version__ = "0.5.0"
 __date__ = "2012/01/08"
-__python__ = "3.x" # Required Python version
+__python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About CodeABC =====\n\n" \
 "CodeABD encrypts/deciphers the phone keyboard code.\n\n" \
@@ -87,10 +88,12 @@ d_encrypt = {'a': '2',
 
 d_decipher = {v: k for k, v in d_encrypt.items()}
 
+
 #############################################################################
 def do_encrypt(text):
     """Encrypt text with codeABC allowed chars: [a..z] + space."""
     return ' '.join([d_encrypt[c] for c in text])
+
 
 def encrypt(text):
     """Wrapper around do_encrypt, making some checks."""
@@ -111,6 +114,7 @@ def encrypt(text):
 def do_decipher(text):
     """Decipher text using codeABC"""
     return ''.join([d_decipher[c] for c in text.split()])
+
 
 def decipher(text):
     """Wrapper around do_decipher, making some checks."""
@@ -136,7 +140,7 @@ def main():
     # Treating direct script call with args
     # Args retrieval
     import argparse
-    parser = argparse.ArgumentParser(description=
+    parser = argparse.ArgumentParser(description=""
                                      "Encrypt/decipher a text according to "
                                      "cell phones' keyboard.\n"
                                      "Example: 'c' => '222'.\n"
@@ -163,9 +167,7 @@ def main():
 
     sparsers.add_parser('about', help="About codeABC…")
 
-
     args = parser.parse_args()
-
 
     if args.command == "encrypt":
         try:

@@ -27,15 +27,16 @@
 ########################################################################
 
 
-import sys, itertools
+import sys
+import itertools
 
 __pf__ = sys.platform
-if __pf__ == 'win32': 
+if __pf__ == 'win32':
     if sys.getwindowsversion().platform == 2:
         winpf = ' (NT/2000/XP/x64)'
     else:
         winpf = ''
-    __pf__='Windows' + winpf
+    __pf__ = 'Windows' + winpf
 elif __pf__ == 'cygwin':
     __pf__ = 'Windows/Cygwin'
 elif __pf__ == 'linux2':

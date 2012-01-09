@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME  = "*picture"
-TIP   = "Tools to hide data in pictures."
-TYPE  = app.cli.Node.CATEGORY
+NAME = "*picture"
+TIP = "Tools to hide data in pictures."
+TYPE = app.cli.Node.CATEGORY

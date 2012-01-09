@@ -7,7 +7,7 @@
 #   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
-#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         # 
+#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
 #   madhatter@thehackademy.fr, mont29@thehackademy.fr,                 #
 #   irc.thehackademy.fr #cyprium, irc.thehackademy.fr #hackademy       #
 #                                                                      #
@@ -27,7 +27,8 @@
 ########################################################################
 
 
-import sys, os, os.path
+import sys
+import os
 import importlib
 
 
@@ -36,7 +37,7 @@ class Node:
 
     # The node type.
     CATEGORY = 1
-    TOOL     = 2
+    TOOL = 2
 
     def __init__(self, tree, parent, module):
         self.tree = tree
@@ -66,13 +67,15 @@ class Node:
                         continue
                     p = os.path.join(path, el)
                     # import sub packages
-                    if not (os.path.isdir(p) or (os.path.isfile(p) and el[-3:] == ".py")):
+                    if not (os.path.isdir(p) or \
+                       (os.path.isfile(p) and el[-3:] == ".py")):
                         continue
                     if os.path.isfile(p):
                         el = el[:-3]
 
                     try:
-                        m = importlib.import_module(".".join((self.module.__name__, el)))
+                        m = importlib.import_module( \
+                                      ".".join((self.module.__name__, el)))
                         self.children.append(Node(self.tree, self, m))
                     except Exception as e:
                         print(e)
@@ -90,11 +93,12 @@ class Tree:
 
     # Print tree modes.
     COMPACT = 1
-    FULL    = 2
+    FULL = 2
 
     # Print tree, current node marker.
     CURR_MARKER = "  <<<"
 
+    # XXX Find a nice way to avoid > 80 char lines...
     MSG_LOGO = "\n" \
     "          01000   011  011  110010   111000   00111001 00    11 0      1        \n"\
     "         00   10   11  10   10   10  11   01     10    10    01 00    00        \n"\
@@ -125,57 +129,16 @@ class Tree:
     "################################################################################\n"\
 
 
+    ###########################################################################
+    # Init.
+    ###########################################################################
     def __init__(self, root):
         self._root = Node(self, None, root)
         self._current = self._root
 
-
-    def get_root(self):
-        return self._root
-
-    root = property(get_root, doc="Root Node.")
-
-
-    def get_current(self):
-        return self._current
-
-    def set_current(self, node):
-        if (self._root.is_descendant(node)):
-            self._current = node
-
-    current = property(get_current, set_current,
-                       doc="Current Node (tool or category) in menu.")
-
-
-    def breadcrumbs(self):
-        """Return a one-line string with "path" to current node."""
-        chain = [self._current]
-        while chain[0].parent:
-            chain.insert(0, chain[0].parent)
-        return "/".join([el.name.replace('*', '') for el in chain])
-
-
-    def print_tree(self, ui, mode=COMPACT):
-        """Print the whole tree, with current node if set."""
-        if mode == self.COMPACT:
-            ui.message(self.breadcrumbs())
-        else:
-            def rec(tree, lines, lvl, node):
-                if node.type == Node.CATEGORY:
-                    elts = ["    "*lvl, "/", node.name.replace('*', '')]
-                else:
-                    elts = ["    "*lvl, "* ", node.name.replace('*', '')]
-                if tree._current == node:
-                    elts.append(self.CURR_MARKER)
-                lines.append("".join(elts))
-                for child in node.children:
-                    rec(tree, lines, lvl+1, child)
-
-            lines = []
-            rec(self, lines, 0, self.root)
-            ui.message("\n".join(lines))
-
-
+    ###########################################################################
+    # Main entry point.
+    ###########################################################################
     def main(self, ui):
         """Print a menu (choices) with current level nodes."""
         import time
@@ -215,6 +178,54 @@ class Tree:
 
         ui.message("Goodbye !")
 
+    ###########################################################################
+    # Properties.
+    ###########################################################################
+    def get_root(self):
+        return self._root
+
+    root = property(get_root, doc="Root Node.")
+
+    def get_current(self):
+        return self._current
+
+    def set_current(self, node):
+        if (self._root.is_descendant(node)):
+            self._current = node
+
+    current = property(get_current, set_current,
+                       doc="Current Node (tool or category) in menu.")
+
+    ###########################################################################
+    # Tree drawing.
+    ###########################################################################
+    def breadcrumbs(self):
+        """Return a one-line string with "path" to current node."""
+        chain = [self._current]
+        while chain[0].parent:
+            chain.insert(0, chain[0].parent)
+        return "/".join([el.name.replace('*', '') for el in chain])
+
+    def print_tree(self, ui, mode=COMPACT):
+        """Print the whole tree, with current node if set."""
+        if mode == self.COMPACT:
+            ui.message(self.breadcrumbs())
+        else:
+            def rec(tree, lines, lvl, node):
+                if node.type == Node.CATEGORY:
+                    elts = ["    " * lvl, "/", node.name.replace('*', '')]
+                else:
+                    elts = ["    " * lvl, "* ", node.name.replace('*', '')]
+                if tree._current == node:
+                    elts.append(self.CURR_MARKER)
+                lines.append("".join(elts))
+                for child in node.children:
+                    rec(tree, lines, lvl + 1, child)
+
+            lines = []
+            rec(self, lines, 0, self.root)
+            ui.message("\n".join(lines))
+
 
 class NoTree(Tree):
     """Fake Tree class used when a Tool is called directly."""
@@ -224,11 +235,19 @@ class NoTree(Tree):
         self._current = self._root
         self._name = name
 
+    ###########################################################################
+    # Main entry point.
+    ###########################################################################
+    def main(self, ui):
+        """Dummy void func."""
+        return
 
+    ###########################################################################
+    # Tree drawing.
+    ###########################################################################
     def breadcrumbs(self):
         """Return a one-line string with "path" to current node."""
         return "/{}".format(self._name)
-
 
     def print_tree(self, ui, mode=Tree.COMPACT):
         """Print the whole tree, with current node if set."""
@@ -236,11 +255,6 @@ class NoTree(Tree):
             ui.message(self.breadcrumbs())
         else:
             ui.message("{}{}".format(self._name, self.CURR_MARKER))
-
-
-    def main(self, ui):
-        """Dummy void func."""
-        return
 
 
 class Tool:

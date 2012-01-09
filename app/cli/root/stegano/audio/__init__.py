@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME  = "*audio"
-TIP   = "Tools to hide data in audio files."
-TYPE  = app.cli.Node.CATEGORY
+NAME = "*audio"
+TIP = "Tools to hide data in audio files."
+TYPE = app.cli.Node.CATEGORY

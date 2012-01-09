@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME  = "*cryptography"
-TIP   = "Tools to make some data unreadable."
-TYPE  = app.cli.Node.CATEGORY
+NAME = "*cryptography"
+TIP = "Tools to make some data unreadable."
+TYPE = app.cli.Node.CATEGORY

@@ -29,7 +29,8 @@
 ########################################################################
 
 
-import sys, os
+import sys
+import os
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -41,7 +42,7 @@ import kernel.utils as utils
 
 __version__ = "0.5.0"
 __date__ = "2012/01/08"
-__python__ = "3.x" # Required Python version
+__python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Sema =====\n\n" \
 "Sema is a steganographic tool which can hide text datas in a file, by\n" \
@@ -88,7 +89,7 @@ def do_hide(txt, data, marker, delta):
     # then a "simplest" one.
     org_txt = txt
     len_txt = len(txt)
-    ln_chunk = len_txt//len(data)
+    ln_chunk = len_txt // len(data)
     cur = max(0, -delta)
     failed = False
     for i, c in enumerate(data):
@@ -98,7 +99,7 @@ def do_hide(txt, data, marker, delta):
         if idx == 0:
             failed = True
             break
-        cur = idx+1
+        cur = idx + 1
         idx += delta
         # If delta is to high, error.
         if idx >= len_txt + i:
@@ -117,7 +118,7 @@ def do_hide(txt, data, marker, delta):
                 raise Exception("Could not hide \"{}\" in the input "
                                 "text (letter '{}' was not found in "
                                 "remaining text)!".format(data, c))
-            cur = idx+1
+            cur = idx + 1
             idx += delta
             # If delta is to high, error.
             if idx >= len_txt + i:
@@ -156,7 +157,7 @@ def do_unhide(txt, marker, delta):
     """Unhide some data from the given txt, using marker and optionally
        an obfuscating delta."""
     cur = txt.find(marker)
-    max_idx = len(txt)-2
+    max_idx = len(txt) - 2
     ret = []
     while cur != -1:
         idx = cur - delta
@@ -167,7 +168,7 @@ def do_unhide(txt, marker, delta):
                             "delta value is probably wrong!")
             return ""
         ret.append(txt[idx])
-        cur = txt.find(marker, cur+1)
+        cur = txt.find(marker, cur + 1)
     return "".join(ret)
 
 
@@ -246,9 +247,7 @@ def main():
     sparsers.add_parser('test', help="Small auto-tests…")
     sparsers.add_parser('about', help="About Sema…")
 
-
     args = parser.parse_args()
-
 
     if args.command == "hide":
         try:

@@ -29,7 +29,8 @@
 ########################################################################
 
 
-import sys, os
+import sys
+import os
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -41,10 +42,10 @@ import kernel.utils as utils
 
 __version__ = "0.5.0"
 __date__ = "2012/01/08"
-__python__ = "3.x" # Required Python version
+__python__ = "3.x"  # Required Python version
 __about__ = "" \
-"===== About Cellphone =====\n\n" \
-"Cellphone encrypts/deciphers “cellphone” code.\n\n "\
+"===== About Celldrawer =====\n\n" \
+"Celldrawer encrypts/deciphers “celldrawer” code.\n\n "\
 "This code only accepts lowercase ASCII letters, and represents them by\n" \
 "phone digits (#*0123456789), so that each code “draws” its letter on a\n" \
 "4×3 phone keyboard.\n\n" \
@@ -52,7 +53,7 @@ __about__ = "" \
 "          4   6\n" \
 "          7 8 9\n" \
 "E.G.: A:  *   #\n\n" \
-"Cyprium.Cellphone version {} ({}).\n" \
+"Cyprium.Celldrawer version {} ({}).\n" \
 "Licence GPL3\n" \
 "software distributed on the site: http://thehackademy.fr\n\n" \
 "Current execution context:\n" \
@@ -93,8 +94,9 @@ DDICT = {v: k for k, v in EDICT.items()}
 
 
 def do_encrypt(text):
-    """Function to convert some text to "cellphone" text."""
+    """Function to convert some text to "celldrawer" text."""
     return ' '.join([EDICT[c] for c in text])
+
 
 def encrypt(text):
     """Just a wrapper around do_encrypt, with some checks."""
@@ -113,7 +115,7 @@ def encrypt(text):
 
 
 def do_decipher(text):
-    """Function to convert “cellphone” text into clear text."""
+    """Function to convert “celldrawer” text into clear text."""
     words = []
     # Double spaces = word sep ("real" space).
     for w in text.split('  '):
@@ -122,11 +124,12 @@ def do_decipher(text):
         chars = []
         for c in w.split(' '):
             if c not in DDICT:
-                raise Exception("The \"{}\" code is not a valid cellphone one"
+                raise Exception("The \"{}\" code is not a valid celldrawer one"
                                 "".format(c))
             chars.append(DDICT[c])
         words.append(''.join(chars))
     return ' '.join(words)
+
 
 def decipher(text):
     """Just a wrapper around do_decipher, with some checks."""
@@ -146,36 +149,34 @@ def main():
     # Try 'program.py -h' to see! ;)
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decipher some text in cellphone "
-                                     "code.")
+                                     "Encrypt/decipher some text in "
+                                     "celldrawer code.")
     sparsers = parser.add_subparsers(dest="command")
 
     hide_parser = sparsers.add_parser('encrypt', help="Encryptcode text in "
-                                                      "cellphone.")
+                                                      "celldrawer.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                              help="A file containing the text to convert to "
-                                  "cellphone.")
+                                  "celldrawer.")
     hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                             help="A file into which write the cellphone "
+                             help="A file into which write the celldrawer "
                                   "text.")
     hide_parser.add_argument('-d', '--data',
-                             help="The text to encrypt in cellphone.")
+                             help="The text to encrypt in celldrawer.")
 
     unhide_parser = sparsers.add_parser('decipher',
-                                        help="Decipher cellphone to text.")
+                                        help="Decipher celldrawer to text.")
     unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                help="A file containing the text to convert "
-                                    "from cellphone.")
+                                    "from celldrawer.")
     unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
                                help="A file into which write the deciphered "
                                     "text.")
     unhide_parser.add_argument('-d', '--data', help="The text to decipher.")
 
-    sparsers.add_parser('about', help="About Cellphone…")
-
+    sparsers.add_parser('about', help="About Celldrawer…")
 
     args = parser.parse_args()
-
 
     if args.command == "encrypt":
         try:

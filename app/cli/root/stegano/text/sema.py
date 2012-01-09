@@ -30,13 +30,15 @@
 # In case we directly run that file, we need to add the whole cyprium to path,
 # to get access to CLI stuff!
 if __name__ == "__main__":
-    import sys, os
+    import sys
+    import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  "..", "..", "..", "..",
                                                  "..")))
 
 import app.cli
 import kernel.stegano.text.sema as sema
+
 
 class Sema(app.cli.Tool):
     """CLI wrapper for sema stegano text tool."""
@@ -49,7 +51,9 @@ class Sema(app.cli.Tool):
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
                        (self.hide, "*hide", "Hide some data into a text"),
-                       (self.unhide, "*unhide", "Find the data hidden into the given text"),
+                       (self.unhide, "*unhide",
+                                     "Find the data hidden into the given "
+                                     "text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Sema")]
@@ -88,14 +92,14 @@ class Sema(app.cli.Tool):
                    "".format(sema.hide(text, "comix", marker, 0)))
         ui.message("")
 
-        htext = "“Mes s"+marker+"ouvenirs sont comme les pistoles dans la " \
-                "bourse du di"+marker+"able. Quand on l’ouvrit, on n’y " \
-                "trouva que des feuilles mo"+marker+"rtes. J’ai beau " \
-                "fouiller le passé je n’en retire plus que des bribes d’im" \
-                +marker+"ages et je ne sais pas très bien ce qu’elles " \
-                "représentent, ni si ce sont des sou"+marker+"venirs ou des " \
-                "fictions.” – extrait de « La nausée » de Jean-Paul Sar" \
-                +marker+"tre."
+        htext = "“Mes s" + marker + "ouvenirs sont comme les pistoles dans " \
+                "la bourse du di" + marker + "able. Quand on l’ouvrit, on " \
+                "n’y trouva que des feuilles mo" + marker + "rtes. J’ai " \
+                "beau fouiller le passé je n’en retire plus que des bribes " \
+                "d’im" + marker + "ages et je ne sais pas très bien ce " \
+                "qu’elles représentent, ni si ce sont des sou" + marker + \
+                "venirs ou des fictions.” – extrait de « La nausée » de " \
+                "Jean-Paul Sar" + marker + "tre."
         ui.message("--- Unhiding ---")
         ui.message("Text used as source (input file): {}".format(htext))
         ui.message("The hidden data is: {}"
@@ -167,7 +171,6 @@ class Sema(app.cli.Tool):
             if answ in {None, "quit"}:
                 return
 
-
     def unhide(self, ui):
         """Interactive version of unhide()."""
         txt = ""
@@ -190,10 +193,10 @@ class Sema(app.cli.Tool):
                 return
 
 
-NAME  = "*sema"
-TIP   = "Tool to hide some text into a much bigger one, " \
-        "by placing small dots below some letters."
-TYPE  = app.cli.Node.TOOL
+NAME = "*sema"
+TIP = "Tool to hide some text into a much bigger one, " \
+      "by placing small dots below some letters."
+TYPE = app.cli.Node.TOOL
 CLASS = Sema
 
 # Allow tool to be used directly, without using Cyprium menu.

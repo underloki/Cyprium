@@ -32,7 +32,8 @@
 # In case we directly run that file, we need to add the whole cyprium to path,
 # to get access to CLI stuff!
 if __name__ == "__main__":
-    import sys, os
+    import sys
+    import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  "..", "..", "..", "..",
                                                  "..")))
@@ -68,11 +69,9 @@ class CodeABC(app.cli.Tool):
                 answ(ui)
         ui.message("Back to Cyprium menus! Bye.")
 
-
     def about(self, ui):
         ui.message(codeabc.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
-
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -110,7 +109,6 @@ class CodeABC(app.cli.Tool):
             ui.message(str(e), ui.ERROR)
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
-
 
     def encrypt(self, ui):
         """Interactive version of encrypt()."""
@@ -150,7 +148,6 @@ class CodeABC(app.cli.Tool):
             if answ in {None, "quit"}:
                 return
 
-
     def decipher(self, ui):
         """Interactive version of decipher()."""
         txt = ""
@@ -173,9 +170,9 @@ class CodeABC(app.cli.Tool):
                 return
 
 
-NAME  = "*codeABC"
-TIP   = "Tool to convert text to/from codeABC code."
-TYPE  = app.cli.Node.TOOL
+NAME = "*codeABC"
+TIP = "Tool to convert text to/from codeABC code."
+TYPE = app.cli.Node.TOOL
 CLASS = CodeABC
 
 # Allow tool to be used directly, without using Cyprium menu.

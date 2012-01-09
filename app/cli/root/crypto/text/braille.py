@@ -32,7 +32,8 @@
 # In case we directly run that file, we need to add the whole cyprium to path,
 # to get access to CLI stuff!
 if __name__ == "__main__":
-    import sys, os
+    import sys
+    import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  "..", "..", "..", "..",
                                                  "..")))
@@ -68,11 +69,9 @@ class Braille(app.cli.Tool):
                 answ(ui)
         ui.message("Back to Cyprium menus! Bye.")
 
-
     def about(self, ui):
         ui.message(braille.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
-
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -113,7 +112,6 @@ class Braille(app.cli.Tool):
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
-
     def encrypt(self, ui):
         """Interactive version of encrypt()."""
         txt = ""
@@ -152,7 +150,6 @@ class Braille(app.cli.Tool):
             if answ in {None, "quit"}:
                 return
 
-
     def decipher(self, ui):
         """Interactive version of decipher()."""
         txt = ""
@@ -175,9 +172,9 @@ class Braille(app.cli.Tool):
                 return
 
 
-NAME  = "B*raille"
-TIP   = "Tool to convert text to/from Braille us-437 code."
-TYPE  = app.cli.Node.TOOL
+NAME = "B*raille"
+TIP = "Tool to convert text to/from Braille us-437 code."
+TYPE = app.cli.Node.TOOL
 CLASS = Braille
 
 # Allow tool to be used directly, without using Cyprium menu.

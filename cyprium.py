@@ -28,7 +28,12 @@
 #                                                                      #
 ########################################################################
 
-import app, app.cli, app.cli.ui, app.cli.root
+# PEP8
+
+import app
+import app.cli
+import app.cli.ui
+import app.cli.root
 
 
 tree = app.cli.Tree(app.cli.root)

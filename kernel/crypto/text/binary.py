@@ -27,6 +27,9 @@
 ########################################################################
 
 
+import sys
+import os
+
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
 if __name__ == '__main__':
@@ -37,7 +40,7 @@ import kernel.utils as utils
 
 __version__ = "0.5.0"
 __date__ = "2012/01/08"
-__python__ = "3.x" # Required Python version
+__python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Binary =====\n\n" \
 "Binary is a simple binary/text converter. It allows you to encode and\n" \
@@ -61,11 +64,12 @@ def do_encode(text, codec):
     try:
         for c in chars:
             b = c.encode(codec)
-            chars[c] = ("{:0>8b}"*len(b)).format(*b)
+            chars[c] = ("{:0>8b}" * len(b)).format(*b)
     except Exception as e:
         raise ValueError("The text could not be encoded into given '{}' "
                          "encoding ({})".format(codec, str(e)))
     return ''.join([chars[i] for i in text])
+
 
 def encode(text, codec="ascii"):
     """Just a wrapper around do_encode, no check currently."""
@@ -79,6 +83,7 @@ def do_decode(text, codec):
     hex_s = "".join(["{:0>2x}".format(int(''.join(p), 2))
                      for p in utils.grouper(8, text, '')])
     return bytes.fromhex(hex_s).decode(codec)
+
 
 def decode(text, codec="ascii"):
     """Just a wrapper around do_decode, with some checks."""
@@ -100,13 +105,13 @@ def main():
     # The argparse is much nicer than directly using sys.argv...
     # Try 'program.py -h' to see! ;)
     import argparse
-    parser = argparse.ArgumentParser(description="" \
+    parser = argparse.ArgumentParser(description=""
                                      "Encode/decode some text in binary form.")
     sparsers = parser.add_subparsers(dest="command")
 
     hide_parser = sparsers.add_parser('encode', help="Encode data in binary.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                             help="A file containing the text to convert to " \
+                             help="A file containing the text to convert to "
                                   "binary.")
     hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
                              help="A file into which write the “binary” text.")
@@ -118,10 +123,11 @@ def main():
     unhide_parser = sparsers.add_parser('decode',
                                         help="Decode binary to text.")
     unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                               help="A file containing the text to convert " \
+                               help="A file containing the text to convert "
                                     "from binary.")
     unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                               help="A file into which write the decoded text.")
+                               help="A file into which write the decoded "
+                                    "text.")
     unhide_parser.add_argument('-d', '--data',
                                help="The binary text to decode.")
     unhide_parser.add_argument('-c', '--codec', default="ascii",
@@ -129,9 +135,7 @@ def main():
 
     sparsers.add_parser('about', help="About Binary…")
 
-
     args = parser.parse_args()
-
 
     if args.command == "encode":
         try:

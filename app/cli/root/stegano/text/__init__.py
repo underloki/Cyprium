@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME  = "t*ext"
-TIP   = "Tools to hide data in text files."
-TYPE  = app.cli.Node.CATEGORY
+NAME = "t*ext"
+TIP = "Tools to hide data in text files."
+TYPE = app.cli.Node.CATEGORY

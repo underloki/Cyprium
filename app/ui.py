@@ -26,6 +26,7 @@
 #                                                                      #
 ########################################################################
 
+
 class UI:
     """Base, "None" UI class (also used as "interface").
        NOTE: All those functions might return None, in addition
@@ -39,16 +40,18 @@ class UI:
     FATAL = 40
 
     # Sub-types of get_data.
-    STRING  = None  # Default...
-    PATH    = 10    # Check is format-valid, and autocompletion?
+    STRING = None  # Default...
+    PATH = 10      # Check is format-valid, and autocompletion?
 
-
+    ###########################################################################
+    # Init.
+    ###########################################################################
     def __init__(self):
         pass
 
-###############################################################################
-# UI itself.
-###############################################################################
+    ###########################################################################
+    # UI itself.
+    ###########################################################################
     def message(self, message="", level=INFO):
         """Print a message to the user, with some formatting given
            the level value.
@@ -63,7 +66,8 @@ class UI:
         """
         return None
 
-    def get_choice(self, message="", choices=[], start_opt="", end_opt="", oneline=False):
+    def get_choice(self, message="", choices=[], start_opt="", end_opt="",
+                   oneline=False):
         """Give some choices to the user, and get its answer.
            Message is printed once. Then, choices is a list of tuples:
                (returned_key_str_or_obj, label, tip)
@@ -86,10 +90,11 @@ class UI:
                 return c[0]
         return None
 
+    ###########################################################################
+    # Util text/file functions.
+    ###########################################################################
 
-###############################################################################
-# Util file functions.
-###############################################################################
+    # Misc.
     def text_file_get_path(self, msg, codec):
         """Get a text path (with codec)."""
         msg = " ".join((msg, "(if not using the current encoding, “{}”, " \
@@ -100,7 +105,7 @@ class UI:
             path, codec = path.split(';', 1)
         return path, codec
 
-
+    # Read/Get.
     def text_file_ropen(self, path=None, codec=None):
         """Helper to open a text file in read mode."""
         import locale
@@ -110,7 +115,7 @@ class UI:
         if not path:
             path, codec = self.text_file_get_path("Choose an input text file",
                                                   codec)
-            if path is None: # No user interaction, return.
+            if path is None:  # No user interaction, return.
                 return
 
         while 1:
@@ -163,16 +168,18 @@ class UI:
         else:
             return
 
-
+    # Write/print.
     def text_file_wopen(self, path=None, codec=None):
         """Helper to open a text file in write mode."""
-        import os, locale
+        import os
+        import locale
         default_codec = locale.getpreferredencoding()
         if not codec:
             codec = default_codec
         if not path:
-            path, codec = self.text_file_get_path("Choose an output text file", codec)
-            if path is None: # No user interaction, return.
+            path, codec = self.text_file_get_path("Choose an output text file",
+                                                  codec)
+            if path is None:  # No user interaction, return.
                 return
 
         while 1:
@@ -195,10 +202,12 @@ class UI:
                 self.message(e)
                 options = [("retry", "$try again", ""),
                            ("menu", "or go back to *menu", "")]
-                action = self.get_choice("Could not open that file, please", options, oneline=True)
+                action = self.get_choice("Could not open that file, please",
+                                         options, oneline=True)
                 if action != "retry":
                     return
-            path, codec = self.text_file_get_path("Choose an input text file", codec)
+            path, codec = self.text_file_get_path("Choose an input text file",
+                                                  codec)
 
     def text_file_write(self, data, path=None, codec=None):
         """Helper to write the whole content of a text file."""
@@ -214,7 +223,8 @@ class UI:
                 self.message(e)
                 options = [("retry", "$try again", ""),
                            ("menu", "or go back to *menu", "")]
-                answ = self.get_choice("Could not write to that file, please", options, oneline=True)
+                answ = self.get_choice("Could not write to that file, please",
+                                       options, oneline=True)
                 if answ != "retry":
                     return
             finally:
@@ -226,9 +236,9 @@ class UI:
         options = [("console", "print to $console", ""),
                    ("file", "write into a *file", ""),
                    ("both", "or *both", "")]
-        answ = self.get_choice(msg, options, start_opt="(", end_opt=")", oneline=True)
+        answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
+                               oneline=True)
         if answ in {"console", "both"}:
             self.message(": ".join((print_msg, data)))
         if answ in {"file", "both"}:
             self.text_file_write(data)
-

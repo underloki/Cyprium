@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME  = "t*ext"
-TIP   = "Tools to make some textual data unreadable."
-TYPE  = app.cli.Node.CATEGORY
+NAME = "t*ext"
+TIP = "Tools to make some textual data unreadable."
+TYPE = app.cli.Node.CATEGORY

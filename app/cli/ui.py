@@ -29,12 +29,16 @@
 import app.ui
 import sys
 
+
 class UI(app.ui.UI):
     """CLI UI class.
        NOTE: All those functions might return None, in addition
              to some expected data...
     """
 
+    ###########################################################################
+    # Helpers (for compatibility...).
+    ###########################################################################
     @staticmethod
     def cprint(*objs, sep=' ', end='\n', file=sys.stdout):
         codec = file.encoding
@@ -46,9 +50,9 @@ class UI(app.ui.UI):
         objs = [str(obj).encode(codec, "replace") for obj in objs]
         end = end.encode(codec, "replace")
         if hasattr(file, "buffer"):
-            file.buffer.write(sep.join(objs)+end)
+            file.buffer.write(sep.join(objs) + end)
         else:
-            file.write(sep.join(objs)+end)
+            file.write(sep.join(objs) + end)
         file.flush()
 
     @staticmethod
@@ -58,7 +62,9 @@ class UI(app.ui.UI):
         UI.cprint("")
         return ret
 
-
+    ###########################################################################
+    # Simple message.
+    ###########################################################################
     def message(self, message="", level=app.ui.UI.INFO):
         """Print a message to the user, with some formatting given
            the level value.
@@ -71,6 +77,9 @@ class UI(app.ui.UI):
             message = "".join(("FATAL ERROR: ", message))
         self.cprint(message, "\n")
 
+    ###########################################################################
+    # Text input.
+    ###########################################################################
     def get_data(self, message="", sub_type=None, completion=None):
         """Get some data from the user.
            Will ensure data is valid given sub_type, and call
@@ -80,6 +89,9 @@ class UI(app.ui.UI):
         return self.cinput(message)
         self.cprint("")
 
+    ###########################################################################
+    # Menu.
+    ###########################################################################
     def get_choice(self, message="", options=[], start_opt="", end_opt="",
                    oneline=False):
         """Gives some choices to the user, and get its answer."""
@@ -97,16 +109,20 @@ class UI(app.ui.UI):
             # If no '*' or '$' found, considered as "static label".
             if key_idx >= 0:
                 key = name[key_idx + 1].lower()
-                name = name[:key_idx] + '(' + key.upper() + ')' + name[key_idx+2:]
+                name = name[:key_idx] + '(' + key.upper() + ')' + \
+                       name[key_idx + 2:]
                 if do_default:
                     if "" in chc_map:
-                        self.message("Option {} wants to be default, while we already have one!".format(name), self.WARNING)
+                        self.message("Option {} wants to be default, while "
+                                     "we already have one!"
+                                     "".format(name), self.WARNING)
                         continue
                     chc_map[""] = c[0]
                     name = " ".join((name, "[default]"))
                     do_default = False
                 if key in chc_map:
-                    self.message("Option {} wants the already used '{}' key!".format(name, key), self.WARNING)
+                    self.message("Option {} wants the already used '{}' key!"
+                                 "".format(name, key), self.WARNING)
                     continue
                 chc_map[key] = c[0]
             if c[2]:
