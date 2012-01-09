@@ -44,7 +44,7 @@ import kernel.crypto.text.codeabc as codeabc
 class CodeABC(app.cli.Tool):
     """CLI wrapper for codeABC crypto text tool."""
     def main(self, ui):
-        ui.message("********** Welcome to Cyprium.Cellphone! **********")
+        ui.message("********** Welcome to Cyprium.CodeABC! **********")
         quit = False
         while not quit:
             options = [(self.about, "*about", "Show some help!"),

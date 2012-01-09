@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 ########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #
@@ -26,6 +28,8 @@
 #                                                                      #
 ########################################################################
 
+
+import sys, os
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!

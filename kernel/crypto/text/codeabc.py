@@ -29,6 +29,8 @@
 ########################################################################
 
 
+import sys, os
+
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
 if __name__ == '__main__':
