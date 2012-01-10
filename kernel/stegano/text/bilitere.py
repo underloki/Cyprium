@@ -67,20 +67,18 @@ def int_to_bilitere(i):
     return "{:0>5b}".format(i).replace('0', 'A').replace('1', 'B')
 
 
-DICO = {k: int_to_bilitere(v) for v, k in enumerate(string.ascii_lowercase) if k not in 'jv'}
-DICO['j'] = DICO['i']
-DICO['v'] = DICO['u']
-#for k, v in DICO.items():
+MAP = {k: int_to_bilitere(v) for v, k in enumerate(string.ascii_lowercase) if k not in 'jv'}
+MAP['j'] = MAP['i']
+MAP['v'] = MAP['u']
+#for k, v in MAP.items():
 #    print(k, ": ", v, sep="")
 
-DICO_REV = {v: k for k, v in DICO.items()}
-DICO_REV[DICO['i']] = '[ij]'
-DICO_REV[DICO['u']] = '[uv]'
+R_MAP = utils.revert_dict(MAP, exceptions={MAP['i']: '[ij]', MAP['u']: '[uv]'})
 
 
 def do_encrypt(text):
     """Encrypt message d --> AAABB"""
-    return "".join((DICO[c] for c in text))
+    return "".join((MAP[c] for c in text))
 
 
 def encrypt(text):
@@ -102,8 +100,8 @@ def do_decipher(text):
     ret = []
     for c in utils.grouper(text, 5):
         c = ''.join(c)
-        if c in DICO_REV:
-            ret.append(DICO_REV[c])
+        if c in R_MAP:
+            ret.append(R_MAP[c])
         else:
             raise ValueError("{} is not a valid bilitere code!"
                              "".format(c))

@@ -31,6 +31,9 @@ import sys
 import itertools
 import time
 
+###############################################################################
+# Misc platform abstraction code.
+###############################################################################
 __pf__ = sys.platform
 if __pf__ == 'win32':
     if sys.getwindowsversion().platform == 2:
@@ -55,6 +58,19 @@ major, minor, micro, _, _ = sys.version_info
 __pytver__ = '{}.{}.{}'.format(major, minor, micro)
 
 
+###############################################################################
+# Misc utils.
+###############################################################################
+def revert_dict(d, exceptions={}):
+    """Revert a mapping (dict).
+       If several keys have the same values, use the optional exceptions dict
+       to give the result you want for those values-as-key.
+    """
+    return {v: exceptions.get(v, k) for k, v in d.items()}
+
+###############################################################################
+# Iterators/sets operations.
+###############################################################################
 def grouper(iterable, n, fillvalue=None):
     """Return an iterator of n-length chunks of iterable.
        grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx

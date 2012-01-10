@@ -54,8 +54,8 @@ class Celldrawer(app.cli.Tool):
                                        "Decipher celldrawer into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Sema")]
-            msg = "Cyprium.cipher"
+                       ("quit", "*quit", "Quit Cyprium.Celldrawer")]
+            msg = "Cyprium.Celldrawer"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':

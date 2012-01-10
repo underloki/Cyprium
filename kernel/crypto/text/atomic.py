@@ -271,7 +271,9 @@ def do_decipher(text):
     dec_w = []
 
     for w in words:
-        if ' ' in w:
+        if not w:
+            continue
+        if ' ' in w or w.isalpha() or w in REVERSED_FILTER.keys():
             # Nice, just decode each element (letter).
             dec = []
             for c in w.split():
