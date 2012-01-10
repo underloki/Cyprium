@@ -120,7 +120,7 @@ class Atomic(app.cli.Tool):
         ui.message("Data to encrypt: {}\n".format("Hello WORLD !"))
         try:
             out = atomic.encrypt("Hello WORLD !")
-            ui.message("Atomic deciphered data:\n    {}"
+            ui.message("Atomic encrypted data:\n    {}"
                        "".format("\n    ".join(utils.format_multiwords(out))))
         except Exception as e:
             ui.message(str(e), ui.ERROR)

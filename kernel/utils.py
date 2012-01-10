@@ -55,7 +55,7 @@ major, minor, micro, _, _ = sys.version_info
 __pytver__ = '{}.{}.{}'.format(major, minor, micro)
 
 
-def grouper(n, iterable, fillvalue=None):
+def grouper(iterable, n, fillvalue=None):
     """Return an iterator of n-length chunks of iterable.
        grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
     """

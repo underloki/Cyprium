@@ -46,12 +46,13 @@ __date__ = "2012/01/09"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Atomic =====\n\n" \
-"Atomic allows you to encrypt and decrypt ascii-chars only text in the\n"
-"atomic-code.\n\n"
-"“Hello world” → “2LL8 748RLD”\n\n"
-"Note that the text will be automatically converted to uppercase, and that\n"
-"the non-cryptable chars will remain unciphered. Spaces are allowed and\n"
-"coded as double-spaces.\n\n"
+"Atomic allows you to encrypt and decrypt ascii-chars only text in the\n" \
+"atomic-code.\n\n" \
+"“Hello world” → “2 L L 8  74 8 R L D”\n\n" \
+"Note that the text must be uppercase, and that the non-cryptable chars\n" \
+"will remain unciphered. Spaces are allowed and coded as double-spaces.\n\n" \
+"It can also decipher texts like “2LL8  748RLD”, printing all possible\n" \
+"solutions.\n\n" \
 "Cyprium.Atomic version {} ({}).\n" \
 "Licence GPL3\n" \
 "software distributed on the site: http://thehackademy.fr\n\n" \

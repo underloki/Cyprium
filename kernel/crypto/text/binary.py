@@ -83,7 +83,7 @@ def do_decode(text, codec):
     # XXX Their might be a better way to create a bytes from ints, but
     #     for now it will do the trick!
     hex_s = "".join(["{:0>2x}".format(int(''.join(p), 2))
-                     for p in utils.grouper(8, text, '')])
+                     for p in utils.grouper(text, 8, '')])
     return bytes.fromhex(hex_s).decode(codec)
 
 
