@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 ########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #

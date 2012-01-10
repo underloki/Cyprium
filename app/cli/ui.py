@@ -62,6 +62,36 @@ class UI(app.ui.UI):
         UI.cprint("")
         return ret
 
+    @classmethod
+    def _getch_unix(cl, echo=False):
+        import tty
+        import termios
+        _fd = sys.stdin.fileno()
+        _old_settings = termios.tcgetattr(_fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(_fd, termios.TCSADRAIN, _old_settings)
+        if echo:
+            cl.cprint(ch, end="")
+        return ch
+
+    @classmethod
+    def _getch_win(cl, echo=False):
+        import msvcrt
+        import time
+        while not msvcrt.kbhit():
+            time.sleep(0.1)
+        if echo:
+            return msvcrt.getwche()
+        return msvcrt.getwch()
+
+    if sys.platform == 'win32':
+        _getch = _getch_win
+    else:
+        _getch = _getch_unix
+
     ###########################################################################
     # Simple message.
     ###########################################################################
@@ -80,14 +110,51 @@ class UI(app.ui.UI):
     ###########################################################################
     # Text input.
     ###########################################################################
-    def get_data(self, message="", sub_type=None, completion=None):
+    def get_data(self, message="", sub_type=app.ui.UI.STRING, completion=None):
         """Get some data from the user.
            Will ensure data is valid given sub_type, and call
            completion callback if user hits <tab>.
            completion(data_already_entered=None)
         """
-        return self.cinput(message)
-        self.cprint("")
+        while 1:
+            data = self.cinput(message)
+            if sub_type == app.ui.UI.LOWER:
+                t_data = data.lower()
+                if t_data != data:
+                    self.message("Your input has been converted to lower case: {}"
+                                 "".format(t_data))
+                    data = t_data
+            elif sub_type == app.ui.UI.UPPER:
+                t_data = data.upper()
+                if t_data != data:
+                    self.message("Your input has been converted to upper case: {}"
+                                 "".format(t_data))
+                    data = t_data
+            elif sub_type == self.INT:
+                try:
+                    return int(data)
+                except:
+                    msg = "Could not convert {} to an integer".format(data)
+                    options = [("retry", "$retry", ""),
+                               ("abort", "or *abort", "")]
+                    answ = self.get_choice(msg, options, start_opt="(",
+                                           end_opt=")", oneline=True)
+                    if answ == "retry":
+                        continue
+                    return
+            elif sub_type == self.FLOAT:
+                try:
+                    return float(data)
+                except:
+                    msg = "Could not convert {} to a float".format(data)
+                    options = [("retry", "$retry", ""),
+                               ("abort", "or *abort", "")]
+                    answ = self.get_choice(msg, options, start_opt="(",
+                                           end_opt=")", oneline=True)
+                    if answ == "retry":
+                        continue
+                    return
+            return data
 
     ###########################################################################
     # Menu.

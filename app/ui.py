@@ -41,7 +41,11 @@ class UI:
 
     # Sub-types of get_data.
     STRING = None  # Default...
-    PATH = 10      # Check is format-valid, and autocompletion?
+    UPPER = 10     # Only upper chars.
+    LOWER = 20     # Only lower chars.
+    PATH = 30      # Check is format-valid, and autocompletion?
+    INT = 100
+    FLOAT = 110
 
     ###########################################################################
     # Init.
@@ -58,7 +62,7 @@ class UI:
         """
         pass
 
-    def get_data(self, message="", sub_type=None, completion=None):
+    def get_data(self, message="", sub_type=STRING, completion=None):
         """Get some data from the user.
            Will ensure data is valid given sub_type, and call
            completion callback if user hits <tab>.
@@ -155,18 +159,49 @@ class UI:
                 if ifile:
                     ifile.close()
 
-    def text_input(self, msg):
+    def text_input(self, msg, sub_type=STRING):
         """Helper to get some text, either from console or from a file."""
-        options = [("console", "directly from $console", ""),
-                   ("file", "or reading a *file", "")]
-        answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
-                               oneline=True)
-        if answ == "console":
-            return self.get_data("Please type the text: ")
-        elif answ == "file":
-            return self.text_file_read()
-        else:
-            return
+        while 1:
+            options = [("console", "directly from $console", ""),
+                       ("file", "or reading a *file", "")]
+            answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
+                                   oneline=True)
+            if answ == "console":
+                return self.get_data("Please type the text: ",
+                                     sub_type=sub_type)
+            elif answ == "file":
+                ret = self.text_file_read()
+                if sub_type == self.UPPER:
+                    return ret.upper()
+                elif sub_type == self.LOWER:
+                    return ret.lower()
+                elif sub_type == self.INT:
+                    try:
+                        return int(ret)
+                    except:
+                        msg = "Could not convert {} to an integer".format(ret)
+                        options = [("retry", "$retry", ""),
+                                   ("abort", "or *abort", "")]
+                        answ = self.get_choice(msg, options, start_opt="(",
+                                               end_opt=")", oneline=True)
+                        if answ == "retry":
+                            continue
+                        return
+                elif sub_type == self.FLOAT:
+                    try:
+                        return float(ret)
+                    except:
+                        msg = "Could not convert {} to a float".format(ret)
+                        options = [("retry", "$retry", ""),
+                                   ("abort", "or *abort", "")]
+                        answ = self.get_choice(msg, options, start_opt="(",
+                                               end_opt=")", oneline=True)
+                        if answ == "retry":
+                            continue
+                        return
+                return ret
+            else:
+                return
 
     # Write/print.
     def text_file_wopen(self, path=None, codec=None):

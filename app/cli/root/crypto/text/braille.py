@@ -57,7 +57,7 @@ class Braille(app.cli.Tool):
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Braille")]
-            msg = "Cyprium.CodeABC"
+            msg = "Cyprium.Braille"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
