@@ -51,10 +51,10 @@ class Atomic(app.cli.Tool):
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
-                       (self.encrypt, "*encrypt",
-                                      "Encrypt some text in atomic"),
-                       (self.decipher, "de*cipher",
-                                       "Decipher atomic into text"),
+                       (self.cypher, "*cypher",
+                                     "Cypher some text in atomic"),
+                       (self.decypher, "d*ecypher",
+                                       "Decypher atomic into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Atomic")]
@@ -79,61 +79,61 @@ class Atomic(app.cli.Tool):
         ui.message("Running a small demo/testing!")
         ui.message("")
 
-        ui.message("--- Encrypting ---")
-        ui.message("Data to encrypt: {}".format("HOW ARE YOU NICEDAYISNTIT"))
-        out = atomic.encrypt("HOW ARE YOU NICEDAYISNTIT")
-        ui.message("Atomic encrypted data:\n    {}"
+        ui.message("--- Cyphering ---")
+        ui.message("Data to cypher: {}".format("HOW ARE YOU NICEDAYISNTIT"))
+        out = atomic.cypher("HOW ARE YOU NICEDAYISNTIT")
+        ui.message("Atomic cyphered data:\n    {}"
                    "".format("\n    ".join(utils.format_multiwords(out,
                                                                    sep="  "))))
         ui.message("")
 
         htext = "90 53 16  53 16  A  Q 92 53 52  16 53 M 15 L E  52 16 T"
-        ui.message("--- Deciphering ---")
+        ui.message("--- Decyphering ---")
         ui.message("Atomic text used as input: {}".format(htext))
-        out = atomic.decipher(htext)
-        ui.message("The deciphered data is:\n    {}"
+        out = atomic.decypher(htext)
+        ui.message("The decyphered data is:\n    {}"
                    "".format("\n    ".join(utils.format_multiwords(out))))
         ui.message("")
 
         ui.message("--- Notes ---")
         ui.message("+ You can choose the optionnal Exhaustive option, to get "
                    "all possible encodings of each words higher than the "
-                   "given threshold of encryption (or the highest possible):")
-        ui.message("Data to encrypt: {}".format("HOW ARE YOU NICEDAYISNTIT"))
-        out = atomic.encrypt("HOW ARE YOU NICEDAYISNTIT", exhaustive=True,
-                             min_encrypt=0.8)
-        ui.message("Atomic exhaustive encrypted data (threshold: 0.8):\n    {}"
+                   "given threshold of cyphering (or the highest possible):")
+        ui.message("Data to cypher: {}".format("HOW ARE YOU NICEDAYISNTIT"))
+        out = atomic.cypher("HOW ARE YOU NICEDAYISNTIT", exhaustive=True,
+                             min_cypher=0.8)
+        ui.message("Atomic exhaustive cyphered data (threshold: 0.8):\n    {}"
                    "".format("\n    ".join(utils.format_multiwords(out,
                                                                    sep="  "))))
         ui.message("")
 
         htext = "1874  A75  39892  75358DA39535081T"
-        ui.message("+ You can try to decipher a text with atomic numbers "
+        ui.message("+ You can try to decypher a text with atomic numbers "
                    "merged (i.e. no more spaces between them – nasty!):")
-        ui.message("Data to decipher: {}".format(htext))
-        out = atomic.decipher(htext)
-        ui.message("Atomic deciphered data:\n    {}"
+        ui.message("Data to decypher: {}".format(htext))
+        out = atomic.decypher(htext)
+        ui.message("Atomic decyphered data:\n    {}"
                    "".format("\n    ".join(utils.format_multiwords(out))))
         ui.message("")
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to encrypt must be ASCII uppercase "
+        ui.message("+ The input text to cypher must be ASCII uppercase "
                    "chars only:")
-        ui.message("Data to encrypt: {}\n".format("Hello WORLD !"))
+        ui.message("Data to cypher: {}\n".format("Hello WORLD !"))
         try:
-            out = atomic.encrypt("Hello WORLD !")
-            ui.message("Atomic encrypted data:\n    {}"
+            out = atomic.cypher("Hello WORLD !")
+            ui.message("Atomic cyphered data:\n    {}"
                        "".format("\n    ".join(utils.format_multiwords(out))))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
         ui.message("")
 
-        ui.message("+ The input text to decipher must be valid Atomic:")
+        ui.message("+ The input text to decypher must be valid Atomic:")
         htext = "90 53 016  53 16  A  Q 922 53 52  16 53 M 15 L E  52 16 T"
         ui.message("Atomic text used as input: {}".format(htext))
         try:
-            out = atomic.decipher(htext)
-            ui.message("Atomic deciphered data:\n    {}"
+            out = atomic.decypher(htext)
+            ui.message("Atomic decyphered data:\n    {}"
                        "".format("\n    ".join(utils.format_multiwords(out))))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
@@ -141,36 +141,36 @@ class Atomic(app.cli.Tool):
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
-    def encrypt(self, ui):
-        """Interactive version of encrypt()."""
+    def cypher(self, ui):
+        """Interactive version of cypher()."""
         txt = ""
-        ui.message("===== Encrypt Mode =====")
+        ui.message("===== Cypher Mode =====")
 
         while 1:
             done = False
             while 1:
                 exhaustive = False
                 threshold = 0.9
-                txt = ui.text_input("Text to encrypt to Atomic",
+                txt = ui.text_input("Text to cypher to Atomic",
                                     sub_type=ui.UPPER)
                 if txt is None:
-                    break  # Go back to main Encrypt menu.
+                    break  # Go back to main Cypher menu.
 
-                options = [("exhst", "*exhaustive encryption", ""),
+                options = [("exhst", "*exhaustive cyphering", ""),
                            ("simple", "or $simple one", "")]
                 answ = ui.get_choice("Do you want to use", options,
                                      oneline=True)
                 if answ == "exhst":
                     exhaustive = True
-                    t = ui.get_data("Encrypt threshold: ",
+                    t = ui.get_data("Cypher threshold: ",
                                     sub_type=ui.FLOAT)
                     if t is not None:
                         threshold = t
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = atomic.encrypt(txt, exhaustive=exhaustive,
-                                         min_encrypt=threshold)
+                    txt = atomic.cypher(txt, exhaustive=exhaustive,
+                                         min_cypher=threshold)
                     txt = "\n    " + \
                           "\n    ".join(utils.format_multiwords(txt))
                     done = True  # Out of those loops, output result.
@@ -190,31 +190,31 @@ class Atomic(app.cli.Tool):
                 ui.text_output("Text successfully converted", txt,
                                "Atomic version of text")
 
-            options = [("redo", "*encrypt another text", ""),
+            options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
 
-    def decipher(self, ui):
-        """Interactive version of decipher()."""
+    def decypher(self, ui):
+        """Interactive version of decypher()."""
         txt = ""
-        ui.message("===== Decipher Mode =====")
+        ui.message("===== Decypher Mode =====")
 
         while 1:
             txt = ui.text_input("Please choose some Atomic text",
                                 sub_type=ui.UPPER)
 
             try:
-                txt = atomic.decipher(txt)
+                txt = atomic.decypher(txt)
                 txt = "\n    " + "\n    ".join(utils.format_multiwords(txt))
-                ui.text_output("Text successfully deciphered",
+                ui.text_output("Text successfully decyphered",
                                txt,
-                               "The deciphered text is")
+                               "The decyphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
 
-            options = [("redo", "*decipher another data", ""),
+            options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":

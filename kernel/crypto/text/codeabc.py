@@ -45,7 +45,7 @@ __date__ = "2012/01/08"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About CodeABC =====\n\n" \
-"CodeABD encrypts/deciphers the phone keyboard code.\n\n" \
+"CodeABD cyphers/decyphers the phone keyboard code.\n\n" \
 "This code only accepts lowercase ASCII letters and space, and represents \n" \
 "them by phone codes like 0 for space, 111 for 'c', 5 for 'j', etc..\n\n" \
 "Cyprium.CodeABC version {} ({}).\n" \
@@ -58,7 +58,7 @@ __about__ = "" \
 "".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-d_encrypt = {'a': '2',
+d_cypher = {'a': '2',
              'b': '22',
              'c': '222',
              'd': '3',
@@ -86,38 +86,38 @@ d_encrypt = {'a': '2',
              'z': '9999',
              ' ': '0'}
 
-d_decipher = {v: k for k, v in d_encrypt.items()}
+d_decypher = {v: k for k, v in d_cypher.items()}
 
 
 #############################################################################
-def do_encrypt(text):
-    """Encrypt text with codeABC allowed chars: [a..z] + space."""
-    return ' '.join([d_encrypt[c] for c in text])
+def do_cypher(text):
+    """Cypher text with codeABC allowed chars: [a..z] + space."""
+    return ' '.join([d_cypher[c] for c in text])
 
 
-def encrypt(text):
-    """Wrapper around do_encrypt, making some checks."""
+def cypher(text):
+    """Wrapper around do_cypher, making some checks."""
     import string
     if not text:
         raise Exception("No text given!")
     # Check for unallowed chars…
     c_text = set(text)
-    c_allowed = set(d_encrypt.keys())
+    c_allowed = set(d_cypher.keys())
     if not (c_text <= c_allowed):
         raise Exception("Text contains unallowed chars (only space and "
                         "lowercase strict ASCII chars are allowed): '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_encrypt(text)
+    return do_cypher(text)
 
 
 #############################################################################
-def do_decipher(text):
-    """Decipher text using codeABC"""
-    return ''.join([d_decipher[c] for c in text.split()])
+def do_decypher(text):
+    """Decypher text using codeABC"""
+    return ''.join([d_decypher[c] for c in text.split()])
 
 
-def decipher(text):
-    """Wrapper around do_decipher, making some checks."""
+def decypher(text):
+    """Wrapper around do_decypher, making some checks."""
     if not text:
         raise Exception("No text given!")
     # Check for unallowed chars...
@@ -129,11 +129,11 @@ def decipher(text):
                         "".format("', '".join(sorted(c_text - c_allowed))))
     # Check for invalid codes...
     c_text = set(text.split())
-    c_allowed = set(d_decipher.keys())
+    c_allowed = set(d_decypher.keys())
     if not (c_text <= c_allowed):
         raise Exception("Text contains invalid codeABC codes: '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_decipher(text)
+    return do_decypher(text)
 
 
 def main():
@@ -141,40 +141,40 @@ def main():
     # Args retrieval
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decipher a text according to "
+                                     "Cypher/decypher a text according to "
                                      "cell phones' keyboard.\n"
                                      "Example: 'c' => '222'.\n"
                                      "Allowed chars: a..z + space.")
 
     sparsers = parser.add_subparsers(dest="command")
 
-    encrypt_parser = sparsers.add_parser('encrypt', help="Encrypt text.")
-    encrypt_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                                help="A file containing the text to encrypt.")
-    encrypt_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                                help="A file into which write the encrypted "
+    cypher_parser = sparsers.add_parser('cypher', help="Cypher text.")
+    cypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                                help="A file containing the text to cypher.")
+    cypher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                                help="A file into which write the cyphered "
                                      "text.")
-    encrypt_parser.add_argument('-d', '--data', help="The text to encrypt.")
+    cypher_parser.add_argument('-d', '--data', help="The text to cypher.")
 
-    decipher_parser = sparsers.add_parser('decipher', help="Decipher text.")
-    decipher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+    decypher_parser = sparsers.add_parser('decypher', help="Decypher text.")
+    decypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                  help="A file containing the text to "
-                                      "decipher.")
-    decipher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                                 help="A file into which write the deciphered "
+                                      "decypher.")
+    decypher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                                 help="A file into which write the decyphered "
                                       "text.")
-    decipher_parser.add_argument('-d', '--data', help="The text to decipher.")
+    decypher_parser.add_argument('-d', '--data', help="The text to decypher.")
 
     sparsers.add_parser('about', help="About codeABC…")
 
     args = parser.parse_args()
 
-    if args.command == "encrypt":
+    if args.command == "cypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = encrypt(data)
+            out = cypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:
@@ -188,12 +188,12 @@ def main():
                 args.ofile.close()
         return
 
-    elif args.command == "decipher":
+    elif args.command == "decypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = decipher(data)
+            out = decypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:

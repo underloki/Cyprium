@@ -50,10 +50,10 @@ class Braille(app.cli.Tool):
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
-                       (self.encrypt, "*encrypt",
-                                      "Encrypt some text in Braille"),
-                       (self.decipher, "de*cipher",
-                                       "Decipher Braille into text"),
+                       (self.cypher, "*cypher",
+                                     "Cypher some text in Braille"),
+                       (self.decypher, "d*ecypher",
+                                       "Decypher Braille into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Braille")]
@@ -77,56 +77,56 @@ class Braille(app.cli.Tool):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
 
-        ui.message("--- Encrypting ---")
-        ui.message("Data to encrypt: {}\n".format("Hello Wolrd !"))
-        ui.message("Braille encrypted data: {}"
-                   "".format(braille.encrypt("Hello Wolrd !")))
+        ui.message("--- Cyphering ---")
+        ui.message("Data to cypher: {}\n".format("Hello Wolrd !"))
+        ui.message("Braille cyphered data: {}"
+                   "".format(braille.cypher("Hello Wolrd !")))
 
         htext = "13457 24 14 15  2345 15 234 2345 6  24 234 1345 3457 2345  " \
                 "24 2345 168 1456"
-        ui.message("--- Deciphering ---")
+        ui.message("--- Decyphering ---")
         ui.message("Braille text used as input: {}".format(htext))
-        ui.message("The deciphered data is: {}"
-                   "".format(braille.decipher(htext)))
+        ui.message("The decyphered data is: {}"
+                   "".format(braille.decypher(htext)))
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to encrypt must be cp1252 (Windows "
+        ui.message("+ The input text to cypher must be cp1252 (Windows "
                    "8bit occidental charset) chars only:")
-        ui.message("Data to encrypt: {}\n".format("Japanese : 日本の"))
+        ui.message("Data to cypher: {}\n".format("Japanese : 日本の"))
         try:
-            ui.message("Braille encrypted data: {}"
-                       "".format(braille.encrypt("Japanese : 日本の")))
+            ui.message("Braille cyphered data: {}"
+                       "".format(braille.cypher("Japanese : 日本の")))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decipher must be valid Braille "
+        ui.message("+ The input text to decypher must be valid Braille "
                    "us-437 codes only:")
         htext = "13447 24 14 15  2345 15 234 2345 6  24 234 1345 3457 2345  " \
                 "24 2345 1778 1456"
         ui.message("Braille text used as input: {}".format(htext))
         try:
-            ui.message("The deciphered data is: {}"
-                       "".format(braille.decipher(htext)))
+            ui.message("The decyphered data is: {}"
+                       "".format(braille.decypher(htext)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
-    def encrypt(self, ui):
-        """Interactive version of encrypt()."""
+    def cypher(self, ui):
+        """Interactive version of cypher()."""
         txt = ""
-        ui.message("===== Encrypt Mode =====")
+        ui.message("===== Cypher Mode =====")
 
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to encrypt to Braille")
+                txt = ui.text_input("Text to cypher to Braille")
                 if txt is None:
-                    break  # Go back to main Encrypt menu.
+                    break  # Go back to main Cypher menu.
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = braille.encrypt(txt)
+                    txt = braille.cypher(txt)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -144,28 +144,28 @@ class Braille(app.cli.Tool):
                 ui.text_output("Text successfully converted", txt,
                                "Braille version of text")
 
-            options = [("redo", "*encrypt another text", ""),
+            options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
 
-    def decipher(self, ui):
-        """Interactive version of decipher()."""
+    def decypher(self, ui):
+        """Interactive version of decypher()."""
         txt = ""
-        ui.message("===== Decipher Mode =====")
+        ui.message("===== Decypher Mode =====")
 
         while 1:
             txt = ui.text_input("Please choose some Braille text")
 
             try:
-                ui.text_output("Text successfully deciphered",
-                               braille.decipher(txt),
-                               "The deciphered text is")
+                ui.text_output("Text successfully decyphered",
+                               braille.decypher(txt),
+                               "The decyphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
 
-            options = [("redo", "*decipher another data", ""),
+            options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":

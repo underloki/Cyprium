@@ -45,8 +45,8 @@ __date__ = "2012/01/08"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Binary =====\n\n" \
-"Binary is a simple binary/text converter. It allows you to encode and\n" \
-"decode text to/from binary. It can also cut the output into binary\n" \
+"Binary is a simple binary/text converter. It allows you to cypher and\n" \
+"decypher text to/from binary. It can also cut the output into binary\n" \
 "separated by bytes .You can use special characters and accents, if you\n" \
 "specify a compatible encoding (e.g. utf-8).\n\n" \
 "Cyprium.Binary version {} ({}).\n" \
@@ -58,37 +58,37 @@ __about__ = "" \
 "".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-def do_encode(text, codec):
+def do_cypher(text, codec):
     """Function to convert some text to “binary” text."""
     # Create a dict mapping all chars to their binary representation,
     # in the given codec (might be more than one byte!).
     chars = dict.fromkeys(set(text))
     try:
         for c in chars:
-            b = c.encode(codec)
+            b = c.cypher(codec)
             chars[c] = ("{:0>8b}" * len(b)).format(*b)
     except Exception as e:
-        raise ValueError("The text could not be encoded into given '{}' "
+        raise ValueError("The text could not be cypherd into given '{}' "
                          "encoding ({})".format(codec, str(e)))
     return ''.join([chars[i] for i in text])
 
 
-def encode(text, codec="ascii"):
-    """Just a wrapper around do_encode, no check currently."""
-    return do_encode(text, codec)
+def cypher(text, codec="ascii"):
+    """Just a wrapper around do_cypher, no check currently."""
+    return do_cypher(text, codec)
 
 
-def do_decode(text, codec):
+def do_decypher(text, codec):
     """Function to convert “binary” text into text."""
     # XXX Their might be a better way to create a bytes from ints, but
     #     for now it will do the trick!
     hex_s = "".join(["{:0>2x}".format(int(''.join(p), 2))
                      for p in utils.grouper(text, 8, '')])
-    return bytes.fromhex(hex_s).decode(codec)
+    return bytes.fromhex(hex_s).decypher(codec)
 
 
-def decode(text, codec="ascii"):
-    """Just a wrapper around do_decode, with some checks."""
+def decypher(text, codec="ascii"):
+    """Just a wrapper around do_decypher, with some checks."""
     # Test length (*without* the spaces!).
     text = text.replace(' ', '')
     if len(text) % 8 != 0:
@@ -100,7 +100,7 @@ def decode(text, codec="ascii"):
     if not (c_data <= c_allowed):
         raise ValueError("Only binary digits and spaces are allowed, no '{}'!"
                          .format("', '".join(sorted(c_data - c_allowed))))
-    return do_decode(text, codec)
+    return do_decypher(text, codec)
 
 
 def main():
@@ -108,43 +108,43 @@ def main():
     # Try 'program.py -h' to see! ;)
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encode/decode some text in binary form.")
+                                     "Cypher/decypher some text in binary form.")
     sparsers = parser.add_subparsers(dest="command")
 
-    hide_parser = sparsers.add_parser('encode', help="Encode data in binary.")
+    hide_parser = sparsers.add_parser('cypher', help="Cypher data in binary.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                              help="A file containing the text to convert to "
                                   "binary.")
     hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
                              help="A file into which write the “binary” text.")
     hide_parser.add_argument('-d', '--data',
-                             help="The text to encode in binary.")
+                             help="The text to cypher in binary.")
     hide_parser.add_argument('-c', '--codec', default="ascii",
-                             help="The codec to encode in binary.")
+                             help="The codec to cypher in binary.")
 
-    unhide_parser = sparsers.add_parser('decode',
-                                        help="Decode binary to text.")
+    unhide_parser = sparsers.add_parser('decypher',
+                                        help="Decypher binary to text.")
     unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                help="A file containing the text to convert "
                                     "from binary.")
     unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                               help="A file into which write the decoded "
+                               help="A file into which write the decypherd "
                                     "text.")
     unhide_parser.add_argument('-d', '--data',
-                               help="The binary text to decode.")
+                               help="The binary text to decypher.")
     unhide_parser.add_argument('-c', '--codec', default="ascii",
-                               help="The codec to decode from binary.")
+                               help="The codec to decypher from binary.")
 
     sparsers.add_parser('about', help="About Binary…")
 
     args = parser.parse_args()
 
-    if args.command == "encode":
+    if args.command == "cypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = encode(data, args.codec)
+            out = cypher(data, args.codec)
             if args.ofile:
                 args.ofile.write(out)
             else:
@@ -158,12 +158,12 @@ def main():
                 args.ofile.close()
         return
 
-    elif args.command == "decode":
+    elif args.command == "decypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = decode(data, args.codec)
+            out = decypher(data, args.codec)
             if args.ofile:
                 args.ofile.write(out)
             else:

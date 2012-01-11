@@ -48,10 +48,10 @@ class Celldrawer(app.cli.Tool):
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
-                       (self.encrypt, "*encrypt",
-                                      "Encrypt some text in celldrawer"),
-                       (self.decipher, "de*cipher",
-                                       "Decipher celldrawer into text"),
+                       (self.cypher, "*cypher",
+                                     "Cypher some text in celldrawer"),
+                       (self.decypher, "d*ecypher",
+                                       "Decypher celldrawer into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Celldrawer")]
@@ -75,55 +75,55 @@ class Celldrawer(app.cli.Tool):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
 
-        ui.message("--- Encrypting ---")
-        ui.message("Data to encrypt: {}\n".format("hello wolrd"))
-        ui.message("Celldrawer encrypted data: {}"
-                   "".format(celldrawer.encrypt("hello world")))
+        ui.message("--- Cyphering ---")
+        ui.message("Data to cypher: {}\n".format("hello wolrd"))
+        ui.message("Celldrawer cyphered data: {}"
+                   "".format(celldrawer.cypher("hello world")))
 
         htext = "123580 147*369#8 321457*0#  147*369#8 *74269#8 32470# " \
                 "147*538# *74269#8 *7412690 321457*0# *7415369# 15380"
-        ui.message("--- Deciphering ---")
+        ui.message("--- Decyphering ---")
         ui.message("Celldrawer text used as input: {}".format(htext))
-        ui.message("The deciphered data is: {}"
-                   "".format(celldrawer.decipher(htext)))
+        ui.message("The decyphered data is: {}"
+                   "".format(celldrawer.decypher(htext)))
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to encrypt must be acsii lowercase "
+        ui.message("+ The input text to cypher must be acsii lowercase "
                    "letters only:")
-        ui.message("Data to encrypt: {}\n".format("Hello Wolrd!"))
+        ui.message("Data to cypher: {}\n".format("Hello Wolrd!"))
         try:
-            ui.message("Celldrawer encrypted data: {}"
-                       "".format(celldrawer.encrypt("Hello World!")))
+            ui.message("Celldrawer cyphered data: {}"
+                       "".format(celldrawer.cypher("Hello World!")))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decipher must be phone digits only:")
+        ui.message("+ The input text to decypher must be phone digits only:")
         htext = "123580 147*369#8 321457*0#  1N7*369#8 *74269#8 32470# " \
                 "147*538# *74269#8 *7412690 321457*0# *741k369# 15380!"
         ui.message("Celldrawer text used as input: {}".format(htext))
         try:
-            ui.message("The deciphered data is: {}"
-                       "".format(celldrawer.decipher(htext)))
+            ui.message("The decyphered data is: {}"
+                       "".format(celldrawer.decypher(htext)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
-    def encrypt(self, ui):
-        """Interactive version of encrypt()."""
+    def cypher(self, ui):
+        """Interactive version of cypher()."""
         txt = ""
-        ui.message("===== Encrypt Mode =====")
+        ui.message("===== Cypher Mode =====")
 
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to encrypt to celldrawer")
+                txt = ui.text_input("Text to cypher to celldrawer")
                 if txt is None:
-                    break  # Go back to main Encrypt menu.
+                    break  # Go back to main Cypher menu.
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = celldrawer.encrypt(txt)
+                    txt = celldrawer.cypher(txt)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -141,28 +141,28 @@ class Celldrawer(app.cli.Tool):
                 ui.text_output("Text successfully converted", txt,
                                "Celldrawer version of text")
 
-            options = [("redo", "*encrypt another text", ""),
+            options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
 
-    def decipher(self, ui):
-        """Interactive version of decipher()."""
+    def decypher(self, ui):
+        """Interactive version of decypher()."""
         txt = ""
-        ui.message("===== Decipher Mode =====")
+        ui.message("===== Decypher Mode =====")
 
         while 1:
             txt = ui.text_input("Please choose some celldrawer text")
 
             try:
-                ui.text_output("Text successfully deciphered",
-                               celldrawer.decipher(txt),
-                               "The deciphered text is")
+                ui.text_output("Text successfully decyphered",
+                               celldrawer.decypher(txt),
+                               "The decyphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
 
-            options = [("redo", "*decipher another data", ""),
+            options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":

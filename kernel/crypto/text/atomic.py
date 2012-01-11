@@ -46,12 +46,12 @@ __date__ = "2012/01/09"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Atomic =====\n\n" \
-"Atomic allows you to encrypt and decrypt ascii-chars only text in the\n" \
+"Atomic allows you to cypher and decrypt ascii-chars only text in the\n" \
 "atomic-code.\n\n" \
 "“Hello world” → “2 L L 8  74 8 R L D”\n\n" \
 "Note that the text must be uppercase, and that the non-cryptable chars\n" \
 "will remain unciphered. Spaces are allowed and coded as double-spaces.\n\n" \
-"It can also decipher texts like “2LL8  748RLD”, printing all possible\n" \
+"It can also decypher texts like “2LL8  748RLD”, printing all possible\n" \
 "solutions.\n\n" \
 "Cyprium.Atomic version {} ({}).\n" \
 "Licence GPL3\n" \
@@ -183,8 +183,8 @@ FILTER = {'AC': '89',
 REVERSED_FILTER = {v: k for k, v in FILTER.items()}
 
 
-def encrypt_word(word):
-    """Yields all possible encryptions of a word, as tuples
+def cypher_word(word):
+    """Yields all possible cypherings of a word, as tuples
        (codes, factor_crypted).
     """
     ln_w = len(word)
@@ -201,18 +201,18 @@ def encrypt_word(word):
         yield (" ".join(y), crypted / ln_w)
 
 
-def do_encrypt(text, exhaustive=False, min_encrypt=0.8):
+def do_cypher(text, exhaustive=False, min_cypher=0.8):
     """Encrypt text in atomic code.
-       Returns a list of encrypted words, or tuples of encrypted words,
-       that either have a higher encrypt level than min_encrypt,
-       or are the higest encrypted solutions.
+       Returns a list of cyphered words, or tuples of cyphered words,
+       that either have a higher cypher level than min_cypher,
+       or are the higest cyphered solutions.
     """
     words = text.split()
     enc_w = []
     if exhaustive:
         for w in words:
-            solutions = {s for s in encrypt_word(w)}
-            fact = min(max(solutions, key=lambda x: x[1])[1], min_encrypt)
+            solutions = {s for s in cypher_word(w)}
+            fact = min(max(solutions, key=lambda x: x[1])[1], min_cypher)
             enc_w.append(tuple((s[0] for s in solutions if s[1] >= fact)))
     else:
         for w in words:
@@ -236,8 +236,8 @@ def do_encrypt(text, exhaustive=False, min_encrypt=0.8):
     return enc_w
 
 
-def encrypt(text, exhaustive=False, min_encrypt=0.8):
-    """Just a wrapper around do_encrypt, with some checks."""
+def cypher(text, exhaustive=False, min_cypher=0.8):
+    """Just a wrapper around do_cypher, with some checks."""
     import string
     if not text:
         raise ValueError("No text given!")
@@ -249,10 +249,10 @@ def encrypt(text, exhaustive=False, min_encrypt=0.8):
         raise ValueError("Text contains unallowed chars (only strict ASCII "
                          "uppercase chars and space are allowed): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_encrypt(text, exhaustive=exhaustive, min_encrypt=min_encrypt)
+    return do_cypher(text, exhaustive=exhaustive, min_cypher=min_cypher)
 
 
-def decipher_code(code):
+def decypher_code(code):
     """Yields all possible meanings of a number."""
     ln_w = len(code)
     valid_codes = set(REVERSED_FILTER.keys())
@@ -262,9 +262,9 @@ def decipher_code(code):
             yield tuple((REVERSED_FILTER[e] for e in grps))
 
 
-def do_decipher(text):
-    """Decipher text in atomic code.
-       Returns a list of deciphered words, or tuples of deciphered words,
+def do_decypher(text):
+    """Decypher text in atomic code.
+       Returns a list of decyphered words, or tuples of decyphered words,
        in case several solutions are possible.
     """
     import string
@@ -290,7 +290,7 @@ def do_decipher(text):
             dec_w.append(("".join(dec),))
         else:
             # Not nice, each element is not well space-separated,
-            # try to decipher nonetheless...
+            # try to decypher nonetheless...
             is_code = False
             dec = []
             curr = ''
@@ -298,7 +298,7 @@ def do_decipher(text):
                 if c in valid_c:
                     if is_code:
                         dec.append(tuple("".join(e) for e in \
-                                                        decipher_code(curr)))
+                                                        decypher_code(curr)))
                         is_code = False
                         curr = c
                     else:
@@ -314,14 +314,14 @@ def do_decipher(text):
             if c in valid_c:
                 dec.append((curr,))
             else:  # Assume digit!
-                dec.append(tuple("".join(e) for e in decipher_code(curr)))
+                dec.append(tuple("".join(e) for e in decypher_code(curr)))
             dec_w.append(tuple(("".join(d) for d in itertools.product(*dec))))
 
     return dec_w
 
 
-def decipher(text):
-    """Just a wrapper around do_decipher, with some checks."""
+def decypher(text):
+    """Just a wrapper around do_decypher, with some checks."""
     import string
     if not text:
         raise ValueError("No text given!")
@@ -333,7 +333,7 @@ def decipher(text):
         raise ValueError("Text contains unallowed chars (only ascii uppercase "
                          "chars, digits and spaces are allowed): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_decipher(text)
+    return do_decypher(text)
 
 
 def main():
@@ -341,12 +341,12 @@ def main():
     # Try 'program.py -h' to see! ;)
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decipher some text in "
+                                     "Encrypt/decypher some text in "
                                      "atomic code.")
     sparsers = parser.add_subparsers(dest="command")
 
-    hide_parser = sparsers.add_parser('encrypt', help="Encryptcode text in "
-                                                      "atomic.")
+    hide_parser = sparsers.add_parser('cypher', help="Encryptcode text in "
+                                                     "atomic.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                              help="A file containing the text to convert to "
                                   "atomic.")
@@ -354,39 +354,39 @@ def main():
                              help="A file into which write the atomic "
                                   "text.")
     hide_parser.add_argument('-d', '--data',
-                             help="The text to encrypt in atomic.")
+                             help="The text to cypher in atomic.")
     hide_parser.add_argument('--exhaustive', action="store_true",
                              help="Use a complete search of all possible "
-                                  "encryptions. WARNING: with long words, it "
+                                  "cypherings. WARNING: with long words, it "
                                   "will take a *very* long time to compute "
                                   "(tens of seconds with 15 chars word, and "
                                   "increasing at a *very* high rate)!")
-    hide_parser.add_argument('--min_encrypt', type=float, default=0.8,
-                             help="Minimum level of encryption, if possible. "
+    hide_parser.add_argument('--min_cypher', type=float, default=0.8,
+                             help="Minimum level of cyphering, if possible. "
                                   "Only relevant with --exhaustive!")
 
-    unhide_parser = sparsers.add_parser('decipher',
-                                        help="Decipher atomic to text.")
+    unhide_parser = sparsers.add_parser('decypher',
+                                        help="Decypher atomic to text.")
     unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                help="A file containing the text to convert "
                                     "from atomic.")
     unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                               help="A file into which write the deciphered "
+                               help="A file into which write the decyphered "
                                     "text.")
     unhide_parser.add_argument('-d', '--data',
-                               help="The text to decipher.")
+                               help="The text to decypher.")
 
     sparsers.add_parser('about', help="About Atomic…")
 
     args = parser.parse_args()
 
-    if args.command == "encrypt":
+    if args.command == "cypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = encrypt(data, exhaustive=args.exhaustive,
-                          min_encrypt=args.min_encrypt)
+            out = cypher(data, exhaustive=args.exhaustive,
+                          min_cypher=args.min_cypher)
             if args.ofile:
                 args.ofile.write("\n\n".join(out))
             else:
@@ -400,12 +400,12 @@ def main():
                 args.ofile.close()
         return 0
 
-    elif args.command == "decipher":
+    elif args.command == "decypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = decipher(data)
+            out = decypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:

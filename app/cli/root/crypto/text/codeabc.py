@@ -50,10 +50,10 @@ class CodeABC(app.cli.Tool):
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
-                       (self.encrypt, "*encrypt",
-                                      "Encrypt some text in codeABC"),
-                       (self.decipher, "de*cipher",
-                                       "Decipher codeABC into text"),
+                       (self.cypher, "*cypher",
+                                     "Cypher some text in codeABC"),
+                       (self.decypher, "d*ecypher",
+                                       "Decypher codeABC into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.CodeABC")]
@@ -77,54 +77,54 @@ class CodeABC(app.cli.Tool):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
 
-        ui.message("--- Encrypting ---")
-        ui.message("Data to encrypt: {}\n".format("hello wolrd"))
-        ui.message("CodeABC encrypted data: {}"
-                   "".format(codeabc.encrypt("hello world")))
+        ui.message("--- Cyphering ---")
+        ui.message("Data to cypher: {}\n".format("hello wolrd"))
+        ui.message("CodeABC cyphered data: {}"
+                   "".format(codeabc.cypher("hello world")))
 
         htext = "66 444 222 33 0 222 666 3 33 0 44 33 44"
-        ui.message("--- Deciphering ---")
+        ui.message("--- Decyphering ---")
         ui.message("CodeABC text used as input: {}".format(htext))
-        ui.message("The deciphered data is: {}"
-                   "".format(codeabc.decipher(htext)))
+        ui.message("The decyphered data is: {}"
+                   "".format(codeabc.decypher(htext)))
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to encrypt must be space and acsii "
+        ui.message("+ The input text to cypher must be space and acsii "
                    "lowercase letters only:")
-        ui.message("Data to encrypt: {}\n".format("Hello Wolrd!"))
+        ui.message("Data to cypher: {}\n".format("Hello Wolrd!"))
         try:
-            ui.message("CodeABC encrypted data: {}"
-                       "".format(codeabc.encrypt("Hello World!")))
+            ui.message("CodeABC cyphered data: {}"
+                       "".format(codeabc.cypher("Hello World!")))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decipher must be valid abc codes "
+        ui.message("+ The input text to decypher must be valid abc codes "
                    "only:")
         htext = "66 444 222 3333 0 222 666 3 33 00 44 33 44"
         ui.message("CodeABC text used as input: {}".format(htext))
         try:
-            ui.message("The deciphered data is: {}"
-                       "".format(codeabc.decipher(htext)))
+            ui.message("The decyphered data is: {}"
+                       "".format(codeabc.decypher(htext)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
-    def encrypt(self, ui):
-        """Interactive version of encrypt()."""
+    def cypher(self, ui):
+        """Interactive version of cypher()."""
         txt = ""
-        ui.message("===== Encrypt Mode =====")
+        ui.message("===== Cypher Mode =====")
 
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to encrypt to codeABC")
+                txt = ui.text_input("Text to cypher to codeABC")
                 if txt is None:
-                    break  # Go back to main Encrypt menu.
+                    break  # Go back to main Cypher menu.
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = codeabc.encrypt(txt)
+                    txt = codeabc.cypher(txt)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -142,28 +142,28 @@ class CodeABC(app.cli.Tool):
                 ui.text_output("Text successfully converted", txt,
                                "CodeABC version of text")
 
-            options = [("redo", "*encrypt another text", ""),
+            options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
 
-    def decipher(self, ui):
-        """Interactive version of decipher()."""
+    def decypher(self, ui):
+        """Interactive version of decypher()."""
         txt = ""
-        ui.message("===== Decipher Mode =====")
+        ui.message("===== Decypher Mode =====")
 
         while 1:
             txt = ui.text_input("Please choose some codeABC text")
 
             try:
-                ui.text_output("Text successfully deciphered",
-                               codeabc.decipher(txt),
-                               "The deciphered text is")
+                ui.text_output("Text successfully decyphered",
+                               codeabc.decypher(txt),
+                               "The decyphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
 
-            options = [("redo", "*decipher another data", ""),
+            options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":

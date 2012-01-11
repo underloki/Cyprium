@@ -45,7 +45,7 @@ __date__ = "2012/01/08"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Celldrawer =====\n\n" \
-"Celldrawer encrypts/deciphers “celldrawer” code.\n\n "\
+"Celldrawer cyphers/decyphers “celldrawer” code.\n\n "\
 "This code only accepts lowercase ASCII letters, and represents them by\n" \
 "phone digits (#*0123456789), so that each code “draws” its letter on a\n" \
 "4×3 phone keyboard.\n\n" \
@@ -93,13 +93,13 @@ EDICT = {"a": "*74269#8",
 DDICT = {v: k for k, v in EDICT.items()}
 
 
-def do_encrypt(text):
+def do_cypher(text):
     """Function to convert some text to "celldrawer" text."""
     return ' '.join([EDICT[c] for c in text])
 
 
-def encrypt(text):
-    """Just a wrapper around do_encrypt, with some checks."""
+def cypher(text):
+    """Just a wrapper around do_cypher, with some checks."""
     import string
     if not text:
         raise Exception("no text given!")
@@ -111,10 +111,10 @@ def encrypt(text):
         raise Exception("Text contains unallowed chars (only lowercase strict "
                         "ASCII chars are allowed): '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_encrypt(text)
+    return do_cypher(text)
 
 
-def do_decipher(text):
+def do_decypher(text):
     """Function to convert “celldrawer” text into clear text."""
     words = []
     # Double spaces = word sep ("real" space).
@@ -131,8 +131,8 @@ def do_decipher(text):
     return ' '.join(words)
 
 
-def decipher(text):
-    """Just a wrapper around do_decipher, with some checks."""
+def decypher(text):
+    """Just a wrapper around do_decypher, with some checks."""
     # Check for unallowed chars…
     c_text = set(text)
     c_allowed = {' ', '*', '#',
@@ -141,7 +141,7 @@ def decipher(text):
         raise Exception("Text contains unallowed chars (only phone digits are "
                         "allowed): '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_decipher(text)
+    return do_decypher(text)
 
 
 def main():
@@ -149,11 +149,11 @@ def main():
     # Try 'program.py -h' to see! ;)
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decipher some text in "
+                                     "Cypher/decypher some text in "
                                      "celldrawer code.")
     sparsers = parser.add_subparsers(dest="command")
 
-    hide_parser = sparsers.add_parser('encrypt', help="Encryptcode text in "
+    hide_parser = sparsers.add_parser('cypher', help="Cypher text in "
                                                       "celldrawer.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                              help="A file containing the text to convert to "
@@ -162,28 +162,28 @@ def main():
                              help="A file into which write the celldrawer "
                                   "text.")
     hide_parser.add_argument('-d', '--data',
-                             help="The text to encrypt in celldrawer.")
+                             help="The text to cypher in celldrawer.")
 
-    unhide_parser = sparsers.add_parser('decipher',
-                                        help="Decipher celldrawer to text.")
+    unhide_parser = sparsers.add_parser('decypher',
+                                        help="Decypher celldrawer to text.")
     unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                help="A file containing the text to convert "
                                     "from celldrawer.")
     unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                               help="A file into which write the deciphered "
+                               help="A file into which write the decyphered "
                                     "text.")
-    unhide_parser.add_argument('-d', '--data', help="The text to decipher.")
+    unhide_parser.add_argument('-d', '--data', help="The text to decypher.")
 
     sparsers.add_parser('about', help="About Celldrawer…")
 
     args = parser.parse_args()
 
-    if args.command == "encrypt":
+    if args.command == "cypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = encrypt(data)
+            out = cypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:
@@ -197,12 +197,12 @@ def main():
                 args.ofile.close()
         return 0
 
-    elif args.command == "decipher":
+    elif args.command == "decypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = decipher(data)
+            out = decypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:

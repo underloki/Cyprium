@@ -45,11 +45,11 @@ __date__ = "2012/01/09"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 "===== About Braille =====\n\n" \
-"Braille allows you to encrypt and decipher text into informatic-Braille\n" \
+"Braille allows you to cypher and decypher text into informatic-Braille\n" \
 "us-437 (on 8 dots).\n\n" \
 "You can use all chars from the cp1252 charset (Windows 8bit encoding).\n\n" \
 "Example : “Hello world” → “125 15 123 123 135  2456 135 1235 123 145”\n\n" \
-"Note that the space-char is encrypted with 2 spaces.\n\n" \
+"Note that the space-char is cyphered with 2 spaces.\n\n" \
 "Cyprium.Braille version {} ({}).\n" \
 "Licence GPL3\n" \
 "software distributed on the site: http://thehackademy.fr\n\n" \
@@ -321,13 +321,13 @@ FILTER = {'\x00': '478',       # NUL, null
 REVERSED_FILTER = {v: k for k, v in FILTER.items()}
 
 
-def do_encrypt(text):
+def do_cypher(text):
     """Function to convert some text to Braille us-437 text (cp1252)."""
     return " ".join([FILTER[c] for c in text])
 
 
-def encrypt(text):
-    """Just a wrapper around do_encrypt, with some checks."""
+def cypher(text):
+    """Just a wrapper around do_cypher, with some checks."""
     if not text:
         raise Exception("no text given!")
     # Check for unallowed chars…
@@ -337,10 +337,10 @@ def encrypt(text):
         raise Exception("Text contains unallowed chars (only chars in cp1252 "
                         "[Windows 8bit charset] are allowed): '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_encrypt(text)
+    return do_cypher(text)
 
 
-def do_decipher(text):
+def do_decypher(text):
     """Function to convert Braille us-437 text into clear text."""
     words = text.split('  ')
     chars = []
@@ -352,8 +352,8 @@ def do_decipher(text):
     return "".join(chars)
 
 
-def decipher(text):
-    """Wrapper around do_decipher, making some checks."""
+def decypher(text):
+    """Wrapper around do_decypher, making some checks."""
     if not text:
         raise Exception("No text given!")
     # Check for unallowed chars...
@@ -369,15 +369,15 @@ def decipher(text):
     if not (c_text <= c_allowed):
         raise Exception("Text contains invalid Braille us-437 codes: '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return do_decipher(text)
+    return do_decypher(text)
 
 
 def test():
     print("Start test...")
     for i in FILTER.keys():
         txt = "".join(list(FILTER.keys()) * 10)
-        coded = encrypt(txt)
-        decoded = decipher(coded)
+        coded = cypher(txt)
+        decoded = decypher(coded)
         if txt != decoded:
             raise Exception("Test error, text and decoded(coded) text are "\
                             "not the same!")
@@ -389,41 +389,41 @@ def main():
     # Args retrieval
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decrypt a text according to"
+                                     "Cypher/decrypt a text according to"
                                      "to informatic Braille code us-437.\n"
                                      "example: 'the' ==> ''2345 125 15'.\n"
                                      "allowed chars: cp1252 charset.")
 
     sparsers = parser.add_subparsers(dest="command")
 
-    encrypt_parser = sparsers.add_parser('encrypt', help="Encrypt text.")
-    encrypt_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                                help="A file containing the text to encrypt.")
-    encrypt_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                                help="A file into which write the encrypted "
+    cypher_parser = sparsers.add_parser('cypher', help="Cypher text.")
+    cypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                                help="A file containing the text to cypher.")
+    cypher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                                help="A file into which write the cyphered "
                                      "text.")
-    encrypt_parser.add_argument('-d', '--data', help="The text to encrypt.")
+    cypher_parser.add_argument('-d', '--data', help="The text to cypher.")
 
-    decipher_parser = sparsers.add_parser('decipher', help="Decipher text.")
-    decipher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+    decypher_parser = sparsers.add_parser('decypher', help="Decypher text.")
+    decypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                  help="A file containing the text to "
-                                      "decipher.")
-    decipher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                                 help="A file into which write the deciphered "
+                                      "decypher.")
+    decypher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                                 help="A file into which write the decyphered "
                                       "text.")
-    decipher_parser.add_argument('-d', '--data', help="The text to decipher.")
+    decypher_parser.add_argument('-d', '--data', help="The text to decypher.")
 
     sparsers.add_parser('about', help="About Braille…")
     sparsers.add_parser('test', help="Run a small auto-test.")
 
     args = parser.parse_args()
 
-    if args.command == "encrypt":
+    if args.command == "cypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = encrypt(data)
+            out = cypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:
@@ -437,12 +437,12 @@ def main():
                 args.ofile.close()
         return
 
-    elif args.command == "decipher":
+    elif args.command == "decypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = decipher(data)
+            out = decypher(data)
             if args.ofile:
                 args.ofile.write(out)
             else:
