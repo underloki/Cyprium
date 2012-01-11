@@ -220,11 +220,11 @@ def do_encrypt(text, exhaustive=False, min_encrypt=0.8):
             i = 0
             ln_w = len(w)
             while i < ln_w:
-                if w[i:i+3] in FILTER:
-                    els.append(FILTER[w[i:i+3]])
+                if w[i:i + 3] in FILTER:
+                    els.append(FILTER[w[i:i + 3]])
                     i += 3
-                elif w[i:i+2] in FILTER:
-                    els.append(FILTER[w[i:i+2]])
+                elif w[i:i + 2] in FILTER:
+                    els.append(FILTER[w[i:i + 2]])
                     i += 2
                 elif w[i] in FILTER:
                     els.append(FILTER[w[i]])
@@ -234,6 +234,7 @@ def do_encrypt(text, exhaustive=False, min_encrypt=0.8):
                     i += 1
             enc_w.append((" ".join(els),))
     return enc_w
+
 
 def encrypt(text, exhaustive=False, min_encrypt=0.8):
     """Just a wrapper around do_encrypt, with some checks."""
@@ -250,6 +251,7 @@ def encrypt(text, exhaustive=False, min_encrypt=0.8):
                          "".format("', '".join(sorted(c_text - c_allowed))))
     return do_encrypt(text, exhaustive=exhaustive, min_encrypt=min_encrypt)
 
+
 def decipher_code(code):
     """Yields all possible meanings of a number."""
     ln_w = len(code)
@@ -258,6 +260,7 @@ def decipher_code(code):
         grps = tuple(("".join(grp) for grp in grps))
         if set(grps) <= valid_codes:
             yield tuple((REVERSED_FILTER[e] for e in grps))
+
 
 def do_decipher(text):
     """Decipher text in atomic code.
@@ -294,7 +297,8 @@ def do_decipher(text):
             for c in w:
                 if c in valid_c:
                     if is_code:
-                        dec.append(tuple("".join(e) for e in decipher_code(curr)))
+                        dec.append(tuple("".join(e) for e in \
+                                                        decipher_code(curr)))
                         is_code = False
                         curr = c
                     else:

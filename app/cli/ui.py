@@ -121,14 +121,14 @@ class UI(app.ui.UI):
             if sub_type == app.ui.UI.LOWER:
                 t_data = data.lower()
                 if t_data != data:
-                    self.message("Your input has been converted to lower case: {}"
-                                 "".format(t_data))
+                    self.message("Your input has been converted to lowercase: "
+                                 "{}".format(t_data))
                     data = t_data
             elif sub_type == app.ui.UI.UPPER:
                 t_data = data.upper()
                 if t_data != data:
-                    self.message("Your input has been converted to upper case: {}"
-                                 "".format(t_data))
+                    self.message("Your input has been converted to uppercase: "
+                                 "{}".format(t_data))
                     data = t_data
             elif sub_type == self.INT:
                 try:

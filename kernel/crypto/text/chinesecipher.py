@@ -92,17 +92,17 @@ MAP = {'a': (1, 0),
 R_MAP = utils.revert_dict(MAP)
 
 
-# To allow easy change of chars of needed...
+# To allow easy change of chars if needed...
 CHAR1 = "—"
 CHAR2 = "|"
 
 
 def code_to_chinese(code):
-    return "".join([CHAR1] * code[0] + [CHAR2] * code [1])
+    return "".join([CHAR1] * code[0] + [CHAR2] * code[1])
 
 
 def code_to_samurai(code):
-    return "".join([CHAR2] * code[0] + [CHAR1] * code [1])
+    return "".join([CHAR2] * code[0] + [CHAR1] * code[1])
 
 
 def code_to_digits(code):

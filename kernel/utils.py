@@ -68,6 +68,7 @@ def revert_dict(d, exceptions={}):
     """
     return {v: exceptions.get(v, k) for k, v in d.items()}
 
+
 ###############################################################################
 # Iterators/sets operations.
 ###############################################################################
@@ -113,13 +114,16 @@ def all_groups_in_order(iterable, min_n=1, max_n=1):
             yield cut_iter(tuple(iterable), *c)
 
 
+###############################################################################
+# Formating.
+###############################################################################
 def format_multiwords(words, sep=' '):
     """Format words as multi-lines text output.
        Returns a list of lines.
        (this) (is,was,will be) (a) (test) →
-              is          
+              is
        this   was   a test
-            will be       
+            will be
     """
     # Higher number of possibilities for a single word.
     if len(words) > 1:

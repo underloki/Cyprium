@@ -172,7 +172,7 @@ class Braille(app.cli.Tool):
                 return
 
 
-NAME = "B*raille"
+NAME = "b*raille"
 TIP = "Tool to convert text to/from Braille us-437 code."
 TYPE = app.cli.Node.TOOL
 CLASS = Braille

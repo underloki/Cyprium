@@ -52,6 +52,7 @@ class Node:
             self.name = ""
             self.tip = ""
             self.type = None
+        self.clean_name = self.name.replace('*', '').replace('$', '')
         if hasattr(module, "CLASS"):
             self.obj = module.CLASS(self.tree)
         else:
@@ -87,6 +88,19 @@ class Node:
                 return True
         return False
 
+    def sort_children(self):
+        """Sort children nodes (first categorie, then tools ones)."""
+        t_cats = []
+        t_tools = []
+        for c in self.children:
+            c.sort_children()
+            if c.type == self.CATEGORY:
+                t_cats.append(c)
+            else:
+                t_tools.append(c)
+        key = lambda c: c.clean_name
+        self.children = sorted(t_cats, key=key) + sorted(t_tools, key=key)
+
 
 class Tree:
     """Class representing the whole tool tree."""
@@ -100,33 +114,33 @@ class Tree:
 
     # XXX Find a nice way to avoid > 80 char lines...
     MSG_LOGO = "\n" \
-    "          01000   011  011  110010   111000   00111001 00    11 0      1        \n"\
-    "         00   10   11  10   10   10  11   01     10    10    01 00    00        \n"\
-    "        00     1    1000    10    01 11    10    01    00    10 000  001        \n"\
-    "        01           01     00   01  10   10     00    01    10 01 01 00        \n"\
-    "        10           00     00010    010000      11    00    00 10    11        \n"\
-    "        00     0     11     01       10    1     01    10    11 00    00        \n"\
-    "         10   11     00     10       00    11    00     1    0  10    11        \n"\
-    "          01101      01     11       10    01 00100000   0010   00    01        \n"
+    "     01000   011  011  110010   111000   00111001 00    11 0      1   \n"\
+    "    00   10   11  10   10   10  11   01     10    10    01 00    00   \n"\
+    "   00     1    1000    10    01 11    10    01    00    10 000  001   \n"\
+    "   01           01     00   01  10   10     00    01    10 01 01 00   \n"\
+    "   10           00     00010    010000      11    00    00 10    11   \n"\
+    "   00     0     11     01       10    1     01    10    11 00    00   \n"\
+    "    10   11     00     10       00    11    00     1    0  10    11   \n"\
+    "     01101      01     11       10    01 00100000   0010   00    01   \n"
 
     MSG_WELCOME = "" \
-    "################################################################################\n"\
-    "#                                                                              #\n"\
-    "#   Cyprium is a multifunction cryptographic, steganographic and               #\n"\
-    "#   cryptanalysis tool developped by members of The Hackademy.                 #\n"\
-    "#   French White Hat Hackers Community!                                        #\n"\
-    "#   www.thehackademy.fr                                                        #\n"\
-    "#   Copyright © 2012                                                           #\n"\
-    "#   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,           #\n"\
-    "#   afranck64, Tyrtamos.                                                       #\n"\
-    "#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,                 #\n"\
-    "#   madhatter@thehackademy.fr, mont29@thehackademy.fr,                         #\n"\
-    "#   irc.thehackademy.fr #cyprium, irc.thehackademy.fr #hackademy               #\n"\
-    "#                                                                              #\n"\
-    "#   This is free software under GNU GPL licence.                               #\n"\
-    "#   You are welcome to redistribute it under the GNU GPL conditions.           #\n"\
-    "#                                                                              #\n"\
-    "################################################################################\n"\
+    "######################################################################\n"\
+    "#                                                                    #\n"\
+    "#   Cyprium is a multifunction cryptographic, steganographic and     #\n"\
+    "#   cryptanalysis tool developped by members of The Hackademy.       #\n"\
+    "#   French White Hat Hackers Community!                              #\n"\
+    "#   www.thehackademy.fr                                              #\n"\
+    "#   Copyright © 2012                                                 #\n"\
+    "#   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred, #\n"\
+    "#   afranck64, Tyrtamos.                                             #\n"\
+    "#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,       #\n"\
+    "#   madhatter@thehackademy.fr, mont29@thehackademy.fr,               #\n"\
+    "#   irc.thehackademy.fr #cyprium, irc.thehackademy.fr #hackademy     #\n"\
+    "#                                                                    #\n"\
+    "#   This is free software under GNU GPL licence.                     #\n"\
+    "#   You are welcome to redistribute it under the GNU GPL conditions. #\n"\
+    "#                                                                    #\n"\
+    "######################################################################\n"\
 
 
     ###########################################################################
@@ -134,6 +148,7 @@ class Tree:
     ###########################################################################
     def __init__(self, root):
         self._root = Node(self, None, root)
+        self._root.sort_children()
         self._current = self._root
 
     ###########################################################################
@@ -213,9 +228,9 @@ class Tree:
         else:
             def rec(tree, lines, lvl, node):
                 if node.type == Node.CATEGORY:
-                    elts = ["    " * lvl, "/", node.name.replace('*', '')]
+                    elts = ["    " * lvl, "/", node.clean_name]
                 else:
-                    elts = ["    " * lvl, "* ", node.name.replace('*', '')]
+                    elts = ["    " * lvl, "* ", node.clean_name]
                 if tree._current == node:
                     elts.append(self.CURR_MARKER)
                 lines.append("".join(elts))

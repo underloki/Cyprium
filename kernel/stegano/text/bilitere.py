@@ -67,7 +67,8 @@ def int_to_bilitere(i):
     return "{:0>5b}".format(i).replace('0', 'A').replace('1', 'B')
 
 
-MAP = {k: int_to_bilitere(v) for v, k in enumerate(string.ascii_lowercase) if k not in 'jv'}
+MAP = {k: int_to_bilitere(v) for v, k in enumerate(string.ascii_lowercase)
+                                      if k not in 'jv'}
 MAP['j'] = MAP['i']
 MAP['v'] = MAP['u']
 #for k, v in MAP.items():
@@ -89,8 +90,8 @@ def encrypt(text):
     c_text = set(text)
     c_allowed = set(string.ascii_lowercase)
     if not (c_text <= c_allowed):
-        raise ValueError("Text contains unallowed chars (only lowercase strict "
-                         "ASCII chars are allowed): '{}'!"
+        raise ValueError("Text contains unallowed chars (only lowercase "
+                         "strict ASCII chars are allowed): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
     return do_encrypt(text)
 

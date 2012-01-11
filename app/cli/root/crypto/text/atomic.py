@@ -83,7 +83,8 @@ class Atomic(app.cli.Tool):
         ui.message("Data to encrypt: {}".format("HOW ARE YOU NICEDAYISNTIT"))
         out = atomic.encrypt("HOW ARE YOU NICEDAYISNTIT")
         ui.message("Atomic encrypted data:\n    {}"
-                   "".format("\n    ".join(utils.format_multiwords(out, sep="  "))))
+                   "".format("\n    ".join(utils.format_multiwords(out,
+                                                                   sep="  "))))
         ui.message("")
 
         htext = "90 53 16  53 16  A  Q 92 53 52  16 53 M 15 L E  52 16 T"
@@ -102,7 +103,8 @@ class Atomic(app.cli.Tool):
         out = atomic.encrypt("HOW ARE YOU NICEDAYISNTIT", exhaustive=True,
                              min_encrypt=0.8)
         ui.message("Atomic exhaustive encrypted data (threshold: 0.8):\n    {}"
-                   "".format("\n    ".join(utils.format_multiwords(out, sep="  "))))
+                   "".format("\n    ".join(utils.format_multiwords(out,
+                                                                   sep="  "))))
         ui.message("")
 
         htext = "1874  A75  39892  75358DA39535081T"
@@ -169,7 +171,8 @@ class Atomic(app.cli.Tool):
                     # Will also raise an exception if data is None.
                     txt = atomic.encrypt(txt, exhaustive=exhaustive,
                                          min_encrypt=threshold)
-                    txt = "\n    " + "\n    ".join(utils.format_multiwords(txt))
+                    txt = "\n    " + \
+                          "\n    ".join(utils.format_multiwords(txt))
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -218,7 +221,7 @@ class Atomic(app.cli.Tool):
                 return
 
 
-NAME = "Ato*mic"
+NAME = "ato*mic"
 TIP = "Tool to convert text to/from atomic code."
 TYPE = app.cli.Node.TOOL
 CLASS = Atomic

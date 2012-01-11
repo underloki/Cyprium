@@ -183,7 +183,7 @@ class Bilitere(app.cli.Tool):
                 return
 
 
-NAME = "B*ilitere"
+NAME = "b*ilitere"
 TIP = "Tool to convert text to/from bilitere code."
 TYPE = app.cli.Node.TOOL
 CLASS = Bilitere

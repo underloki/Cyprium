@@ -103,14 +103,12 @@ class ChineseCipher(app.cli.Tool):
                    "".format(chinesecipher.decipher(htext)))
         ui.message("")
 
-
         ui.message("--- Deciphering Digits version ---")
         htext = "45 23 20  23 10 12 32 10 13 20 34 60"
         ui.message("ChineseCipher text used as input: {}".format(htext))
         ui.message("The deciphered data is: {}"
                    "".format(chinesecipher.decipher(htext)))
         ui.message("")
-
 
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to encrypt must be acsii lowercase "
@@ -151,7 +149,7 @@ class ChineseCipher(app.cli.Tool):
                 options = [((True, False, False), "*Chinese", ""),
                            ((False, True, False), "*Samurai", ""),
                            ((False, False, True), "*Digits", ""),
-                           ((True, True, True), "or *all of them", ""),]
+                           ((True, True, True), "or *all of them", "")]
                 chinese, samurai, digits = \
                          ui.get_choice("What version(s) do you want to get, ",
                                        options, oneline=True)
