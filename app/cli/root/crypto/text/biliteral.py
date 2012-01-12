@@ -39,25 +39,26 @@ if __name__ == "__main__":
                                                  "..")))
 
 import app.cli
-import kernel.crypto.text.braille as braille
+import kernel.crypto.text.biliteral as biliteral
+import kernel.utils as utils
 
 
-class Braille(app.cli.Tool):
-    """CLI wrapper for braille crypto text tool."""
+class Biliteral(app.cli.Tool):
+    """CLI wrapper for biliteral crypto text tool."""
     def main(self, ui):
-        ui.message("********** Welcome to Cyprium.Braille! **********")
+        ui.message("********** Welcome to Cyprium.Biliteral! **********")
         quit = False
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
                        (self.cypher, "*cypher",
-                                     "Cypher some text in Braille"),
+                                     "Cypher some text in biliteral"),
                        (self.decypher, "d*ecypher",
-                                       "Decypher Braille into text"),
+                                       "Decypher biliteral into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Braille")]
-            msg = "Cyprium.Braille"
+                       ("quit", "*quit", "Quit Cyprium.Biliteral")]
+            msg = "Cyprium.Biliteral"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
@@ -70,7 +71,7 @@ class Braille(app.cli.Tool):
         ui.message("Back to Cyprium menus! Bye.")
 
     def about(self, ui):
-        ui.message(braille.__about__)
+        ui.message(biliteral.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
     def demo(self, ui):
@@ -79,40 +80,39 @@ class Braille(app.cli.Tool):
         ui.message("")
 
         ui.message("--- Cyphering ---")
-        text = "Hello Wolrd !"
-        ui.message("Data to cypher: {}\n".format(text))
-        ui.message("Braille cyphered data: {}"
-                   "".format(braille.cypher(text)))
+        text = "snoworrain"
+        ui.message("Data to cypher: {}".format(text))
+        out = biliteral.cypher(text)
+        ui.message("Biliteral cyphered data: {}".format(out))
         ui.message("")
 
         ui.message("--- Decyphering ---")
-        htext = "13457 24 14 15  2345 15 234 2345 6  24 234 1345 3457 2345  " \
-                "24 2345 168 1456"
-        ui.message("Braille text used as input: {}".format(htext))
-        ui.message("The decyphered data is: {}"
-                   "".format(braille.decypher(htext)))
+        htext = "BABAAABAAABAABAABAAABAABBBAABBAABBBAABAAAABBBAAAAAAAABA" \
+                "ABABAAAAAAAAABBAABAAABBAABBAAAAAABBABBBABAABBAABABBAAAB"
+        ui.message("Biliteral text used as input: {}".format(htext))
+        out = biliteral.decypher(htext)
+        ui.message("The decyphered data is: {}".format(out))
         ui.message("")
 
         ui.message("--- Won’t work ---")
-        text = "Japanese : 日本の"
-        ui.message("+ The input text to cypher must be cp1252 (Windows "
-                   "8bit occidental charset) chars only:")
-        ui.message("Data to cypher: {}\n".format(text))
+        ui.message("+ The input text to cypher must be ASCII lowercase "
+                   "chars only:")
+        ui.message("Data to cypher: {}\n".format("Hello World !"))
         try:
-            ui.message("Braille cyphered data: {}"
-                       "".format(braille.cypher(text)))
+            out = biliteral.cypher("Hello World !")
+            ui.message("Biliteral cyphered data: {}"
+                       "".format(out))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
         ui.message("")
 
-        ui.message("+ The input text to decypher must be valid Braille "
-                   "us-437 codes only:")
-        htext = "13447 24 14 15  2345 15 234 2345 6  24 234 1345 3457 2345  " \
-                "24 2345 1778 1456"
-        ui.message("Braille text used as input: {}".format(htext))
+        ui.message("+ The input text to decypher must be valid Biliteral:")
+        htext = "AABBBBBAABABBBBAAAABABABBBAABABBAAAABABABABBAABB"
+        ui.message("Biliteral text used as input: {}".format(htext))
         try:
-            ui.message("The decyphered data is: {}"
-                       "".format(braille.decypher(htext)))
+            out = biliteral.decypher(htext)
+            ui.message("Biliteral decyphered data: {}"
+                       "".format(out))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
         ui.message("")
@@ -127,13 +127,16 @@ class Braille(app.cli.Tool):
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to cypher to Braille")
+                exhaustive = False
+                threshold = 0.9
+                txt = ui.text_input("Text to cypher to Biliteral",
+                                    sub_type=ui.LOWER)
                 if txt is None:
                     break  # Go back to main Cypher menu.
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = braille.cypher(txt)
+                    txt = biliteral.cypher(txt)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -141,7 +144,7 @@ class Braille(app.cli.Tool):
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
-                                         "Braille, please", options,
+                                         "Biliteral, please", options,
                                          oneline=True)
                     if answ in {None, "menu"}:
                         return  # Go back to main Sema menu.
@@ -149,7 +152,7 @@ class Braille(app.cli.Tool):
 
             if done:
                 ui.text_output("Text successfully converted", txt,
-                               "Braille version of text")
+                               "Biliteral version of text")
 
             options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
@@ -163,11 +166,12 @@ class Braille(app.cli.Tool):
         ui.message("===== Decypher Mode =====")
 
         while 1:
-            txt = ui.text_input("Please choose some Braille text")
+            txt = ui.text_input("Please choose some Biliteral text",
+                                sub_type=ui.UPPER)
 
             try:
                 ui.text_output("Text successfully decyphered",
-                               braille.decypher(txt),
+                               biliteral.decypher(txt),
                                "The decyphered text is")
             except Exception as e:
                 ui.message(str(e), ui.ERROR)
@@ -179,14 +183,14 @@ class Braille(app.cli.Tool):
                 return
 
 
-NAME = "b*raille"
-TIP = "Tool to convert text to/from Braille us-437 code."
+NAME = "b*iliteral"
+TIP = "Tool to convert text to/from biliteral code."
 TYPE = app.cli.Node.TOOL
-CLASS = Braille
+CLASS = Biliteral
 
 # Allow tool to be used directly, without using Cyprium menu.
 if __name__ == "__main__":
     import app.cli.ui
     ui = app.cli.ui.UI()
-    tree = app.cli.NoTree("Braille")
-    Braille(tree).main(ui)
+    tree = app.cli.NoTree("Biliteral")
+    Biliteral(tree).main(ui)
