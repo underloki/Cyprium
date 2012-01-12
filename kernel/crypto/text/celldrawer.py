@@ -44,58 +44,62 @@ __version__ = "0.5.0"
 __date__ = "2012/01/08"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"===== About Celldrawer =====\n\n" \
-"Celldrawer cyphers/decyphers “celldrawer” code.\n\n "\
-"This code only accepts lowercase ASCII letters, and represents them by\n" \
-"phone digits (#*0123456789), so that each code “draws” its letter on a\n" \
-"4×3 phone keyboard.\n\n" \
-"            2  \n" \
-"          4   6\n" \
-"          7 8 9\n" \
-"E.G.: A:  *   #\n\n" \
-"Cyprium.Celldrawer version {} ({}).\n" \
-"Licence GPL3\n" \
-"software distributed on the site: http://thehackademy.fr\n\n" \
-"Current execution context:\n" \
-"    Operating System: {}\n" \
-"    Python version: {}" \
-"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+"""===== About Celldrawer =====
+Celldrawer cyphers/decyphers “celldrawer” code.
+
+This code only accepts lowercase ASCII letters, and represents them by
+phone digits (#*0123456789), so that each code “draws” its letter on a
+4×3 phone keyboard.
+
+            2
+          4   6
+          7 8 9
+E.G.: A:  *   #
+
+Cyprium.Celldrawer version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-EDICT = {"a": "*74269#8",
-         "b": "*741236589#0",
-         "c": "32470#",
-         "d": "*7412690",
-         "e": "321457*0#",
-         "f": "*741238",
-         "g": "32147*0#98",
-         "h": "147*369#8",
-         "i": "12358*0#",
-         "j": "123580*",
-         "k": "147*538#",
-         "l": "147*0#",
-         "m": "*7415369#",
-         "n": "*74158#963",
-         "o": "*7412369#0",
-         "p": "*74123698",
-         "q": "#96321478",
-         "r": "*7412368#",
-         "s": "324590*",
-         "t": "123580",
-         "u": "147*0#963",
-         "v": "1470963",
-         "w": "147*8#963",
-         "x": "158#*3",
-         "y": "15380",
-         "z": "12357*0#",
-         " ": ""}
+MAP = {"a": "*74269#8",
+       "b": "*741236589#0",
+       "c": "32470#",
+       "d": "*7412690",
+       "e": "321457*0#",
+       "f": "*741238",
+       "g": "32147*0#98",
+       "h": "147*369#8",
+       "i": "12358*0#",
+       "j": "123580*",
+       "k": "147*538#",
+       "l": "147*0#",
+       "m": "*7415369#",
+       "n": "*74158#963",
+       "o": "*7412369#0",
+       "p": "*74123698",
+       "q": "#96321478",
+       "r": "*7412368#",
+       "s": "324590*",
+       "t": "123580",
+       "u": "147*0#963",
+       "v": "1470963",
+       "w": "147*8#963",
+       "x": "158#*3",
+       "y": "15380",
+       "z": "12357*0#",
+       " ": ""}
 
-DDICT = {v: k for k, v in EDICT.items()}
+R_MAP = utils.revert_dict(MAP)
 
 
 def do_cypher(text):
     """Function to convert some text to "celldrawer" text."""
-    return ' '.join([EDICT[c] for c in text])
+    return ' '.join([MAP[c] for c in text])
 
 
 def cypher(text):
@@ -123,10 +127,10 @@ def do_decypher(text):
         w.rstrip().lstrip()
         chars = []
         for c in w.split(' '):
-            if c not in DDICT:
+            if c not in R_MAP:
                 raise Exception("The \"{}\" code is not a valid celldrawer one"
                                 "".format(c))
-            chars.append(DDICT[c])
+            chars.append(R_MAP[c])
         words.append(''.join(chars))
     return ' '.join(words)
 

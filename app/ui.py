@@ -62,7 +62,7 @@ class UI:
         """
         pass
 
-    def get_data(self, message="", sub_type=STRING, allow_void = False,
+    def get_data(self, message="", sub_type=STRING, allow_void=False,
                  completion=None):
         """
         Get some data from the user.

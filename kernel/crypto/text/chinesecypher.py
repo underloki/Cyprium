@@ -44,21 +44,26 @@ __version__ = "0.1.0"
 __date__ = "2012/01/10"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"===== About ChineseCipher =====\n\n" \
-"ChineseCipher allows you to cypher and decypher ASCII lowercase text \n" \
-"into Chinese or Samurai (or their digit version) ciphers.\n\n" \
-"Note that the space-char is cyphered with 2 spaces.\n\n" \
-"For example, “the hackademy”:\n" \
-"Chinese: “————||||| ——||| ——  ——||| — —|| ———|| — —||| —— ———|||| ——————”\n" \
-"Samurai: “||||————— ||——— ||  ||——— | |—— |||—— | |——— || |||———— ||||||”\n" \
-"Digits:  “45 23 20  23 10 12 32 10 13 20 34 60”\n\n" \
-"Cyprium.ChineseCipher version {} ({}).\n" \
-"Licence GPL3\n" \
-"software distributed on the site: http://thehackademy.fr\n\n" \
-"Current execution context:\n" \
-"    Operating System: {}\n" \
-"    Python version: {}" \
-"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+"""===== About ChineseCipher =====
+
+ChineseCipher allows you to cypher and decypher ASCII lowercase text
+into Chinese or Samurai (or their digit version) ciphers.
+
+Note that the space-char is cyphered with 2 spaces.
+
+For example, “the hackademy”:
+    Chinese: “————||||| ——||| ——  ——||| — —|| ———|| — —||| —— ———|||| ——————”
+    Samurai: “||||————— ||——— ||  ||——— | |—— |||—— | |——— || |||———— ||||||”
+    Digits:  “45 23 20  23 10 12 32 10 13 20 34 60”
+
+Cyprium.ChineseCipher version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
 # Reference vowel first, then shift from that vowel.

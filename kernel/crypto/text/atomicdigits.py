@@ -57,7 +57,7 @@ remain unciphered. Spaces are allowed and coded as double-spaces.
 
 You can also use another cypher algorithm, “exhaustive”, that will, for each
 word, check *all* possible chipering, and output (again, for each word) all
-solutions giving a cyphering threshold (i.e. nbr of cyphered chars/total nbr 
+solutions giving a cyphering threshold (i.e. nbr of cyphered chars/total nbr
 of chars) higher than the given one ([0.0 .. 1.0]).
 
 E.g. for “NITROGEN”, with a threshold of 0.5 (at least half of the letters
@@ -460,7 +460,7 @@ def main():
                 print(text)
         except Exception as e:
             raise e
-            utils.msgerr()#(e, "\n\n")
+#            print(e, "\n\n")
         finally:
             if args.ifile:
                 args.ifile.close()

@@ -80,7 +80,7 @@ def msgerr():
 def grouper(iterable, n, fillvalue=None):
     """
     Return an iterator of n-length chunks of iterable.
-    
+
     >>> grouper('ABCDEFG', 3, 'x')
     ABC DEF Gxx
     """
@@ -91,10 +91,10 @@ def grouper(iterable, n, fillvalue=None):
 def grouper2(lst, n, gap=0):
     """
     Return an iterator of n-length chunks of iterable.
-    
+
     >>> grouper('ABCDEFG', 3, 1)
     ABC EFG
-    
+
     Compared to grouper, it has no fillvalue (thus returning a truncated
     last element), and lst must be subscriptable (i.e. not an iterator).
     But you can get groups of n elements separated (spaced) by gap elements.

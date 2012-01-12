@@ -44,18 +44,21 @@ __version__ = "0.5.0"
 __date__ = "2012/01/08"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"===== About Binary =====\n\n" \
-"Binary is a simple binary/text converter. It allows you to cypher and\n" \
-"decypher text to/from binary. It can also cut the output into binary\n" \
-"separated by bytes .You can use special characters and accents, if you\n" \
-"specify a compatible encoding (e.g. utf-8).\n\n" \
-"Cyprium.Binary version {} ({}).\n" \
-"Licence GPL3\n" \
-"software distributed on the site: http://thehackademy.fr\n\n" \
-"Current execution context:\n" \
-"    Operating System: {}\n" \
-"    Python version: {}" \
-"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+"""===== About Binary =====
+
+Binary is a simple binary/text converter. It allows you to cypher and
+decypher text to/from binary. It can also cut the output into binary
+separated by bytes .You can use special characters and accents, if you
+specify a compatible encoding (e.g. utf-8).
+
+Cyprium.Binary version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
 def do_cypher(text, codec):
@@ -107,8 +110,8 @@ def main():
     # The argparse is much nicer than directly using sys.argv...
     # Try 'program.py -h' to see! ;)
     import argparse
-    parser = argparse.ArgumentParser(description=""
-                                     "Cypher/decypher some text in binary form.")
+    parser = argparse.ArgumentParser(description="Cypher/decypher some text "
+                                                 "in binary form.")
     sparsers = parser.add_subparsers(dest="command")
 
     hide_parser = sparsers.add_parser('cypher', help="Cypher data in binary.")

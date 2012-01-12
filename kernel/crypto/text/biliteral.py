@@ -45,20 +45,25 @@ __version__ = "0.5.0"
 __date__ = "2012/01/10"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"===== About Biliteral =====\n\n" \
-"Biliteral is a steganographic (!) tool which can cypher text in the.\n" \
-"biliteral code, which is a binary encoding using A and B as digits.\n\n" \
-"Cypher input can be any string containing ASCII lowercase letters only\n" \
-"(no spaces), decypher input must be an integer number of groups of five\n" \
-"(A,B) digits.\n\n" \
-"Note that [ij] and [uv] have the same biliteral codes.\n\n" \
-"Cyprium.Biliteral version {} ({}).\n" \
-"Licence GPL3\n" \
-"software distributed on the site: http://thehackademy.fr\n\n" \
-"Current execution context:\n" \
-"    Operating System: {}\n" \
-"    Python version: {}" \
-"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+"""===== About Biliteral =====
+
+Biliteral is a steganographic (!) tool which can cypher text in the.
+biliteral code, which is a binary encoding using A and B as digits.
+
+Cypher input can be any string containing ASCII lowercase letters only
+(no spaces), decypher input must be an integer number of groups of five
+(A,B) digits.
+
+Note that [ij] and [uv] have the same biliteral codes.
+
+Cyprium.Biliteral version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
 def int_to_biliteral(i):

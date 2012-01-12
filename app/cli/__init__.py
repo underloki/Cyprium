@@ -144,9 +144,8 @@ class Tree:
 
 
     WARNINGS = ""
-    if sys.platform == 'darwin': # = Mac OS X
+    if sys.platform == 'darwin':  # = Mac OS X
         WARNINGS = "Mac OS X console: at most 1024 chars per entry!"
-
 
     ###########################################################################
     # Init.

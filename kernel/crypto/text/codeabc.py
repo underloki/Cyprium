@@ -44,55 +44,59 @@ __version__ = "0.5.0"
 __date__ = "2012/01/08"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"===== About CodeABC =====\n\n" \
-"CodeABD cyphers/decyphers the phone keyboard code.\n\n" \
-"This code only accepts lowercase ASCII letters and space, and represents \n" \
-"them by phone codes like 0 for space, 111 for 'c', 5 for 'j', etc..\n\n" \
-"Cyprium.CodeABC version {} ({}).\n" \
-"Copyright Jean-Paul Vidal alias \"Tyrtamos\" 2012\n" \
-"Licence GPL3\n" \
-"software distributed on the site: http://thehackademy.fr\n\n" \
-"Current execution context:\n" \
-"    Operating System: {}\n" \
-"    Python version: {}" \
-"".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+"""===== About CodeABC =====
+
+CodeABD cyphers/decyphers the phone keyboard code.
+
+This code only accepts lowercase ASCII letters and space, and represents
+them by phone codes like 0 for space, 111 for 'c', 5 for 'j', etc.
+
+Cyprium.CodeABC version {} ({}).
+Copyright Jean-Paul Vidal alias \"Tyrtamos\" 2012
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-d_cypher = {'a': '2',
-             'b': '22',
-             'c': '222',
-             'd': '3',
-             'e': '33',
-             'f': '333',
-             'g': '4',
-             'h': '44',
-             'i': '444',
-             'j': '5',
-             'k': '55',
-             'l': '555',
-             'm': '6',
-             'n': '66',
-             'o': '666',
-             'p': '7',
-             'q': '77',
-             'r': '777',
-             's': '7777',
-             't': '8',
-             'u': '88',
-             'v': '888',
-             'w': '9',
-             'x': '99',
-             'y': '999',
-             'z': '9999',
-             ' ': '0'}
+MAP = {'a': '2',
+       'b': '22',
+       'c': '222',
+       'd': '3',
+       'e': '33',
+       'f': '333',
+       'g': '4',
+       'h': '44',
+       'i': '444',
+       'j': '5',
+       'k': '55',
+       'l': '555',
+       'm': '6',
+       'n': '66',
+       'o': '666',
+       'p': '7',
+       'q': '77',
+       'r': '777',
+       's': '7777',
+       't': '8',
+       'u': '88',
+       'v': '888',
+       'w': '9',
+       'x': '99',
+       'y': '999',
+       'z': '9999',
+       ' ': '0'}
 
-d_decypher = {v: k for k, v in d_cypher.items()}
+R_MAP = utils.revert_dict(MAP)
 
 
 #############################################################################
 def do_cypher(text):
     """Cypher text with codeABC allowed chars: [a..z] + space."""
-    return ' '.join([d_cypher[c] for c in text])
+    return ' '.join([MAP[c] for c in text])
 
 
 def cypher(text):
@@ -102,7 +106,7 @@ def cypher(text):
         raise Exception("No text given!")
     # Check for unallowed chars…
     c_text = set(text)
-    c_allowed = set(d_cypher.keys())
+    c_allowed = set(MAP.keys())
     if not (c_text <= c_allowed):
         raise Exception("Text contains unallowed chars (only space and "
                         "lowercase strict ASCII chars are allowed): '{}'!"
@@ -113,7 +117,7 @@ def cypher(text):
 #############################################################################
 def do_decypher(text):
     """Decypher text using codeABC"""
-    return ''.join([d_decypher[c] for c in text.split()])
+    return ''.join([R_MAP[c] for c in text.split()])
 
 
 def decypher(text):
@@ -129,7 +133,7 @@ def decypher(text):
                         "".format("', '".join(sorted(c_text - c_allowed))))
     # Check for invalid codes...
     c_text = set(text.split())
-    c_allowed = set(d_decypher.keys())
+    c_allowed = set(R_MAP.keys())
     if not (c_text <= c_allowed):
         raise Exception("Text contains invalid codeABC codes: '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
