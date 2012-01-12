@@ -143,6 +143,11 @@ class Tree:
     "######################################################################\n"\
 
 
+    WARNINGS = ""
+    if sys.platform == 'darwin': # = Mac OS X
+        WARNINGS = "Mac OS X console: at most 1024 chars per entry!"
+
+
     ###########################################################################
     # Init.
     ###########################################################################
@@ -161,6 +166,8 @@ class Tree:
         ui.message(self.MSG_LOGO)
         time.sleep(1)
         ui.message(self.MSG_WELCOME)
+        if self.WARNINGS:
+            ui.message(self.WARNINGS, ui.WARNING)
         time.sleep(1)
 
         quit = False
@@ -219,7 +226,7 @@ class Tree:
         chain = [self._current]
         while chain[0].parent:
             chain.insert(0, chain[0].parent)
-        return "/".join([el.name.replace('*', '') for el in chain])
+        return "/".join([n.clean_name for n in chain])
 
     def print_tree(self, ui, mode=COMPACT):
         """Print the whole tree, with current node if set."""

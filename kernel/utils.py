@@ -69,15 +69,38 @@ def revert_dict(d, exceptions={}):
     return {v: exceptions.get(v, k) for k, v in d.items()}
 
 
+def msgerr():
+    """Returns a clear error message: error name + error message."""
+    return " ".join((sys.exc_info()[0].__name__, sys.exc_info()[1]))
+
+
 ###############################################################################
 # Iterators/sets operations.
 ###############################################################################
 def grouper(iterable, n, fillvalue=None):
-    """Return an iterator of n-length chunks of iterable.
-       grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
+    """
+    Return an iterator of n-length chunks of iterable.
+    
+    >>> grouper('ABCDEFG', 3, 'x')
+    ABC DEF Gxx
     """
     args = [iter(iterable)] * n
     return itertools.zip_longest(fillvalue=fillvalue, *args)
+
+
+def grouper2(lst, n, gap=0):
+    """
+    Return an iterator of n-length chunks of iterable.
+    
+    >>> grouper('ABCDEFG', 3, 1)
+    ABC EFG
+    
+    Compared to grouper, it has no fillvalue (thus returning a truncated
+    last element), and lst must be subscriptable (i.e. not an iterator).
+    But you can get groups of n elements separated (spaced) by gap elements.
+    Also, it is quicker than grouper, except for small n (tipically <10).
+    """
+    return (lst[i:i + n] for i in range(0, len(lst), n + gap))
 
 
 def nwise(iterable, n=1):

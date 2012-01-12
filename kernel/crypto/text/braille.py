@@ -329,7 +329,7 @@ def do_cypher(text):
 def cypher(text):
     """Just a wrapper around do_cypher, with some checks."""
     if not text:
-        raise Exception("no text given!")
+        raise Exception("No text given!")
     # Check for unallowed chars…
     c_text = set(text)
     c_allowed = set(FILTER.keys())

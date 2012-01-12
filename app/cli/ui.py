@@ -176,7 +176,7 @@ class UI(app.ui.UI):
             # If no '*' or '$' found, considered as "static label".
             if key_idx >= 0:
                 key = name[key_idx + 1].lower()
-                name = name[:key_idx] + '(' + key.upper() + ')' + \
+                name = name[:key_idx] + '[' + key + ']' + \
                        name[key_idx + 2:]
                 if do_default:
                     if "" in chc_map:
@@ -185,13 +185,13 @@ class UI(app.ui.UI):
                                      "".format(name), self.WARNING)
                         continue
                     chc_map[""] = c[0]
-                    name = " ".join((name, "[default]"))
+                    name = " ".join((name, "(default)"))
                     do_default = False
-                if key in chc_map:
+                if key.lower() in chc_map:
                     self.message("Option {} wants the already used '{}' key!"
-                                 "".format(name, key), self.WARNING)
+                                 "".format(name, key.lower()), self.WARNING)
                     continue
-                chc_map[key] = c[0]
+                chc_map[key.lower()] = c[0]
             if c[2]:
                 msg_chc.append("{} ({})".format(name, c[2]))
             else:

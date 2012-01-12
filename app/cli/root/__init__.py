@@ -28,6 +28,6 @@
 
 import app.cli
 
-NAME = ""
+NAME = "cyprium"
 TIP = "Root of Cyprium!"
 TYPE = app.cli.Node.CATEGORY
