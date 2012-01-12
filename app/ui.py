@@ -62,33 +62,38 @@ class UI:
         """
         pass
 
-    def get_data(self, message="", sub_type=STRING, completion=None):
-        """Get some data from the user.
-           Will ensure data is valid given sub_type, and call
-           completion callback if user hits <tab>.
-           completion(data_already_entered=None)
+    def get_data(self, message="", sub_type=STRING, allow_void = False,
+                 completion=None):
+        """
+        Get some data from the user.
+        Will ensure data is valid given sub_type, and call
+        completion callback if user hits <tab>.
+            completion(data_already_entered=None)
+        If allow_void is True, return None or "" in case user types nothing,
+        (else print a menu).
         """
         return None
 
     def get_choice(self, message="", choices=[], start_opt="", end_opt="",
                    oneline=False):
-        """Give some choices to the user, and get its answer.
-           Message is printed once. Then, choices is a list of tuples:
-               (returned_key_str_or_obj, label, tip)
-               where:
-                   returned_key_str_or_obj: unique str or hashable object.
-                                            void string for separators.
-                   label: name of the entry, with a '*' before the key letter.
-                          You can specify ONE default option by using rather
-                          a '$' before the letter.
-                          You can specify a multi-chars key by putting another
-                          * (or $) after the last letter of that key.
-                   tip: short help.
-               One choice a line.
-           opt_start and opt_end are optional string to put before/after the
-           option list.
-           If the optional oneline is True, all menu choices are concatenated
-           on a single line, e.g. "Go back to (M)enu or (T)ry again!".
+        """
+        Give some choices to the user, and get its answer.
+        Message is printed once. Then, choices is a list of tuples:
+            (returned_key_str_or_obj, label, tip)
+            where:
+                returned_key_str_or_obj: unique str or hashable object.
+                                         void string for separators.
+                label: name of the entry, with a '*' before the key letter.
+                       You can specify ONE default option by using rather
+                       a '$' before the letter.
+                       You can specify a multi-chars key by putting another
+                       * (or $) after the last letter of that key.
+                tip: short help.
+            One choice a line.
+        opt_start and opt_end are optional string to put before/after the
+        option list.
+        If the optional oneline is True, all menu choices are concatenated
+        on a single line, e.g. "Go back to (M)enu or (T)ry again!".
         """
         # Return the default element, if present.
         for c in choices:
@@ -161,7 +166,7 @@ class UI:
                 if ifile:
                     ifile.close()
 
-    def text_input(self, msg, sub_type=STRING):
+    def text_input(self, msg, sub_type=STRING, allow_void=False):
         """Helper to get some text, either from console or from a file."""
         while 1:
             options = [("console", "directly from $console", ""),
@@ -170,7 +175,7 @@ class UI:
                                    oneline=True)
             if answ == "console":
                 return self.get_data("Please type the text: ",
-                                     sub_type=sub_type)
+                                     sub_type=sub_type, allow_void=allow_void)
             elif answ == "file":
                 ret = self.text_file_read()
                 if sub_type == self.UPPER:

@@ -71,7 +71,7 @@ def revert_dict(d, exceptions={}):
 
 def msgerr():
     """Returns a clear error message: error name + error message."""
-    return " ".join((sys.exc_info()[0].__name__, sys.exc_info()[1]))
+    return " ".join((sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
 
 ###############################################################################

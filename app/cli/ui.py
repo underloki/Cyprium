@@ -110,14 +110,30 @@ class UI(app.ui.UI):
     ###########################################################################
     # Text input.
     ###########################################################################
-    def get_data(self, message="", sub_type=app.ui.UI.STRING, completion=None):
-        """Get some data from the user.
-           Will ensure data is valid given sub_type, and call
-           completion callback if user hits <tab>.
-           completion(data_already_entered=None)
+    def get_data(self, message="", sub_type=app.ui.UI.STRING, allow_void=False,
+                 completion=None):
+        """
+        Get some data from the user.
+        Will ensure data is valid given sub_type, and call
+        completion callback if user hits <tab>.
+            completion(data_already_entered=None)
+        If allow_void is True, return None or "" in case user types nothing,
+        (else print a menu).
         """
         while 1:
             data = self.cinput(message)
+            while not data:
+                if allow_void:
+                    return None
+                else:
+                    msg = "Nothing typed".format(data)
+                    options = [("retry", "$retry", ""),
+                               ("abort", "or *abort", "")]
+                    answ = self.get_choice(msg, options, oneline=True)
+                    if answ == "retry":
+                        data = self.cinput(message)
+                    else:
+                        return None
             if sub_type == app.ui.UI.LOWER:
                 t_data = data.lower()
                 if t_data != data:
@@ -232,6 +248,10 @@ class UI(app.ui.UI):
         # TODO: use a getch()-like!
         key = self.cinput(message).lower()
         while key not in chc_map:
-            key = self.cinput("Invalid choice, please try again: ").lower()
+            if key == "+m":
+                key = self.cinput(message).lower()
+            else:
+                key = self.cinput("Invalid choice, please try "
+                                  "(or show [+m]enu) again: ").lower()
 
         return chc_map[key]
