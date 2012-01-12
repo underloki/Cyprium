@@ -81,6 +81,8 @@ class UI:
                    label: name of the entry, with a '*' before the key letter.
                           You can specify ONE default option by using rather
                           a '$' before the letter.
+                          You can specify a multi-chars key by putting another
+                          * (or $) after the last letter of that key.
                    tip: short help.
                One choice a line.
            opt_start and opt_end are optional string to put before/after the

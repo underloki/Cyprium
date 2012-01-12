@@ -176,8 +176,15 @@ class Tree:
                 self._current.obj.main(ui)
             else:
                 options = []
+                idx = 1
                 for n in self._current.children:
-                    options.append((n, n.name, n.tip))
+                    if n.type == Node.TOOL:
+                        name = "*{}*{} {}".format(idx, " " if idx < 10 else "",
+                                                  n.clean_name)
+                        idx += 1
+                    else:
+                        name = n.name
+                    options.append((n, name, n.tip))
                 options += [("", "-----", ""),
                             ("about", "*about", "Show Cyprium info"),
                             ("tree", "*tree", "Show the whole tree"),

@@ -159,6 +159,27 @@ class UI(app.ui.UI):
     ###########################################################################
     # Menu.
     ###########################################################################
+    @ staticmethod
+    def _get_key(txt):
+        default = False
+        key_start = txt.find('*')
+        key_end = -1
+        if key_start < 0:
+            key_start = txt.find('$')
+            if key_start >= 0:
+                default = True
+                key_end = txt[key_start + 2:].find('$')
+            else:
+                return (txt, "", "", False)
+        else:
+            key_end = txt[key_start + 2:].find('*')
+        if key_end >= 0:
+            key_end += key_start + 2
+            return (txt[:key_start], txt[key_start + 1:key_end],
+                    txt[key_end + 1:], default)
+        return (txt[:key_start], txt[key_start + 1:key_start + 2],
+                txt[key_start + 2:], default)
+
     def get_choice(self, message="", options=[], start_opt="", end_opt="",
                    oneline=False):
         """Gives some choices to the user, and get its answer."""
@@ -168,16 +189,13 @@ class UI(app.ui.UI):
         do_default = False
         for c in options:
             name = c[1]
-            key_idx = name.find('*')
-            if key_idx < 0:
-                key_idx = name.find('$')
-                if key_idx >= 0:
-                    do_default = True
-            # If no '*' or '$' found, considered as "static label".
-            if key_idx >= 0:
-                key = name[key_idx + 1].lower()
-                name = name[:key_idx] + '[' + key + ']' + \
-                       name[key_idx + 2:]
+            start, key, end, do_default = self._get_key(name)
+            if key:
+                name = start + '[' + key + ']' + end
+                if key.lower() in chc_map:
+                    self.message("Option {} wants the already used '{}' key!"
+                                 "".format(name, key.lower()), self.WARNING)
+                    continue
                 if do_default:
                     if "" in chc_map:
                         self.message("Option {} wants to be default, while "
@@ -187,11 +205,10 @@ class UI(app.ui.UI):
                     chc_map[""] = c[0]
                     name = " ".join((name, "(default)"))
                     do_default = False
-                if key.lower() in chc_map:
-                    self.message("Option {} wants the already used '{}' key!"
-                                 "".format(name, key.lower()), self.WARNING)
-                    continue
                 chc_map[key.lower()] = c[0]
+            # If no key, considered as "static label".
+            else:
+                name = start
             if c[2]:
                 msg_chc.append("{} ({})".format(name, c[2]))
             else:
@@ -213,8 +230,8 @@ class UI(app.ui.UI):
             message = "".join((message, "\n"))
 
         # TODO: use a getch()-like!
-        r = self.cinput(message).lower()
-        while r not in chc_map:
-            r = self.cinput("Invalid choice, please try again: ").lower()
+        key = self.cinput(message).lower()
+        while key not in chc_map:
+            key = self.cinput("Invalid choice, please try again: ").lower()
 
-        return chc_map[r]
+        return chc_map[key]
