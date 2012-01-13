@@ -47,8 +47,8 @@ __python__ = "3.x"  # Required Python version
 __about__ = "" \
 """===== About Biliteral =====
 
-Biliteral is a steganographic (!) tool which can cypher text in the.
-biliteral code, which is a binary encoding using A and B as digits.
+Biliteral is a cryptographic tool which can cypher text in the biliteral code,
+which is a binary encoding using A and B as digits.
 
 Cypher input can be any string containing ASCII lowercase letters only
 (no spaces), decypher input must be an integer number of groups of five
@@ -66,24 +66,20 @@ Current execution context:
 """.format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-def int_to_biliteral(i):
-    if 0 < i > 31:
-        raise ValueError("biliteral only accepts [0..31] values")
-    return "{:0>5b}".format(i).replace('0', 'A').replace('1', 'B')
-
-
-MAP = {k: int_to_biliteral(v) for v, k in enumerate(string.ascii_lowercase)
-                                      if k not in 'jv'}
+MAP = {k: utils.num_to_base(v, ('A', 'B'), 5)
+                           for v, k in enumerate(string.ascii_lowercase)
+                                    if k not in 'jv'}
 MAP['j'] = MAP['i']
 MAP['v'] = MAP['u']
-#for k, v in MAP.items():
-#    print(k, ": ", v, sep="")
 
 R_MAP = utils.revert_dict(MAP, exceptions={MAP['i']: '[ij]', MAP['u']: '[uv]'})
 
 
 def do_cypher(text):
-    """Cypher message d --> AAABB"""
+    """
+    Cypher message to triliteral (with optional base, shift)
+    'd' --> AAABB
+    """
     return "".join((MAP[c] for c in text))
 
 
@@ -102,16 +98,11 @@ def cypher(text):
 
 
 def do_decypher(text):
-    """Decypher message AAABB --> d"""
-    ret = []
-    for c in utils.grouper(text, 5):
-        c = ''.join(c)
-        if c in R_MAP:
-            ret.append(R_MAP[c])
-        else:
-            raise ValueError("{} is not a valid biliteral code!"
-                             "".format(c))
-    return "".join(ret)
+    """
+    Decypher message to triliteral (with optional base, shift)
+    AAABB --> 'd'
+    """
+    return "".join((R_MAP[c] for c in utils.grouper2(text, 5)))
 
 
 def decypher(text):
@@ -130,7 +121,24 @@ def decypher(text):
         raise ValueError("Text must contains an integer number of groups of "
                          "five chars (current length: {})…"
                          "".format(len(text)))
+    # Check for valid triliteral codes.
+    c_text = {c for c in utils.grouper2(text, 5)}
+    c_allowed = set(R_MAP.keys())
+    if not (c_text <= c_allowed):
+        raise ValueError("Text contains invalid biliteral codes: '{}'!"
+                         "".format("', '".join(sorted(c_text - c_allowed))))
     return do_decypher(text)
+
+
+def test():
+    print("Start test...")
+    txt = "".join(list(MAP.keys()) * 10)
+    coded = cypher(txt)
+    decoded = decypher(coded)
+    if txt != decoded:
+        raise Exception("Test error, text and decoded(coded) text are "
+                        "not the same!")
+    print("...Success")
 
 
 def main():
@@ -145,7 +153,7 @@ def main():
     sparsers = parser.add_subparsers(dest="command")
 
     cypher_parser = sparsers.add_parser('cypher', help="Cypher text in "
-                                                       "atomic.")
+                                                       "biliteral.")
     cypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                help="A file containing the text to convert to "
                                     "biliteral.")
@@ -153,10 +161,10 @@ def main():
                                help="A file into which write the biliteral "
                                     "text.")
     cypher_parser.add_argument('-d', '--data',
-                               help="The text to cypher in atomic.")
+                               help="The text to cypher in biliteral.")
 
     uncypher_parser = sparsers.add_parser('decypher',
-                                          help="Decypher atomic to text.")
+                                          help="Decypher biliteral to text.")
     uncypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                  help="A file containing the text to convert "
                                       "from biliteral.")

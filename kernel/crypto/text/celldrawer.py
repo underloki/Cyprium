@@ -123,16 +123,8 @@ def do_decypher(text):
     words = []
     # Double spaces = word sep ("real" space).
     for w in text.split('  '):
-        # Remove any additional "outside" spaces…
-        w.rstrip().lstrip()
-        chars = []
-        for c in w.split(' '):
-            if c not in R_MAP:
-                raise Exception("The \"{}\" code is not a valid celldrawer one"
-                                "".format(c))
-            chars.append(R_MAP[c])
-        words.append(''.join(chars))
-    return ' '.join(words)
+        words.append("".join(R_MAP[c] for c in w.split()))
+    return " ".join(words)
 
 
 def decypher(text):
@@ -144,6 +136,12 @@ def decypher(text):
     if not (c_text <= c_allowed):
         raise Exception("Text contains unallowed chars (only phone digits are "
                         "allowed): '{}'!"
+                        "".format("', '".join(sorted(c_text - c_allowed))))
+    # Check for invalid codes...
+    c_text = set(text.split())
+    c_allowed = set(R_MAP.keys())
+    if not (c_text <= c_allowed):
+        raise Exception("Text contains invalid codes: '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
     return do_decypher(text)
 

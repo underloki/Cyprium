@@ -315,14 +315,16 @@ def do_decypher(text):
     import string
     valid_c = set(string.ascii_uppercase)
 
-    words = text.split('  ')
     dec_w = []
 
-    for w in words:
+    # For each word...
+    for w in text.split('  '):
+        do_exhaustive = True
         if not w:
             continue
         if ' ' in w or w.isalpha() or w in R_MAP.keys():
             # Nice, just decode each element (letter).
+            do_exhaustive = False
             dec = []
             for c in w.split():
                 if c in valid_c:
@@ -330,11 +332,13 @@ def do_decypher(text):
                 elif c in R_MAP:
                     dec.append(R_MAP[c])
                 else:
-                    raise ValueError("{} is an invalid atomic digits element!"
-                                     "".format(c))
-            dec_w.append(("".join(dec),))
-        else:
-            # Not nice, each element is not well space-separated,
+                    # No more nice, switch to "exhaustive" decode.
+                    do_exhaustive = True
+            if not do_exhaustive:
+                dec_w.append(("".join(dec),))
+        if do_exhaustive:
+            # Not nice, each element is not well space-separated, or there are
+            # some invalid atomic codes inside it
             # try to decypher nonetheless...
             is_code = False
             dec = []
@@ -342,12 +346,20 @@ def do_decypher(text):
             for c in w:
                 if c in valid_c:
                     if is_code:
-                        dec.append(tuple("".join(e) for e in \
+                        dec.append(tuple("".join(e) for e in
                                                         decypher_code(curr)))
                         is_code = False
                         curr = c
                     else:
                         curr += c
+                elif c == ' ' and curr:  # A separator.
+                    if is_code:
+                        dec.append(tuple("".join(e) for e in
+                                                        decypher_code(curr)))
+                        is_code = False
+                    else:
+                        dec.append((curr,))
+                    curr = ''
                 else:  # Assume digit!
                     if is_code:
                         curr += c
@@ -370,7 +382,7 @@ def decypher(text):
     import string
     if not text:
         raise ValueError("No text given!")
-    # Check for unallowed chars…
+    # Check for unallowed chars...
     c_text = set(text)
     c_allowed = {' '}
     c_allowed.update(set(string.ascii_uppercase) | set(string.digits))

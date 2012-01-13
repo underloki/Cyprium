@@ -74,11 +74,13 @@ class Celldrawer(app.cli.Tool):
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
+        ui.message("")
 
         ui.message("--- Cyphering ---")
         ui.message("Data to cypher: {}\n".format("hello wolrd"))
         ui.message("Celldrawer cyphered data: {}"
                    "".format(celldrawer.cypher("hello world")))
+        ui.message("")
 
         htext = "123580 147*369#8 321457*0#  147*369#8 *74269#8 32470# " \
                 "147*538# *74269#8 *7412690 321457*0# *7415369# 15380"
@@ -86,6 +88,7 @@ class Celldrawer(app.cli.Tool):
         ui.message("Celldrawer text used as input: {}".format(htext))
         ui.message("The decyphered data is: {}"
                    "".format(celldrawer.decypher(htext)))
+        ui.message("")
 
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to cypher must be acsii lowercase "
@@ -96,6 +99,7 @@ class Celldrawer(app.cli.Tool):
                        "".format(celldrawer.cypher("Hello World!")))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
+        ui.message("")
 
         ui.message("+ The input text to decypher must be phone digits only:")
         htext = "123580 147*369#8 321457*0#  1N7*369#8 *74269#8 32470# " \
@@ -106,6 +110,7 @@ class Celldrawer(app.cli.Tool):
                        "".format(celldrawer.decypher(htext)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
+        ui.message("")
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 

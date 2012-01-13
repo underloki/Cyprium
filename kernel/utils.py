@@ -35,43 +35,65 @@ import time
 # Misc platform abstraction code.
 ###############################################################################
 __pf__ = sys.platform
-if __pf__ == 'win32':
+if __pf__ == "win32":
     if sys.getwindowsversion().platform == 2:
-        winpf = ' (NT/2000/XP/x64)'
+        winpf = " (NT/2000/XP/Vista/7)"
     else:
-        winpf = ''
-    __pf__ = 'Windows' + winpf
-elif __pf__ == 'cygwin':
-    __pf__ = 'Windows/Cygwin'
-elif __pf__ == 'linux2':
-    __pf__ = 'Linux'
-elif __pf__ == 'os2':
-    __pf__ = 'OS/2'
-elif __pf__ == 'os2emx':
-    __pf__ = 'OS/2 EMX'
-elif __pf__ == 'darwin':
-    __pf__ = 'Mac OS X'
+        winpf = ""
+    __pf__ = "Windows" + winpf
+elif __pf__ == "cygwin":
+    __pf__ = "Windows/Cygwin"
+elif __pf__ == "linux2":
+    __pf__ = "Linux"
+elif __pf__ == "os2":
+    __pf__ = "OS/2"
+elif __pf__ == "os2emx":
+    __pf__ = "OS/2 EMX"
+elif __pf__ == "darwin":
+    __pf__ = "Mac OS X"
 else:
-    __pf__ = '?'
+    __pf__ = "?"
 
 major, minor, micro, _, _ = sys.version_info
-__pytver__ = '{}.{}.{}'.format(major, minor, micro)
+__pytver__ = "{}.{}.{}".format(major, minor, micro)
 
 
 ###############################################################################
 # Misc utils.
 ###############################################################################
 def revert_dict(d, exceptions={}):
-    """Revert a mapping (dict).
-       If several keys have the same values, use the optional exceptions dict
-       to give the result you want for those values-as-key.
+    """
+    Revert a mapping (dict).
+    If several keys have the same values, use the optional exceptions dict
+    to give the result you want for those values-as-key.
     """
     return {v: exceptions.get(v, k) for k, v in d.items()}
 
 
+# XXX this does not work nice!
 def msgerr():
     """Returns a clear error message: error name + error message."""
     return " ".join((sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+
+
+def num_to_base(num, base, min_digits=1):
+    """
+    Returns a string with the integer num encoded in base.
+    base is a list or tuple containing all "digits" (the first being '0' one).
+    If the encoded number is shorter than min_digits, base[0] is used as left
+    fill value.
+    """
+    b = len(base)
+    out = []
+    # Standard “decimal to base n” algo...
+    # Note that that algo generates digits in "reversed" order...
+    while num != 0:
+        r = num % b
+        num //= b
+        out.append(str(base[r]))
+    if len(out) < min_digits:
+        out += [str(base[0])] * (min_digits - len(out))
+    return "".join(reversed(out))
 
 
 ###############################################################################
@@ -104,7 +126,7 @@ def grouper2(lst, n, gap=0):
 
 
 def nwise(iterable, n=1):
-    "s, n=2 -> (s0,s1), (s1,s2), (s2, s3), ..."
+    """s, n=2 -> (s0,s1), (s1,s2), (s2, s3), ..."""
     its = itertools.tee(iterable, n)
     for i, it in enumerate(its):
         for j in range(i):
@@ -113,9 +135,10 @@ def nwise(iterable, n=1):
 
 
 def cut_iter(iterable, *cuts):
-    """Returns an iterator of iterable parts of
-       len1=cuts[1], len2=cuts[2], etc.
-       iterable must be subscriptable.
+    """
+    Returns an iterator of iterable parts of
+    len1=cuts[1], len2=cuts[2], etc.
+    iterable must be subscriptable.
     """
     curr = 0
     for c in cuts:
@@ -141,12 +164,13 @@ def all_groups_in_order(iterable, min_n=1, max_n=1):
 # Formating.
 ###############################################################################
 def format_multiwords(words, sep=' '):
-    """Format words as multi-lines text output.
-       Returns a list of lines.
-       (this) (is,was,will be) (a) (test) →
-              is
-       this   was   a test
-            will be
+    """
+    Format words as multi-lines text output.
+    Returns a list of lines.
+    (this) (is,was,will be) (a) (test) →
+           is
+    this   was   a test
+         will be
     """
     # Higher number of possibilities for a single word.
     if len(words) > 1:

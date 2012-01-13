@@ -348,9 +348,8 @@ def cypher(text):
 
 def do_decypher(text):
     """Function to convert Braille us-437 text into clear text."""
-    words = text.split('  ')
     chars = []
-    for w in words:
+    for w in text.split('  '):
         w_chars = w.split()
         chars += [R_MAP[c] for c in w_chars]
         chars.append(' ')

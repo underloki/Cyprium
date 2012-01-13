@@ -61,27 +61,30 @@ Current execution context:
 """.format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-def do_cypher(text, codec):
+def do_cypher(text, codec="utf-8"):
     """Function to convert some text to “binary” text."""
     # Create a dict mapping all chars to their binary representation,
     # in the given codec (might be more than one byte!).
-    chars = dict.fromkeys(set(text))
+    MAP = dict.fromkeys(set(text))
+    for c in MAP:
+        b = c.encode(codec)
+        MAP[c] = ("{:0>8b}" * len(b)).format(*b)
+    return "".join((MAP[c] for c in text))
+
+
+def cypher(text, codec="utf-8"):
+    """Just a wrapper around do_cypher, with some checks."""
+    # Check that text can be encoded with that codec.
+    chars = set(text)
     try:
-        for c in chars:
-            b = c.cypher(codec)
-            chars[c] = ("{:0>8b}" * len(b)).format(*b)
+        "".join(chars).encode(codec)
     except Exception as e:
-        raise ValueError("The text could not be cypherd into given '{}' "
+        raise ValueError("The text could not be cyphered into given '{}' "
                          "encoding ({})".format(codec, str(e)))
-    return ''.join([chars[i] for i in text])
-
-
-def cypher(text, codec="ascii"):
-    """Just a wrapper around do_cypher, no check currently."""
     return do_cypher(text, codec)
 
 
-def do_decypher(text, codec):
+def do_decypher(text, codec="utf-8"):
     """Function to convert “binary” text into text."""
     # XXX Their might be a better way to create a bytes from ints, but
     #     for now it will do the trick!
@@ -90,7 +93,7 @@ def do_decypher(text, codec):
     return bytes.fromhex(hex_s).decypher(codec)
 
 
-def decypher(text, codec="ascii"):
+def decypher(text, codec="utf-8"):
     """Just a wrapper around do_decypher, with some checks."""
     # Test length (*without* the spaces!).
     text = text.replace(' ', '')

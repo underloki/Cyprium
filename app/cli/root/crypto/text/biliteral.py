@@ -127,8 +127,6 @@ class Biliteral(app.cli.Tool):
         while 1:
             done = False
             while 1:
-                exhaustive = False
-                threshold = 0.9
                 txt = ui.text_input("Text to cypher to Biliteral",
                                     sub_type=ui.LOWER)
                 if txt is None:

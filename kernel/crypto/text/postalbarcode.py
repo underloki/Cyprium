@@ -104,7 +104,6 @@ RO_MAP = utils.revert_dict(O_MAP)
 RC_MAP = utils.revert_dict(C_MAP)
 
 
-###############################################################################
 def do_cypher(text, m_org=True, m_cls=False, o_stght=True, o_rev=False):
     """Function to convert some text to postal barcode.
        Returns a list of 1 to 4 str, based on options' values:
@@ -139,7 +138,6 @@ def cypher(text, m_org=True, m_cls=False, o_stght=True, o_rev=False):
                      o_stght=o_stght, o_rev=o_rev)
 
 
-###############################################################################
 def do_decypher(text, o_stght=True, o_rev=False):
     """Function to convert postal barcode text into clear text.
        Note that method (original or classical) is auto-detected,
@@ -194,7 +192,6 @@ def decypher(text, o_stght=True, o_rev=False):
     return do_decypher(text, o_stght=o_stght, o_rev=o_rev)
 
 
-###############################################################################
 def test():
     print("Start test...")
     txt = "".join(list(O_MAP.keys()) * 10)
@@ -211,7 +208,6 @@ def test():
     print("...Success")
 
 
-###############################################################################
 def main():
     # Treating direct script call with args
     # Args retrieval
