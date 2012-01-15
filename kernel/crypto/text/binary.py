@@ -116,6 +116,8 @@ def main():
     parser = argparse.ArgumentParser(description="Cypher/decypher some text "
                                                  "in binary form.")
     sparsers = parser.add_subparsers(dest="command")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
     hide_parser = sparsers.add_parser('cypher', help="Cypher data in binary.")
     hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
@@ -144,6 +146,7 @@ def main():
     sparsers.add_parser('about', help="About Binary…")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
@@ -156,6 +159,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:
@@ -175,6 +180,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:

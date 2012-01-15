@@ -31,6 +31,8 @@ import sys
 import os
 import importlib
 
+import kernel.utils as utils
+
 
 class Node:
     """A category/tool."""
@@ -79,6 +81,9 @@ class Node:
                                       ".".join((self.module.__name__, el)))
                         self.children.append(Node(self.tree, self, m))
                     except Exception as e:
+                        if utils.DEBUG:
+                            import traceback
+                            traceback.print_tb(sys.exc_info()[2])
                         print(e)
 
     def is_descendant(self, node):

@@ -34,10 +34,24 @@ import app
 import app.cli
 import app.cli.ui
 import app.cli.root
+import kernel.utils as utils
 
 
-tree = app.cli.Tree(app.cli.root)
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description=""
+                                     "Cyprium: main app regrouping many "
+                                     "cryptographic/steganographic tools, "
+                                     "as well as some cryptanalysis ones.")
+    parser.add_argument('-d', '--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
-ui = app.cli.ui.UI()
+    args = parser.parse_args()
+    utils.DEBUG = args.debug
 
-tree.main(ui)
+    tree = app.cli.Tree(app.cli.root)
+
+    ui = app.cli.ui.UI()
+
+    tree.main(ui)
+

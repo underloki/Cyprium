@@ -154,6 +154,8 @@ def main():
                                      "Cypher/decypher some text in "
                                      "celldrawer code.")
     sparsers = parser.add_subparsers(dest="command")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
     hide_parser = sparsers.add_parser('cypher', help="Cypher text in "
                                                       "celldrawer.")
@@ -179,6 +181,7 @@ def main():
     sparsers.add_parser('about', help="About Celldrawer…")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
@@ -191,6 +194,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:
@@ -210,6 +215,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:

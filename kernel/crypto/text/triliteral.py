@@ -157,6 +157,8 @@ def main():
                                      "Cypher/decypher some lowercase-"
                                      "no-space text to/from triliteral"
                                      "code.")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")
 
@@ -193,6 +195,7 @@ def main():
     sparsers.add_parser('test', help="Run a small auto-test.")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
@@ -205,6 +208,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:
@@ -224,6 +229,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:

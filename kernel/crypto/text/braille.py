@@ -398,6 +398,8 @@ def main():
                                      "to informatic Braille code us-437.\n"
                                      "example: 'the' ==> ''2345 125 15'.\n"
                                      "allowed chars: cp1252 charset.")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")
 
@@ -422,6 +424,7 @@ def main():
     sparsers.add_parser('test', help="Run a small auto-test.")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
@@ -434,6 +437,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:
@@ -453,6 +458,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:

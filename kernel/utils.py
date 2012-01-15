@@ -31,6 +31,13 @@ import sys
 import itertools
 import time
 
+
+###############################################################################
+# Flags.
+###############################################################################
+DEBUG = True
+
+
 ###############################################################################
 # Misc platform abstraction code.
 ###############################################################################
@@ -158,6 +165,18 @@ def all_groups_in_order(iterable, min_n=1, max_n=1):
             if sum(c) != ln:
                 continue
             yield cut_iter(tuple(iterable), *c)
+
+
+def case_variants(txt):
+    """
+    Yield all case variants of given text.
+    "all" --> all, All, aLl, alL, ALl, AlL, aLL, ALL
+    """
+    TXT = txt.swapcase()
+    # Nice comprehension! :p
+    return ("".join(v) for v in
+                       itertools.product(*(tuple(set(c)) for c in
+                                                         zip(txt, TXT))))
 
 
 ###############################################################################

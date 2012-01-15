@@ -27,17 +27,19 @@
 ########################################################################
 
 
+import sys
+import os
+
 # In case we directly run that file, we need to add the whole cyprium to path,
 # to get access to CLI stuff!
 if __name__ == "__main__":
-    import sys
-    import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  "..", "..", "..", "..",
                                                  "..")))
 
 import app.cli
 import kernel.crypto.text.celldrawer as celldrawer
+import kernel.utils as utils
 
 
 class Celldrawer(app.cli.Tool):
@@ -132,7 +134,10 @@ class Celldrawer(app.cli.Tool):
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
-                    print(e)
+                    if utils.DEBUG:
+                        import traceback
+                        traceback.print_tb(sys.exc_info()[2])
+                    ui.message(str(e), ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
@@ -165,6 +170,9 @@ class Celldrawer(app.cli.Tool):
                                celldrawer.decypher(txt),
                                "The decyphered text is")
             except Exception as e:
+                if utils.DEBUG:
+                    import traceback
+                    traceback.print_tb(sys.exc_info()[2])
                 ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),

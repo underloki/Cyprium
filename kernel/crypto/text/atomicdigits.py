@@ -401,6 +401,8 @@ def main():
                                      "Encrypt/decypher some text in "
                                      "atomic digits code.")
     sparsers = parser.add_subparsers(dest="command")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
     hide_parser = sparsers.add_parser('cypher', help="Encryptcode text in "
                                                      "atomic digits.")
@@ -420,7 +422,8 @@ def main():
                                   "increasing at a *very* high rate)!")
     hide_parser.add_argument('--min_cypher', type=float, default=0.8,
                              help="Minimum level of cyphering, if possible. "
-                                  "Only relevant with --exhaustive!")
+                                  "Only relevant with --exhaustive, defaults "
+                                  "to 0.8!")
 
     unhide_parser = sparsers.add_parser('decypher',
                                         help="Decypher atomic digits to text.")
@@ -436,6 +439,7 @@ def main():
     sparsers.add_parser('about', help="About AtomicDigits…")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
@@ -471,8 +475,9 @@ def main():
                     print("\nAll solutions:")
                 print(text)
         except Exception as e:
-            raise e
-#            print(e, "\n\n")
+            if utils.DEBUG:
+                raise e
+            print(e, "\n\n")
         finally:
             if args.ifile:
                 args.ifile.close()
@@ -486,11 +491,14 @@ def main():
             if args.ifile:
                 data = args.ifile.read()
             out = decypher(data)
+            text = "\n".join(utils.format_multiwords(out))
             if args.ofile:
-                args.ofile.write(out)
+                args.ofile.write(text)
             else:
-                print("\n".join(utils.format_multiwords(out)))
+                print(text)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:

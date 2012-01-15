@@ -255,6 +255,8 @@ def main():
                                      "to Chinese cipher.\n"
                                      "You can get the Chinese, Samurai and/or "
                                      "digits versions.\n")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")
 
@@ -285,6 +287,7 @@ def main():
     sparsers.add_parser('test', help="Run a small auto-test.")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
@@ -298,6 +301,8 @@ def main():
             else:
                 print("\n".join(out))
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:
@@ -317,6 +322,8 @@ def main():
             else:
                 print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             print(e, "\n\n")
         finally:
             if args.ifile:
