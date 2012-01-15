@@ -111,29 +111,39 @@ class UI(app.ui.UI):
     # Text input.
     ###########################################################################
     def get_data(self, message="", sub_type=app.ui.UI.STRING, allow_void=False,
-                 completion=None):
+                 completion=None, completion_kwargs={},
+                 validate=None, validate_kwargs={}):
         """
         Get some data from the user.
         Will ensure data is valid given sub_type, and call
-        completion callback if user hits <tab>.
-            completion(data_already_entered=None)
         If allow_void is True, return None or "" in case user types nothing,
         (else print a menu).
+        completion callback if user hits <tab>.
+            completion(data_already_entered=None, **completion_kwargs)
+            must return a list of (complete) possible data.
+            NOT YET IMPLEMENTED!
+        validate callback to check entry is valid:
+            validate(data=None, **validate_kwargs)
+            must return a tupple (valid, "valid_msg", "invalid_msg")
         """
         while 1:
             data = self.cinput(message)
             while not data:
                 if allow_void:
                     return None
+                elif validate:
+                    if validate(data, **validate_kwargs)[0]:
+                        return data
+                msg = "Nothing typed".format(data)
+                options = [("retry", "$retry", ""),
+                           ("abort", "or *abort", "")]
+                answ = self.get_choice(msg, options, oneline=True)
+                if answ == "retry":
+                    data = self.cinput(message)
                 else:
-                    msg = "Nothing typed".format(data)
-                    options = [("retry", "$retry", ""),
-                               ("abort", "or *abort", "")]
-                    answ = self.get_choice(msg, options, oneline=True)
-                    if answ == "retry":
-                        data = self.cinput(message)
-                    else:
-                        return None
+                    return None
+
+            # Validate sub-types.
             if sub_type == app.ui.UI.LOWER:
                 t_data = data.lower()
                 if t_data != data:
@@ -170,6 +180,18 @@ class UI(app.ui.UI):
                     if answ == "retry":
                         continue
                     return
+
+            # Call given validating callback, if any.
+            if validate:
+                vald = validate(data, **validate_kwargs)
+                if vald[0]:
+                    if vald[1]:
+                        self.message(vald[1])
+                else:
+                    self.message(vald[2] or "Invalid entry")
+                    continue  # Go back to beginning!
+
+            # Return valid data!
             return data
 
     ###########################################################################

@@ -63,14 +63,19 @@ class UI:
         pass
 
     def get_data(self, message="", sub_type=STRING, allow_void=False,
-                 completion=None):
+                 completion=None, completion_kwargs={},
+                 validate=None, validate_kwargs={}):
         """
         Get some data from the user.
         Will ensure data is valid given sub_type, and call
-        completion callback if user hits <tab>.
-            completion(data_already_entered=None)
         If allow_void is True, return None or "" in case user types nothing,
         (else print a menu).
+        completion callback if user hits <tab>.
+            completion(data_already_entered=None, **completion_kwargs)
+            must return a list of (complete) possible data.
+        validate callback to check entry is valid:
+            validate(data=None, **validate_kwargs)
+            must return a tupple (valid, "valid_msg", "invalid_msg")
         """
         return None
 
@@ -166,7 +171,9 @@ class UI:
                 if ifile:
                     ifile.close()
 
-    def text_input(self, msg, sub_type=STRING, allow_void=False):
+    def text_input(self, msg, sub_type=STRING, allow_void=False,
+                   completion=None, completion_kwargs={},
+                   validate=None, validate_kwargs={}):
         """Helper to get some text, either from console or from a file."""
         while 1:
             options = [("console", "directly from $console", ""),
@@ -175,7 +182,11 @@ class UI:
                                    oneline=True)
             if answ == "console":
                 return self.get_data("Please type the text: ",
-                                     sub_type=sub_type, allow_void=allow_void)
+                                     sub_type=sub_type, allow_void=allow_void,
+                                     completion=completion,
+                                     completion_kwargs=completion_kwargs,
+                                     validate=validate,
+                                     validate_kwargs=validate_kwargs)
             elif answ == "file":
                 ret = self.text_file_read()
                 if sub_type == self.UPPER:
