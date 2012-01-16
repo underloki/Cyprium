@@ -132,7 +132,7 @@ def is_valid_syllable(method, syllable):
     if method == JAVANAIS:
         # ja, av, va, and case variants.
         valids = set()
-        for v in ('ja', 'av', 'va'):
+        for v in ('aj', 'ja', 'av', 'va'):
             valids |= set(utils.case_variants(v))
         return syllable in valids
     elif method == FEU:
@@ -410,15 +410,24 @@ def main():
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
+            method = GENERIC
+            syllable = args.syllable
+            if args.javanais:
+                method = JAVANAIS
+                if not syllable:
+                    print("WARNING: No obfuscating syllable given, using "
+                          "'av' default one.")
+                    syllable = "av"
+            if args.feu:
+                method = FEU
+                if not syllable:
+                    print("WARNING: No obfuscating syllable given, using "
+                          "'fe' default one.")
+                    syllable = "fe"
             if args.syllable in data:
                 print("WARNING: The choosen obfuscating syllable is already "
                       "present in the text, decyphering will likely give "
                       "wrong results…")
-            method = GENERIC
-            if args.javanais:
-                method = JAVANAIS
-            if args.feu:
-                method = FEU
             out = cypher(data, method, args.syllable, args.exhaustive,
                          args.min_cypher)
             if args.exhaustive:

@@ -182,7 +182,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
                 exhaustive = False
                 threshold = 0.2
                 method = argot_javanais_feu.JAVANAIS
-                syllable = "av"
+                syllable = "uz"
 
                 txt = ui.text_input("Text to cypher")
                 if txt is None:
@@ -196,10 +196,15 @@ class ArgotJavanaisFeu(app.cli.Tool):
                             "or *generic one", "")]
                 method = ui.get_choice("Do you want to use", options,
                                        oneline=True)
+                if method == argot_javanais_feu.JAVANAIS:
+                    syllable = "av"
+                elif method == argot_javanais_feu.FEU:
+                    syllable = "fe"
 
                 # Get obfuscating syllable.
                 s = ui.get_data("Obfuscating syllable (or nothing to use "
                                 "default '{}' one): ".format(syllable),
+                                allow_void=True,
                                 validate=self._validate,
                                 validate_kwargs={'method': method})
                 if s:
@@ -243,8 +248,13 @@ class ArgotJavanaisFeu(app.cli.Tool):
                     # Else, retry with another data to hide.
 
             if done:
+                meth = "Generic"
+                if method == argot_javanais_feu.JAVANAIS:
+                    meth = "Argot Javanais"
+                elif method == argot_javanais_feu.FEU:
+                    meth = "Langue de Feu"
                 ui.text_output("Text successfully converted", txt,
-                               "Atomic digits version of text")
+                               "{} version of text".format(meth))
 
             options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
