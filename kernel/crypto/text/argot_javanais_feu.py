@@ -74,9 +74,14 @@ E.g. using uz:
     “Cuzasquzue d’or ruzefuzait suza puzermuzanuzentuze.”
 
 You can also use another cypher algorithm, “exhaustive”, that will, for each
-word, check *all* possible chipering, and output (again, for each word) all
+word, check *all* possible cyphering, and output (again, for each word) all
 solutions giving a cyphering threshold (i.e. nbr of obfuscating syllables
-added/total nbr of chars) higher than the given one ([0.0 .. 1.0]).
+added/total nbr of chars) higher than the given one ([0.0 .. 1.0]) – note that
+with this tool, a cyphering of 0.3/0.4 is in general already very high, higher
+values are very seldom possible.
+
+WARNING: Avoid using that option with words with more than about 15 chars,
+         the compute time will quickly become prohibitive!
 
 E.g. for “Bellville”, with 'av' and a threshold of 0.2:
      Bellavevavillave
@@ -375,7 +380,7 @@ def main():
                                help="Minimum level of cyphering, if possible. "
                                     "Only relevant with --exhaustive!"
                                     "Note typical good cypher level is 0.3 "
-                                    "(nbr of chars/nbr of syllables added, "
+                                    "(nbr of syllables added/nbr of chars, "
                                     "for each word), defaults to 0.2.")
 
     decypher_parser = sparsers.add_parser('decypher', help="Decypher text.")
