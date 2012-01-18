@@ -244,7 +244,10 @@ class MorseWabun(app.cli.Tool):
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
-                    print(e)
+                    if utils.DEBUG:
+                        import traceback
+                        traceback.print_tb(sys.exc_info()[2])
+                    ui.message(str(e), ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
@@ -285,6 +288,9 @@ class MorseWabun(app.cli.Tool):
                                morse_wabun.decypher(txt, method),
                                "The cyphered data is")
             except Exception as e:
+                if utils.DEBUG:
+                    import traceback
+                    traceback.print_tb(sys.exc_info()[2])
                 ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),

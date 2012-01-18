@@ -26,18 +26,19 @@
 #                                                                      #
 ########################################################################
 
+import sys
+import os
 
 # In case we directly run that file, we need to add the whole cyprium to path,
 # to get access to CLI stuff!
 if __name__ == "__main__":
-    import sys
-    import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                  "..", "..", "..", "..",
                                                  "..")))
 
 import app.cli
 import kernel.stegano.text.sema as sema
+import kernel.utils as utils
 
 
 class Sema(app.cli.Tool):
@@ -86,10 +87,11 @@ class Sema(app.cli.Tool):
         marker = self.marker
 
         ui.message("--- Hiding ---")
+        data = "comix"
         ui.message("Text used as source (input file): {}".format(text))
-        ui.message("Data to hide: {}\n".format("comix"))
+        ui.message("Data to hide: {}\n".format(data))
         ui.message("Text with hidden data (output file): {}"
-                   "".format(sema.hide(text, "comix", marker, 0)))
+                   "".format(sema.hide(text, data, marker, 0)))
         ui.message("")
 
         htext = "“Mes s" + marker + "ouvenirs sont comme les pistoles dans " \
@@ -107,22 +109,22 @@ class Sema(app.cli.Tool):
 
         ui.message("--- Won’t work ---")
         ui.message("+ The letters to hide must be present in the input text:")
+        data = "zowix"
         ui.message("Text used as source (input file): {}".format(text))
-        ui.message("Data to hide: {}".format("zowix"))
+        ui.message("Data to hide: {}".format(data))
         try:
             ui.message("Text with hidden data (output file): {}"
-                       "".format(sema.hide(text, "zowix", marker, 0)))
+                       "".format(sema.hide(text, data, marker, 0)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
         ui.message("+ The input text must be long enough for the given data "
                    "to hide (at least 40 times):")
-        ui.message("Data to hide: {}"
-                   "".format("This is quite a long boring sentence"))
+        data = "This is quite a long boring sentence"
+        ui.message("Data to hide: {}".format(data))
         try:
             ui.message("Text with hidden data (output file): {}"
-                       "".format(sema.hide(text, "This is quite a long boring "
-                                           "sentence", marker, 0)))
+                       "".format(sema.hide(text, data, marker, 0)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
@@ -148,7 +150,10 @@ class Sema(app.cli.Tool):
                         done = True  # Out of those loops, output result.
                         break
                     except Exception as e:
-                        print(e)
+                        if utils.DEBUG:
+                            import traceback
+                            traceback.print_tb(sys.exc_info()[2])
+                        ui.message(str(e), ui.ERROR)
                         options = [("retry", "*try again", ""),
                                    ("file", "choose another *input file", ""),
                                    ("menu", "or go back to *menu", "")]
@@ -179,12 +184,16 @@ class Sema(app.cli.Tool):
         while 1:
             txt = ui.text_input("Please choose some text with hidden data")
 
-            try:
-                ui.text_output("Data successfully unhidden",
-                               sema.unhide(txt, self.marker, 0),
-                               "The hidden data is")
-            except Exception as e:
-                ui.message(str(e), ui.ERROR)
+            if txt is not None:
+                try:
+                    ui.text_output("Data successfully unhidden",
+                                   sema.unhide(txt, self.marker, 0),
+                                   "The hidden data is")
+                except Exception as e:
+                    if utils.DEBUG:
+                        import traceback
+                        traceback.print_tb(sys.exc_info()[2])
+                    ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*unhide another data", ""),
                        ("quit", "or go back to *menu", "")]

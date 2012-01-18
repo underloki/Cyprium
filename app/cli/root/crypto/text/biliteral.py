@@ -141,7 +141,7 @@ class Biliteral(app.cli.Tool):
                 except Exception as e:
                     if utils.DEBUG:
                         import traceback
-                        traceback.print_tb(sys.last_traceback)
+                        traceback.print_tb(sys.exc_info()[2])
                     ui.message(str(e), ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
@@ -178,7 +178,7 @@ class Biliteral(app.cli.Tool):
             except Exception as e:
                 if utils.DEBUG:
                     import traceback
-                    traceback.print_tb(sys.last_traceback)
+                    traceback.print_tb(sys.exc_info()[2])
                 ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),
