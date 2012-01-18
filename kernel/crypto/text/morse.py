@@ -49,7 +49,6 @@ __about__ = "" \
 "International : ===...=.=.=.=...=.=...=.=.=.......\n" \
 "=.=...=.=.=.......=.===.......=.=.=...===.===.===...=.=.=\n" \
 "Fast international : - .... .. ...  / .. ...  / .-  / ... --- ...\n" \
-"Fast slashed international : -/..../../...//../...//.-//.../---/...\n" \
 "The path of the input file can be absolute (e.g. for linux, if the input\n" \
 "file is on your desktop: '/home/admin_name/Desktop/your_input_file'), or\n" \
 "relative to the dir from where you started Morse.\n\n" \
@@ -177,7 +176,7 @@ fastdic  = {'A': '.-',              'a': '.-',
             '5': '.....',           '6': '-....',
             '7': '--...',           '8': '---..',
             '9': '----.',           '0': '-----',
-            ' ': '....',            '\n': '\n',
+            'ê': '.',               '\n': '\n',
             ',': '--..--',          '_': '..--.-',
             '.': '.-.-.-',          '!': '-.-.--',
             '&': '.-...',           '=': '-...-',
@@ -187,9 +186,10 @@ fastdic  = {'A': '.-',              'a': '.-',
             ';': '-.-.-.',          ':': '---...',
             "'": '.----.',          '-': '-....-',
             '/': '-..-.',           '(': '-.--.',
-            ')': '-.--.-',          '   ': '....',
+            ')': '-.--.-',          '   ': '    ',
             '’': '.----.',          'ê': '.',
-            '«': '.-..-.',          '»': '.-..-.'}
+            '«': '.-..-.',          '»': '.-..-.',
+            ' ': ' '}
 
 faststringdic = {'-..': 'D',    '....': 'H',    '..-': 'U',
                  '....-': '4',  '-....': '6',   '.....': '5',
@@ -257,17 +257,11 @@ def cypher(expression, fast='false'):
     """Return a morse code from expression.
        Optionnal modes is
        international code
-       'fast' international
-       fast 'slashed' international.
+       fast international code
     """
-    if fast == 'slashed':
+    if fast == 'true':
         currentdic = fastdic
-        w_sep = '/'
-        c_sep = '/'
-        l_sep = -1
-    elif fast == 'true':
-        currentdic = fastdic
-        w_sep = ' / '
+        w_sep = '/ '
         c_sep = ' '
         l_sep = -1
     else:
@@ -303,39 +297,18 @@ def _decode_to_text(s, w_sep, c_sep, dic):
         expression += ' '
     return expression[:-1]
 
-def _decode_to_string(morse_s, c_sep):
-    """Internal function.
-    Return a morse code from a string."""
-    expression = ''
-    for c in morse_s.split(c_sep):
-        if c in faststringdic:
-            expression += faststringdic[c]
-        else:
-            expression += '<Error>'
-    return expression
-
-
 def decypher(morse_s):
-    """Wrapper for internals _decode_to_text/_decode_to_string methods.
+    """Wrapper for internals _decode_to_text method.
     Check the code morse style and some others checks."""
     # Any text given ?
     if not morse_s:
         raise ValueError("No text given!")
-    # Fast international slashed mode
-    elif '//' in morse_s:
-        return _decode_to_text(morse_s, '//', '/', faststringdic)
     # Fast international mode
-    elif ' / ' in morse_s:
+    elif ' ' in morse_s:
         return _decode_to_text(morse_s, ' / ', ' ', faststringdic)
-    # Or slashed mode with single word
-    elif '/' in morse_s:
-        return _decode_to_string(morse_s, '/')
-    # Just international
+    # International code
     elif '=' in morse_s:
         return _decode_to_text(morse_s, '.......', '...', morsedic)
-    # Single word ?
-    elif '-' or '.' in morse_s:
-        return _decode_to_string(morse_s, ' ')
     # Not a morse code ?
     else:
         raise ValueError("No morse code found!")
@@ -359,7 +332,7 @@ def main():
                              help="The text to cypher in morse.")
     hide_parser.add_argument('-m', '--mode',
                              help="""The type of morse code to use.\n
-                             Valids options: fast, slashed or None (International)""")
+                             Valids options: 'fast' or None (International)""")
 
     unhide_parser = sparsers.add_parser('decypher',
                                         help="Decypher morse to text.")
