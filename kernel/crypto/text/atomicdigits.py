@@ -60,6 +60,9 @@ word, check *all* possible chipering, and output (again, for each word) all
 solutions giving a cyphering threshold (i.e. nbr of cyphered chars/total nbr
 of chars) higher than the given one ([0.0 .. 1.0]).
 
+WARNING: Do not use this with words over about 20 chars length, compute time
+         will become prohibitive.
+
 E.g. for “NITROGEN”, with a threshold of 0.5 (at least half of the letters
 cyphered):
      7 I T R 8 32 7
@@ -212,7 +215,7 @@ def cypher_word(word):
        (codes, factor_crypted).
     """
     ln_w = len(word)
-    for grps in utils.all_groups_in_order(word, max_n=3):
+    for grps in utils.all_groups_in_order(word, (1, 2, 3)):
         cyphered = 0
         y = []
         for el in grps:
@@ -301,7 +304,7 @@ def decypher_code(code):
     """Yields all possible meanings of a number."""
     ln_w = len(code)
     valid_codes = set(R_MAP.keys())
-    for grps in utils.all_groups_in_order(code, max_n=3):
+    for grps in utils.all_groups_in_order(code, (1, 2, 3)):
         grps = tuple(("".join(grp) for grp in grps))
         if set(grps) <= valid_codes:
             yield tuple((R_MAP[e] for e in grps))
@@ -418,8 +421,8 @@ def main():
                              help="Use a complete search of all possible "
                                   "cypherings. WARNING: with long words, it "
                                   "will take a *very* long time to compute "
-                                  "(tens of seconds with 15 chars word, and "
-                                  "increasing at a *very* high rate)!")
+                                  "(seconds with 20 chars word, and "
+                                  "increasing at a high rate)!")
     hide_parser.add_argument('--min_cypher', type=float, default=0.8,
                              help="Minimum level of cyphering, if possible. "
                                   "Only relevant with --exhaustive, defaults "

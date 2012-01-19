@@ -154,17 +154,39 @@ def cut_iter(iterable, *cuts):
         curr = next
 
 
-def all_groups_in_order(iterable, min_n=1, max_n=1):
-    """abc, 3 -> a,b,c   ab,c   a,bc   abc"""
+def _rec_all_groups_in_order(iterable, lengths=(1,2)):
+    """lengths is assumed sorted!"""
+    # This will recursively cut iterable in all possible sets of chunks which
+    # lengths are in the given values.
+    # Might yield nothing, when no arrangements are possible!
     ln = len(iterable)
-    min_blocks = ln // max_n
-    max_blocks = ln // min_n
-    for r in range(min_blocks, max_blocks + 1):
-        cur_max_n = min(max_n + 1, ln - r + 2)
-        for c in itertools.product(range(min_n, cur_max_n), repeat=r):
-            if sum(c) != ln:
+    for l in lengths:
+        if l > ln:
+            return
+        base = [iterable[:l]]
+        if l == ln:
+            yield base
+            return
+        for els in _rec_all_groups_in_order(iterable[l:], lengths):
+            # Void els, continue.
+            if not els:
                 continue
-            yield cut_iter(tuple(iterable), *c)
+            # One element, and length does not match.
+            if len(els) == 1 and len(els[0]) + l != ln:
+                continue
+            yield base + list(els)
+
+
+def all_groups_in_order(iterable, lengths=(1,2)):
+    """
+    abc, (1,2,3) -> a,b,c   ab,c   a,bc   abc
+    abcd, (2, 3) -> ab,cd
+    Note that, depending on the lengths given, it might yield nothing!
+    """
+    # Just be sure lengths are sorted and iterable is subscriptable!
+    lengths = tuple(sorted(lengths))
+    iterable = tuple(iterable)
+    return _rec_all_groups_in_order(iterable, lengths)
 
 
 def case_variants(txt):
