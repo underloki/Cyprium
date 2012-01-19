@@ -46,10 +46,11 @@ __version__ = "0.1.0"
 __date__ = "2012/01/15"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"""===== About ArgotJavanais|LangueDeFeu =====
-ArgotJavanais|LangueDeFeu allows you to cypher and decrypt some text using
-one of those methods (or there generic version).
+"""===== About Argots =====
+Argots allows you to cypher and decrypt some text using one of Argot Javanais,
+Langue de Feu (or there generic version), or Argonji des Louchébems methods.
 
+== Argot Javanais, Langue de Feu and Generic ==
 The principle is to insert a syllable (always the same, two letters only,
 which we’ll call “obfuscating syllable”) between consonants and vowels
 (with a few additional restrictions/special cases).
@@ -80,24 +81,32 @@ added/total nbr of chars) higher than the given one ([0.0 .. 1.0]) – note tha
 with this tool, a cyphering of 0.3/0.4 is in general already very high, higher
 values are very seldom possible.
 
-WARNING: Avoid using that option with words with more than about 15 chars,
+WARNING: Avoid using that option with words with more than about 20 chars,
          the compute time will quickly become prohibitive!
 
-E.g. for “Bellville”, with 'av' and a threshold of 0.2:
-     Bellavevavillave
-      Bellevavillave
-      Bellavevaville
-     Bavellevavillave
-      Bellavevillave
-     Bavellavevaville
-      Bavellevillave
+E.g. for “Bellville”, with 'av' and a threshold of 0.3:
+     Bavelleviavllave
      Bavellavevillave
-      Bavellevaville
     Bavellavevavillave
-      Bavellaveville
+    Bavellaveviavllave
+     Beavlleviavllave
+     Beavllavevillave
+     Bavellevavillave
+     Bavellaveviavlle
+     Bavellavevaville
+     Bellaveviavllave
+     Beavllaveviavlle
+     Beavllevavillave
+     Bellavevavillave
+     Beavllavevaville
+    Beavllavevavillave
+    Beavllaveviavllave
 
 WARNING: If the text already contains the obfuscating syllable, it will
          likely be lost a decyphering time!
+
+== Argonji des Louchébems ==
+
 
 Cyprium.ArgotJavanais|LangueDeFeu version {} ({}).
 Licence GPL3
@@ -123,6 +132,7 @@ Y_C_ADD = 'i'
 GENERIC = 0
 JAVANAIS = 1
 FEU = 2
+ARGONJI = 10
 
 
 def is_valid_syllable(method, syllable):
@@ -148,24 +158,25 @@ def is_valid_syllable(method, syllable):
 
 def _obfuscate_syllable(s, o_s, is_first=False):
     """Return the obfuscated syllable by given type, if possible."""
-    # Length-agnostic.
-    # Start of word, begin by a vowel (a, is, ef, etc.).
-    if is_first and s[0] in VOWELS:
-        return "".join((o_s, s))
+    # Start of word, begin by a mono-vowel (a, i, e, etc.).
+    if is_first and s in VOWELS:
+        if s[0] != o_s[0]:
+            return "".join((s, o_s))
     # Two letters.
     elif len(s) == 2:
         # No obfuscation if it generates doublons (e.g. aavv -> NO!).
         if s[0] == o_s[0] or s[1] == o_s[1]:
             return s
-        # Most common case (s is ba, se, ti, etc.)
-        if s[0] in CONSONANTS and s[1] in VOWELS:
-            return "".join((s[0], o_s, s[1]))
         # s is ye, ya, etc.
         elif s[0] in {'y', 'Y'} and s[1] in VOWELS:
             return "".join((s[0], o_s, s[1]))
         # s is ys, yr, etc.
         elif s[0] in {'y', 'Y'} and s[1] in CONSONANTS:
             return "".join((s[0], o_s, Y_C_ADD, s[1]))
+        # Most common case (s is ba, ok, se, ti, ut, ir, etc.)
+        elif (s[0] in CONSONANTS and s[1] in VOWELS) or \
+             (s[0] in VOWELS and s[1] in CONSONANTS):
+            return "".join((s[0], o_s, s[1]))
     # Else, just return the org syllable.
     return s
 
@@ -177,7 +188,7 @@ def cypher_word(word, syllable):
     factor_cyphered = nbr added syllables / nbr letters.
     """
     ln_w = len(word)
-    for grps in utils.all_groups_in_order(word, max_n=2):
+    for grps in utils.all_groups_in_order(word, (1,2)):
         cyphered = 0
         y = []
         first = True
@@ -279,9 +290,9 @@ def decypher_word(word, syllable):
 
     len_w = len(word)
     if word.endswith(syllable):
-        if len_w > 3:
-            return "".join((word[0:-2].replace(syllable, ''), word[-2:]))
-        else:
+#        if len_w > 3:
+#            return "".join((word[0:-2].replace(syllable, ''), word[-2:]))
+        if len_w <= 2:
             return word
     return word.replace(syllable, '')
 
@@ -374,8 +385,8 @@ def main():
                                help="Use a complete search of all possible "
                                     "cypherings. WARNING: with long words, it "
                                     "will take a *very* long time to compute "
-                                    "(tens of seconds with 15 chars word, and "
-                                    "increasing at a *very* high rate)!")
+                                    "(seconds with 20 chars word, and "
+                                    "increasing at a high rate)!")
     cypher_parser.add_argument('--min_cypher', type=float, default=0.2,
                                help="Minimum level of cyphering, if possible. "
                                     "Only relevant with --exhaustive!"

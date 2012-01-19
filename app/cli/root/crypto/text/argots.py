@@ -42,19 +42,18 @@ if __name__ == "__main__":
                                                  "..")))
 
 import app.cli
-import kernel.crypto.text.argot_javanais_feu as argot_javanais_feu
+import kernel.crypto.text.argots as argots
 import kernel.utils as utils
 
 
-class ArgotJavanaisFeu(app.cli.Tool):
-    """CLI wrapper for argot_javanais_feu crypto text tool."""
+class Argots(app.cli.Tool):
+    """CLI wrapper for argots crypto text tool."""
 
     @staticmethod
     def _validate(txt, **kwargs):
         m = kwargs['method']
-        return (argot_javanais_feu.is_valid_syllable(m, txt),
-                "", "That syllable is not valid for the method you "
-                    "choose!")
+        return (argots.is_valid_syllable(m, txt),
+                "", "That syllable is not valid for the method you choose!")
 
     @staticmethod
     def _get_exhaustive_txt(out, ui, min_cypher, act=None):
@@ -86,22 +85,21 @@ class ArgotJavanaisFeu(app.cli.Tool):
 
 ## Main stuff.
     def main(self, ui):
-        ui.message("********** Welcome to "
-                   "Cyprium.ArgotJavanais|LangueDeFeu! **********")
+        ui.message("********** Welcome to Cyprium.Argots! **********")
         quit = False
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
                        (self.cypher, "*cypher",
-                                     "Cypher some text in argot javanais or "
-                                     "langue de feu"),
+                                     "Cypher some text in argot javanais, "
+                                     "langue de feu or Largonji des "
+                                     "louchébems"),
                        (self.decypher, "d*ecypher",
-                                       "Decypher atomic digits into text"),
+                                       "Decypher some argot into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit",
-                                "Quit Cyprium.ArgotJavanais|LangueDeFeu")]
-            msg = "Cyprium.ArgotJavanais|LangueDeFeu"
+                       ("quit", "*quit", "Quit Cyprium.Argots")]
+            msg = "Cyprium.Argots"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
@@ -114,7 +112,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
         ui.message("Back to Cyprium menus! Bye.")
 
     def about(self, ui):
-        ui.message(argot_javanais_feu.__about__)
+        ui.message(argots.__about__)
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
     def demo(self, ui):
@@ -125,8 +123,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
         ui.message("--- Cyphering ---")
         text = "Les « Blousons Noirs » vous parlent…"
         ui.message("Data to cypher: {}".format(text))
-        out = argot_javanais_feu.cypher(text, argot_javanais_feu.JAVANAIS,
-                                        'av')
+        out = argots.cypher(text, argots.JAVANAIS, 'av')
         ui.message("Argot Javanais with 'av': {}".format(out))
         ui.message("")
 
@@ -136,7 +133,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
                    "here (i.e. Generic, and give no obfuscating syllable), "
                    "as that kind of “cyphering” is really easy to break!")
         ui.message("Langue de Feu text used as input: {}".format(htext))
-        out = argot_javanais_feu.decypher(htext, argot_javanais_feu.FEU)
+        out = argots.decypher(htext, argots.FEU)
         ui.message("The decyphered data is:\n    With '{}': {}"
                    "".format(out[0][0], out[0][1]))
         ui.message("")
@@ -147,8 +144,8 @@ class ArgotJavanaisFeu(app.cli.Tool):
                    "given threshold of cyphering (or the highest possible):")
         text = "Do you know Ménilmuche and Belleville ?"
         ui.message("Data to cypher: {}".format(text))
-        out = argot_javanais_feu.cypher(text, argot_javanais_feu.GENERIC, 'uz',
-                                        exhaustive=True, min_cypher=0.2)
+        out = argots.cypher(text, argots.GENERIC, 'uz', exhaustive=True,
+                            min_cypher=0.2)
         out = self._get_exhaustive_txt(out, ui, min_cypher=0.2, act="all")
         ui.message("Generic cyphered solutions with cypher factor higher "
                    "than 0.2:")
@@ -162,8 +159,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
         ui.message("Data to cypher, using Javanais and 'eh': {}\n"
                    "".format(text))
         try:
-            out = argot_javanais_feu.cypher(text,
-                                            argot_javanais_feu.JAVANAIS, 'eh')
+            out = argots.cypher(text, argots.JAVANAIS, 'eh')
             ui.message("Javanais cyphered data: {}".format(out))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
@@ -181,7 +177,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
             while 1:
                 exhaustive = False
                 threshold = 0.2
-                method = argot_javanais_feu.JAVANAIS
+                method = argots.JAVANAIS
                 syllable = "uz"
 
                 txt = ui.text_input("Text to cypher")
@@ -189,16 +185,15 @@ class ArgotJavanaisFeu(app.cli.Tool):
                     break  # Go back to main Cypher menu.
 
                 # Get obfuscating method.
-                options = [(argot_javanais_feu.JAVANAIS,
+                options = [(argots.JAVANAIS,
                             "$javanais cyphering", ""),
-                           (argot_javanais_feu.FEU, "langue de *feu", ""),
-                           (argot_javanais_feu.GENERIC,
-                            "or *generic one", "")]
+                           (argots.FEU, "langue de *feu", ""),
+                           (argots.GENERIC, "or *generic one", "")]
                 method = ui.get_choice("Do you want to use", options,
                                        oneline=True)
-                if method == argot_javanais_feu.JAVANAIS:
+                if method == argots.JAVANAIS:
                     syllable = "av"
-                elif method == argot_javanais_feu.FEU:
+                elif method == argots.FEU:
                     syllable = "fe"
 
                 # Get obfuscating syllable.
@@ -225,9 +220,9 @@ class ArgotJavanaisFeu(app.cli.Tool):
 
                 try:
                     # Will also raise an exception if data is None.
-                    txt = argot_javanais_feu.cypher(txt, method, syllable,
-                                                    exhaustive=exhaustive,
-                                                    min_cypher=threshold)
+                    txt = argots.cypher(txt, method, syllable,
+                                        exhaustive=exhaustive,
+                                        min_cypher=threshold)
                     if exhaustive:
                         txt = self._get_exhaustive_txt(txt, ui,
                                                        min_cypher=threshold)
@@ -249,9 +244,9 @@ class ArgotJavanaisFeu(app.cli.Tool):
 
             if done:
                 meth = "Generic"
-                if method == argot_javanais_feu.JAVANAIS:
+                if method == argots.JAVANAIS:
                     meth = "Argot Javanais"
-                elif method == argot_javanais_feu.FEU:
+                elif method == argots.FEU:
                     meth = "Langue de Feu"
                 ui.text_output("Text successfully converted", txt,
                                "{} version of text".format(meth))
@@ -270,14 +265,13 @@ class ArgotJavanaisFeu(app.cli.Tool):
         while 1:
             txt = ui.text_input("Please choose some atomic digits text")
             syllable = None
-            method = argot_javanais_feu.GENERIC
+            method = argots.GENERIC
 
             # Get obfuscating method.
-            options = [(argot_javanais_feu.JAVANAIS,
+            options = [(argots.JAVANAIS,
                         "*javanais decyphering", ""),
-                       (argot_javanais_feu.FEU, "langue de *feu", ""),
-                       (argot_javanais_feu.GENERIC,
-                        "or $generic one", "")]
+                       (argots.FEU, "langue de *feu", ""),
+                       (argots.GENERIC, "or $generic one", "")]
             method = ui.get_choice("Do you want to use", options,
                                    oneline=True)
 
@@ -290,7 +284,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
                 syllable = s
 
             try:
-                txt = argot_javanais_feu.decypher(txt, method, syllable)
+                txt = argots.decypher(txt, method, syllable)
                 if len(txt) > 1:
                     txt = "\n    " + \
                           "\n".join(["Using '{}':\n    {}"
@@ -300,8 +294,7 @@ class ArgotJavanaisFeu(app.cli.Tool):
                 else:
                     txt = ""
                 ui.text_output("Text successfully decyphered",
-                               txt,
-                               "The decyphered text is")
+                               txt, "The decyphered text is")
             except Exception as e:
                 if utils.DEBUG:
                     import traceback
@@ -315,14 +308,15 @@ class ArgotJavanaisFeu(app.cli.Tool):
                 return
 
 
-NAME = "argot javanais | langue de feu"
-TIP = "Tool to convert text to/from Argot Javanais / Langue de Feu “codes”."
+NAME = "argots"
+TIP = "Tool to convert text to/from Argot Javanais / Langue de Feu / " \
+      "Largonji des Louchébems “codes”."
 TYPE = app.cli.Node.TOOL
-CLASS = ArgotJavanaisFeu
+CLASS = Argots
 
 # Allow tool to be used directly, without using Cyprium menu.
 if __name__ == "__main__":
     import app.cli.ui
     ui = app.cli.ui.UI()
-    tree = app.cli.NoTree("ArgotJavanais|LangueDeFeu")
-    ArgotJavanaisFeu(tree).main(ui)
+    tree = app.cli.NoTree("Argots")
+    Argots(tree).main(ui)
