@@ -258,22 +258,27 @@ def all_primes(n):
     n = int(n)
     if n < 2:
         return
+    # NOTE: This is Sieve of Eratosthenes, but only on odd numbers.
+    #       It’s a bit more complex to grasp, but takes half of memory,
+    #       and tends to be somewhat quicker when reaching high numbers
+    #       (1000000 and over).
+
     # Create a list for all odd numbers.
     # Note: theorically, 1 is not prime, but as we never test it...
     lst = [True] * (n // 2)
     yield 2  # 2 is a prime number.
     # Use **0.5 instead of Math.sqrt().
-    root = int(n ** 0.5)
+    root = int(n ** 0.5) // 2
     root = root + [1,0][root % 2]  # Get an odd root.
-    for i in range(3, root + 1, 2):
-        idx = i // 2
-        if lst[idx]:
+    for i in range(1, root + 1):
+        if lst[i]:
+            y = i * 2 + 1
             # Get rid of all odd multiples of i.
-            lst[idx::i] = [False] * (((n // i) + 1) // 2)
-            yield i
-    for i in range(root, n + 1, 2):
-        if lst[i // 2]:
-            yield i
+            lst[i::y] = [False] * (((n // y) + 1) // 2)
+            yield y
+    for i in range(root, n // 2):
+        if lst[i]:
+            yield i * 2 + 1
 
 
 _primes_under_100 = {all_primes(100)}
