@@ -77,30 +77,26 @@ E.g. using uz:
 You can also use another cypher algorithm, “exhaustive”, that will, for each
 word, check *all* possible cyphering, and output (again, for each word) all
 solutions giving a cyphering threshold (i.e. nbr of obfuscating syllables
-added/total nbr of chars) higher than the given one ([0.0 .. 1.0]) – note that
-with this tool, a cyphering of 0.3/0.4 is in general already very high, higher
-values are very seldom possible.
+added/total nbr of chars) around the given one ([0.0 .. 1.0] ± 0.05) – note
+that with this tool, a cyphering of 0.3/0.4 is in general already very high,
+higher values are very seldom possible.
 
 WARNING: Avoid using that option with words with more than about 20 chars,
          the compute time will quickly become prohibitive!
 
-E.g. for “Bellville”, with 'av' and a threshold of 0.3:
-     Bavelleviavllave
-     Bavellavevillave
-    Bavellavevavillave
-    Bavellaveviavllave
-     Beavlleviavllave
-     Beavllavevillave
-     Bavellevavillave
-     Bavellaveviavlle
-     Bavellavevaville
-     Bellaveviavllave
-     Beavllaveviavlle
-     Beavllevavillave
-     Bellavevavillave
-     Beavllavevaville
-    Beavllavevavillave
-    Beavllaveviavllave
+E.g. for “Bellville”, with 'av' and a cyphering goal of 0.3:
+    Bavelleviavllave
+    Bavellavevillave
+    Beavlleviavllave
+    Beavllavevillave
+    Bavellevavillave
+    Bavellaveviavlle
+    Bavellavevaville
+    Bellaveviavllave
+    Beavllaveviavlle
+    Beavllevavillave
+    Bellavevavillave
+    Beavllavevaville
 
 WARNING: If the text already contains the obfuscating syllable, it will
          likely be lost a decyphering time!
@@ -203,13 +199,13 @@ def cypher_word(word, syllable):
         yield ("".join(y), cyphered / ln_w)
 
 
-def do_cypher(text, syllable, exhaustive=False, min_cypher=0.8):
+def do_cypher(text, syllable, exhaustive=False, cypher_goal=0.8):
     """
     Cypher (obfuscate) text in "argot javanais" or "langue de feu" method.
     Returns either a str with cyphered words (default basic algorithm),
     or, when exhaustive is True, a dict with following values:
         solutions: (a tuple of tuples of cyphered words)
-                   [with either a cypher factor higer than min_cypher,
+                   [with either a cypher factor near cypher_goal,
                     or the highest possible cypher factor],
         n_solutions: the total number of solutions,
         best_solutions: (a tuple of tuples of best cyphered words),
@@ -225,8 +221,13 @@ def do_cypher(text, syllable, exhaustive=False, min_cypher=0.8):
         best_c = []
         for w in words:
             solutions = {s for s in cypher_word(w, syllable)}
-            fact = min(max(solutions, key=lambda x: x[1])[1], min_cypher)
-            all_s.append(tuple((s[0] for s in solutions if s[1] >= fact)))
+            fact_min = min(max(solutions, key=lambda x: x[1])[1],
+                           max(cypher_goal - 0.05, 0.0))
+            t_s = [s for s in solutions if s[1] >= fact_min]
+            fact_max = max(min(t_s, key=lambda x: x[1])[1],
+                           cypher_goal + 0.05)
+            all_s.append(tuple((s[0] for s in t_s
+                                     if fact_min <= s[1] <= fact_max)))
             max_cypher = max(solutions, key=lambda s: s[1])[1]
             best_s.append(tuple((s[0] for s in solutions \
                                           if s[1] >= max_cypher)))
@@ -261,7 +262,7 @@ def do_cypher(text, syllable, exhaustive=False, min_cypher=0.8):
         return " ".join(enc_w)
 
 
-def cypher(text, method, syllable, exhaustive=False, min_cypher=0.8):
+def cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
     """Wrapper around do_cypher, making some checks."""
     import string
     if not text:
@@ -275,7 +276,7 @@ def cypher(text, method, syllable, exhaustive=False, min_cypher=0.8):
             m_name = "Langue de Feu"
         raise ValueError("Given syllable ({}) is invalid for “{}” type."
                          "".format(syllable, m_name))
-    return do_cypher(text, syllable, exhaustive, min_cypher)
+    return do_cypher(text, syllable, exhaustive, cypher_goal)
 
 
 #############################################################################
@@ -387,7 +388,7 @@ def main():
                                     "will take a *very* long time to compute "
                                     "(seconds with 20 chars word, and "
                                     "increasing at a high rate)!")
-    cypher_parser.add_argument('--min_cypher', type=float, default=0.2,
+    cypher_parser.add_argument('--cypher_goal', type=float, default=0.2,
                                help="Minimum level of cyphering, if possible. "
                                     "Only relevant with --exhaustive!"
                                     "Note typical good cypher level is 0.3 "
@@ -445,12 +446,12 @@ def main():
                       "present in the text, decyphering will likely give "
                       "wrong results…")
             out = cypher(data, method, args.syllable, args.exhaustive,
-                         args.min_cypher)
+                         args.cypher_goal)
             if args.exhaustive:
                 print("Exaustive found {} solutions for a minimum "
                       "cyphering of {}, among which {} solutions with the "
                       "highest possible cyphering ({}):"
-                      "".format(out["n_solutions"], args.min_cypher,
+                      "".format(out["n_solutions"], args.cypher_goal,
                                 out["best_n_solutions"],
                                 out["best_cypher"]))
                 text = "\n".join(utils.format_multiwords(out["solutions"],

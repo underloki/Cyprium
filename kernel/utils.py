@@ -213,6 +213,13 @@ def format_multiwords(words, sep=' '):
     this   was   a test
          will be
     """
+    # Check we have no void list of words...
+    t_words = words
+    for i, w in enumerate(t_words):
+        if not w:
+            if not isinstance(words, list):
+                words = list(words)
+            words[i] = ('-@$!$@-',)
     # Higher number of possibilities for a single word.
     if len(words) > 1:
         max_nr = len(max(*words, key=len))

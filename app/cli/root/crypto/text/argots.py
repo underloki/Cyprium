@@ -56,23 +56,22 @@ class Argots(app.cli.Tool):
                 "", "That syllable is not valid for the method you choose!")
 
     @staticmethod
-    def _get_exhaustive_txt(out, ui, min_cypher, act=None):
-        ui.message("Exaustive found {} solutions for a minimum cyphering of "
-                   "{}, among which {} solutions with the highest possible "
-                   "cyphering ({})."
-                   "".format(out["n_solutions"], min_cypher,
+    def _get_exhaustive_txt(out, ui, cypher_goal, act=None):
+        ui.message("Exaustive found {} solutions cyphering of {} ± 0.05, "
+                   "and {} solutions with the highest possible cyphering ({})."
+                   "".format(out["n_solutions"], cypher_goal,
                              out["best_n_solutions"],
                              out["best_cypher"]))
 
-        if act not in {"all", "best", "rand", "rand_best"}:
-            options = [("all", "*all solutions", ""),
+        if act not in {"goal", "best", "rand", "rand_best"}:
+            options = [("goal", "*goal solutions", ""),
                        ("best", "all $best solutions", ""),
-                       ("rand", "*one random solution", ""),
+                       ("rand", "*one random goal solution", ""),
                        ("rand_best", "or one *random best solution", "")]
             act = ui.get_choice("Do you want to get", options,
                                  oneline=True)
 
-        if act == "all":
+        if act == "goal":
             lines = utils.format_multiwords(out["solutions"], sep=" ")
             return "\n    {}".format("\n    ".join(lines))
         elif act == "best":
@@ -141,12 +140,12 @@ class Argots(app.cli.Tool):
         ui.message("--- Notes ---")
         ui.message("+ You can choose the optionnal Exhaustive option, to get "
                    "all possible encodings of each words higher than the "
-                   "given threshold of cyphering (or the highest possible):")
+                   "given goal of cyphering (or the highest possible):")
         text = "Do you know Ménilmuche and Belleville ?"
         ui.message("Data to cypher: {}".format(text))
         out = argots.cypher(text, argots.GENERIC, 'uz', exhaustive=True,
-                            min_cypher=0.2)
-        out = self._get_exhaustive_txt(out, ui, min_cypher=0.2, act="all")
+                            cypher_goal=0.2)
+        out = self._get_exhaustive_txt(out, ui, cypher_goal=0.2, act="goal")
         ui.message("Generic cyphered solutions with cypher factor higher "
                    "than 0.2:")
         ui.message(out)
@@ -176,7 +175,7 @@ class Argots(app.cli.Tool):
             done = False
             while 1:
                 exhaustive = False
-                threshold = 0.2
+                goal = 0.2
                 method = argots.JAVANAIS
                 syllable = "uz"
 
@@ -212,20 +211,20 @@ class Argots(app.cli.Tool):
                                      oneline=True)
                 if answ == "exhst":
                     exhaustive = True
-                    t = ui.get_data("Cypher threshold (nothing to use default "
-                                    "{} one): ".format(threshold),
+                    t = ui.get_data("Cypher goal (nothing to use default "
+                                    "{} one): ".format(goal),
                                     sub_type=ui.FLOAT, allow_void=True)
                     if t is not None:
-                        threshold = t
+                        goal = t
 
                 try:
                     # Will also raise an exception if data is None.
                     txt = argots.cypher(txt, method, syllable,
                                         exhaustive=exhaustive,
-                                        min_cypher=threshold)
+                                        cypher_goal=goal)
                     if exhaustive:
                         txt = self._get_exhaustive_txt(txt, ui,
-                                                       min_cypher=threshold)
+                                                       cypher_goal=goal)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
