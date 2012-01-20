@@ -249,54 +249,58 @@ def format_multiwords(words, sep=' '):
         ret.append(fmt_line.format(*els))
     return ret
 
+
 ###############################################################################
-# Numbers.
+# Prime numbers.
 ###############################################################################
 def all_primes(n):
-    """return prime numbers from 0 to n"""
-    #Utilisation de **.5 au lieu de Math.sqrt
-    liste = [False,False] + [True]*(n-1)
-    liste[2::2] = [False]*(n//2) # on élimine déjà tous les nombres pairs
-    premiers = [2] # 2 est un nombre premier
-    racine = int(n**0.5)# lsqrt(n)#int(math.sqrt(n))
-    racine = racine + [1,0][racine%2] # pour que racine soit impair
-    for i in range(3,racine+1,2):
-        if liste[i]:
-            premiers.append(i)
-            liste[i::i] = [False]*(n//i) # on élimine i et ses multiples
-    return premiers + [i for i in range(racine,n+1,2) if liste[i]]
+    """Yield all prime numbers from 0 to n."""
+    lst = [False, False] + [True] * (n - 1)
+    lst[2::2] = [False] * (n // 2)  # Get rid of all even numbers.
+    yield 2  # 2 is a prime number.
+    # Use **0.5 instead of Math.sqrt().
+    root = int(n ** 0.5)
+    root = root + [1,0][root % 2]  # Get an odd root.
+    for i in range(3, root + 1, 2):
+        if lst[i]:
+            yield i
+            lst[i::i] = [False] * (n // i)  # Get rid of all multiples of i.
+    for i in range(root, n + 1, 2):
+        if lst[i]:
+            yield i
 
-_primes_under_100 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
-    53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+
+_primes_under_100 = {all_primes(100)}
+
 
 def is_prime(n):
-    """return True if a number is prime and False else"""
+    """Return True if a number is prime and False otherwise."""
     if n <= 100:
         return n in _primes_under_100
     if n % 2 == 0 or n % 3 == 0:
         return False
 
-    for f in range(5, int(n ** .5), 6):
+    for f in range(5, int(n ** 0.5), 6):
         if n % f == 0 or n % (f + 2) == 0:
             return False
     return True
 
-def prime_range(max, min=2):
-    """return prime numbers in from min to max"""
-    if min<3:
-        return all_primes(max)
-    if max<2:
-        return []
-    elif max==2:
-        return [2]
-    if min%2==0:
-        current = min+1
-    else:
-        current = min
-    res = [2]
-    alt = False
-    while (current <= max):
-        if is_prime(current):
-            res.append(current)
-        current += 2
-    return res
+
+def prime_range(end, start=2):
+    """
+    Yield prime numbers from start to end.
+    Note: Only better that all_primes when start is very high, and
+          end - start is relatively low.
+    """
+    if end < 2 or end < start:
+        return
+    if end == 2:
+        yield 2
+    if start < 3:
+        for p in all_primes(end):
+            yield p
+
+    start = start + [1,0][start % 2]  # Get an odd start.
+    for i in range(start, end + 1, 2):
+        if is_prime(i):
+            yield i
