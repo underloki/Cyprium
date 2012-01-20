@@ -255,18 +255,24 @@ def format_multiwords(words, sep=' '):
 ###############################################################################
 def all_primes(n):
     """Yield all prime numbers from 0 to n."""
-    lst = [False, False] + [True] * (n - 1)
-    lst[2::2] = [False] * (n // 2)  # Get rid of all even numbers.
+    n = int(n)
+    if n < 2:
+        return
+    # Create a list for all odd numbers.
+    # Note: theorically, 1 is not prime, but as we never test it...
+    lst = [True] * (n // 2)
     yield 2  # 2 is a prime number.
     # Use **0.5 instead of Math.sqrt().
     root = int(n ** 0.5)
     root = root + [1,0][root % 2]  # Get an odd root.
     for i in range(3, root + 1, 2):
-        if lst[i]:
+        idx = i // 2
+        if lst[idx]:
+            # Get rid of all odd multiples of i.
+            lst[idx::i] = [False] * (((n // i) + 1) // 2)
             yield i
-            lst[i::i] = [False] * (n // i)  # Get rid of all multiples of i.
     for i in range(root, n + 1, 2):
-        if lst[i]:
+        if lst[i // 2]:
             yield i
 
 
