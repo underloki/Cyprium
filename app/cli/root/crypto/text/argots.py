@@ -82,6 +82,23 @@ class Argots(app.cli.Tool):
         else:
             return " ".join((random.choice(w) for w in out["best_solutions"]))
 
+    @staticmethod
+    def _get_largonji_txt(out, ui, act=None):
+        ui.message("Largonji found {} solutions."
+                   "".format(out["n_solutions"]))
+
+        if act not in {"all", "rand"}:
+            options = [("all", "*all solutions", ""),
+                       ("rand", "or *one random solution", "")]
+            act = ui.get_choice("Do you want to get", options,
+                                oneline=True)
+
+        if act == "all":
+            lines = utils.format_multiwords(out["solutions"], sep=" ")
+            return "\n    {}".format("\n    ".join(lines))
+        else:
+            return " ".join((random.choice(w) for w in out["solutions"]))
+
 ## Main stuff.
     def main(self, ui):
         ui.message("********** Welcome to Cyprium.Argots! **********")
@@ -120,10 +137,21 @@ class Argots(app.cli.Tool):
         ui.message("")
 
         ui.message("--- Cyphering ---")
+        ui.message("+ Argot Javanais.")
         text = "Les « Blousons Noirs » vous parlent…"
         ui.message("Data to cypher: {}".format(text))
         out = argots.cypher(text, argots.JAVANAIS, 'av')
         ui.message("Argot Javanais with 'av': {}".format(out))
+        ui.message("")
+
+        ui.message("+ Largonji des Loucherbèmes.")
+        text = "Les bouchers de la Villette osent un tango langoureux !"
+        ui.message("Data to cypher: {}".format(text))
+        out = argots.cypher(text, argots.LARGONJI,
+                            (argots.LARGONJI_SYLLABLES_V,
+                             argots.LARGONJI_SYLLABLES_C))
+        out = self._get_largonji_txt(out, ui, act="rand")
+        ui.message("Largonji des Loucherbèmes: {}".format(out))
         ui.message("")
 
         ui.message("--- Decyphering ---")
@@ -187,35 +215,58 @@ class Argots(app.cli.Tool):
                 options = [(argots.JAVANAIS,
                             "$javanais cyphering", ""),
                            (argots.FEU, "langue de *feu", ""),
-                           (argots.GENERIC, "or *generic one", "")]
+                           (argots.GENERIC, "*generic one", ""),
+                           (argots.LARGONJI,
+                            "or *largonji des loucherbèmes", "")]
                 method = ui.get_choice("Do you want to use", options,
                                        oneline=True)
-                if method == argots.JAVANAIS:
-                    syllable = "av"
-                elif method == argots.FEU:
-                    syllable = "fe"
 
-                # Get obfuscating syllable.
-                s = ui.get_data("Obfuscating syllable (or nothing to use "
-                                "default '{}' one): ".format(syllable),
-                                allow_void=True,
-                                validate=self._validate,
-                                validate_kwargs={'method': method})
-                if s:
-                    syllable = s
+                if method == argots.LARGONJI:
+                    syllable = [argots.LARGONJI_SYLLABLES_V,
+                                argots.LARGONJI_SYLLABLES_C]
+                    s = ui.get_data("Suffix vowel-compliant syllables, comma "
+                                    "separated (or nothing to use default "
+                                    "'{}' ones): "
+                                    "".format("', '".join(syllable[0])),
+                                    allow_void=True)
+                    if s:
+                        syllable[0] = [s.strip() for s in s.split(",")]
 
-                # What algo to use.
-                options = [("exhst", "*exhaustive cyphering", ""),
-                           ("simple", "or $simple one", "")]
-                answ = ui.get_choice("Do you want to use", options,
-                                     oneline=True)
-                if answ == "exhst":
-                    exhaustive = True
-                    t = ui.get_data("Cypher goal (nothing to use default "
-                                    "{} one): ".format(goal),
-                                    sub_type=ui.FLOAT, allow_void=True)
-                    if t is not None:
-                        goal = t
+                    s = ui.get_data("Suffix consonant-compliant syllables, "
+                                    "comma separated (or nothing to use "
+                                    "default '{}' ones): "
+                                    "".format("', '".join(syllable[1])),
+                                    allow_void=True)
+                    if s:
+                        syllable[1] = [s.strip() for s in s.split(",")]
+
+                else:
+                    if method == argots.JAVANAIS:
+                        syllable = "av"
+                    elif method == argots.FEU:
+                        syllable = "fe"
+
+                    # Get obfuscating syllable.
+                    s = ui.get_data("Obfuscating syllable (or nothing to use "
+                                    "default '{}' one): ".format(syllable),
+                                    allow_void=True,
+                                    validate=self._validate,
+                                    validate_kwargs={'method': method})
+                    if s:
+                        syllable = s
+
+                    # What algo to use.
+                    options = [("exhst", "*exhaustive cyphering", ""),
+                               ("simple", "or $simple one", "")]
+                    answ = ui.get_choice("Do you want to use", options,
+                                         oneline=True)
+                    if answ == "exhst":
+                        exhaustive = True
+                        t = ui.get_data("Cypher goal (nothing to use default "
+                                        "{} one): ".format(goal),
+                                        sub_type=ui.FLOAT, allow_void=True)
+                        if t is not None:
+                            goal = t
 
                 try:
                     # Will also raise an exception if data is None.
@@ -225,6 +276,8 @@ class Argots(app.cli.Tool):
                     if exhaustive:
                         txt = self._get_exhaustive_txt(txt, ui,
                                                        cypher_goal=goal)
+                    elif method == argots.LARGONJI:
+                        txt = self._get_largonji_txt(txt, ui)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -247,6 +300,8 @@ class Argots(app.cli.Tool):
                     meth = "Argot Javanais"
                 elif method == argots.FEU:
                     meth = "Langue de Feu"
+                elif method == argots.LARGONJI:
+                    meth = "Largonji des Loucherbèms"
                 ui.text_output("Text successfully converted", txt,
                                "{} version of text".format(meth))
 

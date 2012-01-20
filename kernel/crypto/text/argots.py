@@ -45,10 +45,51 @@ import kernel.utils as utils
 __version__ = "0.1.0"
 __date__ = "2012/01/15"
 __python__ = "3.x"  # Required Python version
+
+
+# XXX For now, only work on basic (ASCII) letters.
+VOWELS = {'a', 'e', 'i', 'o', 'u', 'y',
+          'A', 'E', 'I', 'O', 'U', 'Y'}
+CONSONANTS = set(string.ascii_letters) - VOWELS
+
+
+# For cases like ys -> y[sylb]is, yr -> y[sylb]ir, etc.
+Y_C_ADD = 'i'
+
+
+# Types...
+GENERIC = 0
+JAVANAIS = 1
+FEU = 2
+LARGONJI = 10
+
+
+# Loucherbem...
+# To add after a vowel (sound type, see below).
+LARGONJI_SYLLABLES_V = {"quème", "qué", "puche"}
+
+# To add after a consonant.
+LARGONJI_SYLLABLES_C = {"ème", "esse", "i", "ic", "oc", "ouche"}
+
+# End "vowels" combinations.
+# Higly french-centric... :/
+LARGONJI_VOWELS = {
+    "a", "at", "as",
+    "e", "eu", "eux", "eut", "es",
+    "i", "y", "is", "it", "ît", "ie", "ies", "ient", "ys",
+    "o", "au", "aux", "ôt", "ôts", "os",
+    "u", "ut", "ût", "us",
+    "an", "ant", "en", "ent", "end", "ends", "emps",
+    "è", "ai", "ait", "ais", "aie", "aient", "aît",
+    "é", "ez", "er", "és", "ée", "ées",
+    "on", "ont", "ons",
+    "un", "in", "uns", "ins"}
+
+
 __about__ = "" \
 """===== About Argots =====
 Argots allows you to cypher and decrypt some text using one of Argot Javanais,
-Langue de Feu (or there generic version), or Argonji des Louchébems methods.
+Langue de Feu (or there generic version), or Largonji des Loucherbems methods.
 
 == Argot Javanais, Langue de Feu and Generic ==
 The principle is to insert a syllable (always the same, two letters only,
@@ -101,34 +142,44 @@ E.g. for “Bellville”, with 'av' and a cyphering goal of 0.3:
 WARNING: If the text already contains the obfuscating syllable, it will
          likely be lost a decyphering time!
 
-== Argonji des Louchébems ==
+== Largonji des Loucherbems ==
+WARNING: While previous methods, even though french at origin, are quite easily
+         extendable to other languages, the Louchébem is tightly related to
+         french phonetic, and hence might give strange/unusable results with
+         other languages.
+         And even with french, it’s hard to get reliable results with
+         procedural algorithms… So this tool is more an help than an
+         “out-of-the-box” solution.
 
+This “cyphering” roughly consists in, for each word:
+    * If the first letter is a consonant, move it to the end of the word.
+    * Add an 'l' at the beginning of the word.
+    * Finally, add a (more or less random) syllable at the end of the word.
+So you get “boucher” (butcher) ==> “oucherb” ==> “loucherb” ==> “loucherbème”.
+           “jargon” ==> “argonj” ==> “largonj” ==> “largonji”.
+           “abricot” ==> “abricot” ==> “labricot” ==> “labricotqué”
+           “lapin” ==> “apinl” ==> “lapinl” ==> “lapinlic”.
+           etc.
 
-Cyprium.ArgotJavanais|LangueDeFeu version {} ({}).
+By default, the following vowels can be added after a “phonetic vowel”:
+    '{}'
+And those, after a consonant:
+    '{}'
+You can specify other sets, but beware, this might make decyphering even more
+complicated and unreliable…
+
+Note that during decyphering, if Argots finds an unknown suffix, it will try
+to use it too – but result may well be quite wrong in this case.
+
+Cyprium.Argots version {} ({}).
 Licence GPL3
 Software distributed on the site: http://thehackademy.fr
 
 Current execution context:
     Operating System: {}
     Python version: {}
-""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
-
-
-# XXX For now, only work on basic (ASCII) letters.
-VOWELS = {'a', 'e', 'i', 'o', 'u', 'y',
-          'A', 'E', 'I', 'O', 'U', 'Y'}
-CONSONANTS = set(string.ascii_letters) - VOWELS
-
-
-# For cases like ys -> y[sylb]is, yr -> y[sylb]ir, etc.
-Y_C_ADD = 'i'
-
-
-# Types...
-GENERIC = 0
-JAVANAIS = 1
-FEU = 2
-ARGONJI = 10
+""".format(LARGONJI_SYLLABLES_V, LARGONJI_SYLLABLES_C, __version__,
+           __date__, utils.__pf__, utils.__pytver__)
 
 
 def is_valid_syllable(method, syllable):
@@ -149,6 +200,12 @@ def is_valid_syllable(method, syllable):
     elif method == FEU:
         # One vowel and f/F.
         return (l & VOWELS) and (l & {'f', 'F'})
+    elif method == LARGONJI:
+        # Very simple, not real rules...
+        #     Must contain at least a vowel,
+        #     and length in [1, 5], with consonant(s) if length > 2.
+        return (l & VOWELS) and ((1 <= len(l) <= 2) or
+                                 ((3 <= len(l) <= 5) and (l & CONSONANTS)))
     return False
 
 
@@ -177,6 +234,59 @@ def _obfuscate_syllable(s, o_s, is_first=False):
     return s
 
 
+def _loucherbemize(word, sylb_v, sylb_c):
+    """
+    Yields all possible cypherings of a word.
+    """
+    def _generator(prepnd, word, fl, ends, appnd):
+        for end in ends:
+            yield "".join((prepnd, word, fl, end, appnd))
+
+    prepnd = appnd = ""
+    # Take apart non-alpha starting chars (like quotes, etc.).
+    for idx, c in enumerate(word):
+        if c.isalpha():
+            prepnd = word[:idx]
+            word = word[idx:]
+            break
+    # Take apart non-alpha ending chars (like coma, dots, etc.).
+    for idx, c in enumerate(word):
+        if not c.isalpha():
+            appnd = word[idx:]
+            word = word[:idx]
+            break
+
+    # Do not affect short words!
+    if len(word) < 4:
+        return (word,)  # pseudo-generator...
+
+    # Get first letter if consonant.
+    if word[0].isupper():
+        fl = word[0].lower()
+        prepnd = prepnd + 'L'
+    else:
+        fl = word[0]
+        prepnd = prepnd + 'l'
+
+    # Very basic plural handling...
+    if word[-1] in "sS":
+        appnd = word[-1] + appnd
+        word = word[:-1]
+
+    # Always add a "consonant-compliant" end.
+    if fl in CONSONANTS:
+        return _generator(prepnd, word[1:], fl, sylb_c, appnd)
+    # If word starts with a vowel, no "fl" to insert, have to check whether
+    # it ends with a "vowel" or consonant.
+    fl = ''
+    for i in range(-5, 0):
+        if word[i:] in LARGONJI_VOWELS:
+            # We have a "vowel" end, use a "vowel-compliant" end.
+            return _generator(prepnd, word, fl, sylb_v, appnd)
+    # At this stage, it’s assumed to end with a consonant.
+    return _generator(prepnd, word, fl, sylb_c, appnd)
+
+
 def cypher_word(word, syllable):
     """
     Yields all possible cypherings of a word, as tuples
@@ -199,9 +309,12 @@ def cypher_word(word, syllable):
         yield ("".join(y), cyphered / ln_w)
 
 
-def do_cypher(text, syllable, exhaustive=False, cypher_goal=0.8):
+def do_cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
     """
     Cypher (obfuscate) text in "argot javanais" or "langue de feu" method.
+    Or, if method is LARGONJI, in largonji des loucherbems (in this case,
+    syllable must be a tuple(vowel-compliant syllables,
+                             consonant-compliant syllables).
     Returns either a str with cyphered words (default basic algorithm),
     or, when exhaustive is True, a dict with following values:
         solutions: (a tuple of tuples of cyphered words)
@@ -215,6 +328,16 @@ def do_cypher(text, syllable, exhaustive=False, cypher_goal=0.8):
              likely be lost a decyphering time!
     """
     words = text.split()
+
+    if method == LARGONJI:
+        # In this case, syllable must be a tuple of syllables "vowel-compliant"
+        # and "consonant-compliant".
+        s = tuple(tuple(_loucherbemize(w, syllable[0], syllable[1]))
+                  for w in words)
+        return {"solutions": s,
+                "n_solutions": \
+                    functools.reduce(lambda n, w: n * len(w), s, 1)}
+
     if exhaustive:
         all_s = []
         best_s = []
@@ -268,7 +391,7 @@ def cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
     if not text:
         raise Exception("No text given!")
     # Check the given syllable is compatible with given method.
-    if not is_valid_syllable(method, syllable):
+    if method != LARGONJI and not is_valid_syllable(method, syllable):
         m_name = "Generic"
         if method == JAVANAIS:
             m_name = "Argot Javanais"
@@ -276,7 +399,7 @@ def cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
             m_name = "Langue de Feu"
         raise ValueError("Given syllable ({}) is invalid for “{}” type."
                          "".format(syllable, m_name))
-    return do_cypher(text, syllable, exhaustive, cypher_goal)
+    return do_cypher(text, method, syllable, exhaustive, cypher_goal)
 
 
 #############################################################################
@@ -291,8 +414,6 @@ def decypher_word(word, syllable):
 
     len_w = len(word)
     if word.endswith(syllable):
-#        if len_w > 3:
-#            return "".join((word[0:-2].replace(syllable, ''), word[-2:]))
         if len_w <= 2:
             return word
     return word.replace(syllable, '')
@@ -394,6 +515,22 @@ def main():
                                     "Note typical good cypher level is 0.3 "
                                     "(nbr of syllables added/nbr of chars, "
                                     "for each word), defaults to 0.2.")
+    cypher_parser.add_argument('-l', '--largonji', action="store_true",
+                               help="Use Largonji des Loucherbems cyphering.")
+    cypher_parser.add_argument('--vowel_syllables', nargs='*',
+                               default = LARGONJI_SYLLABLES_V,
+                               help="Largonji: syllables to add after a "
+                                    "vowel, at the end of words (defaults "
+                                    "to '{}')."
+                                    "".format("', '"
+                                              "".join(LARGONJI_SYLLABLES_V)))
+    cypher_parser.add_argument('--consonant_syllables', nargs='*',
+                               default = LARGONJI_SYLLABLES_C,
+                               help="Largonji: syllables to add after a "
+                                    "consonant, at the end of words "
+                                    "(defaults to '{}')."
+                                    "".format("', '"
+                                              "".join(LARGONJI_SYLLABLES_C)))
 
     decypher_parser = sparsers.add_parser('decypher', help="Decypher text.")
     decypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
@@ -441,7 +578,11 @@ def main():
                     print("WARNING: No obfuscating syllable given, using "
                           "'fe' default one.")
                     syllable = "fe"
-            if args.syllable in data:
+            if args.largonji:
+                method = LARGONJI
+                args.syllable = (args.vowel_syllables,
+                                 args.consonant_syllables)
+            elif args.syllable in data:
                 print("WARNING: The choosen obfuscating syllable is already "
                       "present in the text, decyphering will likely give "
                       "wrong results…")
@@ -459,6 +600,13 @@ def main():
                 b_text = \
                     "\n".join(utils.format_multiwords(out["best_solutions"],
                                                       sep=" "))
+            elif args.largonji:
+                print("Largonji found {} solutions."
+                      "".format(out["n_solutions"]))
+                print(out["solutions"])
+                text = "\n".join(utils.format_multiwords(out["solutions"],
+                                                         sep=" "))
+                btext = ""
             else:
                 text = out
                 b_text = ""
@@ -494,6 +642,8 @@ def main():
                 method = JAVANAIS
             if args.feu:
                 method = FEU
+            if args.largonji:
+                method = LARGONJI
             out = decypher(data, method, args.syllable)
             text = "\n\n".join(["Using '{}':\n    {}"
                                 "".format(o[0], o[1]) for o in out])
