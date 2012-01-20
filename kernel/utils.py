@@ -4,7 +4,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright © 2012                                                   #
+#   Copyright Â© 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -92,7 +92,7 @@ def num_to_base(num, base, min_digits=1):
     """
     b = len(base)
     out = []
-    # Standard “decimal to base n” algo...
+    # Standard â€œdecimal to base nâ€ algo...
     # Note that that algo generates digits in "reversed" order...
     while num != 0:
         r = num % b
@@ -208,7 +208,7 @@ def format_multiwords(words, sep=' '):
     """
     Format words as multi-lines text output.
     Returns a list of lines.
-    (this) (is,was,will be) (a) (test) →
+    (this) (is,was,will be) (a) (test) â†’
            is
     this   was   a test
          will be
@@ -248,3 +248,55 @@ def format_multiwords(words, sep=' '):
                 els.append('')
         ret.append(fmt_line.format(*els))
     return ret
+
+###############################################################################
+# Numbers.
+###############################################################################
+def all_primes(n):
+    """return prime numbers from 0 to n"""
+    #Utilisation de **.5 au lieu de Math.sqrt
+    liste = [False,False] + [True]*(n-1)
+    liste[2::2] = [False]*(n//2) # on élimine déjà tous les nombres pairs
+    premiers = [2] # 2 est un nombre premier
+    racine = int(n**0.5)# lsqrt(n)#int(math.sqrt(n))
+    racine = racine + [1,0][racine%2] # pour que racine soit impair
+    for i in range(3,racine+1,2):
+        if liste[i]:
+            premiers.append(i)
+            liste[i::i] = [False]*(n//i) # on élimine i et ses multiples
+    return premiers + [i for i in range(racine,n+1,2) if liste[i]]
+
+_primes_under_100 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
+    53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+
+def is_prime(n):
+    """return True if a number is prime and False else"""
+    if n <= 100:
+        return n in _primes_under_100
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+
+    for f in range(5, int(n ** .5), 6):
+        if n % f == 0 or n % (f + 2) == 0:
+            return False
+    return True
+
+def prime_range(max, min=2):
+    """return prime numbers in from min to max"""
+    if min<3:
+        return all_primes(max)
+    if max<2:
+        return []
+    elif max==2:
+        return [2]
+    if min%2==0:
+        current = min+1
+    else:
+        current = min
+    res = [2]
+    alt = False
+    while (current <= max):
+        if is_prime(current):
+            res.append(current)
+        current += 2
+    return res
