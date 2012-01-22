@@ -6,7 +6,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright © 2012                                                   #
+#   Copyright Â© 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -49,22 +49,22 @@ __about__ = "" \
 """===== About Upper-Lower =====
 
 Upper-Lower is a steganographic tool which simply hides a short sentence
-into the letters of a bigger text. Alowed chars in text are stric lowercase
-chars. digits, spaces and ponctuation are also allowed.
+into the letters of a bigger text. Alowed chars in text are strict lowercase
+chars. Digits, spaces and ponctuation are also allowed.
 
 This obviously implies that the hiding text must have at least 8 times
-letters as letters to hide!
+more letters + 1 as the length of the text to hide.
 They are two modes:
     0: use lower-case as 0, upper-case as 1
     1: use lower-case as 1, upper-case as 0
 
 Example:
-    hide("welcome to all of you to thehackademy.fr!", "tha", mode=0) ==>
-        'WelcOmE TO alL oF YOU to THEHackademy.fr!'
-    hide("welcome to all of you to thehackademy.fr!", "tha", mode=1) ==>
-        'WeLCOmE to aLL oF you tO ThehaCkademy.fr!'
+    hide("welcome to all of you to thehackademy.fr!","2012", mode=1) ==>
+        'WelCOme To alL Of you to THehaCkaDEmy.Fr!'
+    hide("welcome to all of you to thehackademy.fr!","2012", mode=0) ==>
+        'wELcoME tO ALl oF YOU TO thEHAcKAdeMY.fR!'
 
-    unhide('WelcOmE TO alL oF YOU to THEHackademy.fr!') ==>
+    unhide('wELcoME tO ALl oF YOU TO thEHAcKAdeMY.fR!') ==>
         'tha'
 
 
@@ -157,7 +157,7 @@ def do_unhide(text, mode=0):
             else:
                 bits += _MODES[mode]
             if len(bits)==8:
-                if bits=="00000000":
+                if bits==_MODES[(mode+1)%2]*8:
                     break
                 chars.append(chr(int(bits, 2)))
                 bits = ''
