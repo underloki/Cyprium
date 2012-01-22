@@ -31,6 +31,35 @@ import sys
 import os
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
+if __name__ == '__main__':
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 "..", "..", "..")))
+import kernel.utils as utils
+__version__ = "0.5.0"
+__date__ = "2012/01/14"
+__python__ = "3.x"  # Required Python version
+__about__ = "" \
+"""===== About Baudot =====
+Baudot allows you to cypher and decrypt textes in the
+baudot-code.
+Allows chars are: upper-case alphabetic letters, spaces
+digits, and the symbols : '!\x00£"$\'&)(\n\r,/.-;:=x06?'
+they are three modes:
+0 : binary output
+1 : octal output
+2 : hexa output
+with text="THA 12.":
+    cypher(txt, 0) = '11111 00001 00101 11000 00100 11011 11101 11001 00111'
+    cypher(txt, 1) = '037 001 005 030 004 033 035 031 007'
+    cypher(txt, 2) = '1F 01 05 18 04 1B 1D 19 07'
+Cyprium.Baudot version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+
 
 
 MAP_CHARS_UPPER = {
