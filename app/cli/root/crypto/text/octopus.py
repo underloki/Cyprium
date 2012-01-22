@@ -38,26 +38,26 @@ if __name__ == "__main__":
                                                  "..")))
 
 import app.cli
-import kernel.crypto.text.binary as binary
+import kernel.crypto.text.octopus as octopus
 import kernel.utils as utils
 
 
-class Binary(app.cli.Tool):
-    """CLI wrapper for binary crypto text tool."""
+class Octopus(app.cli.Tool):
+    """CLI wrapper for octopus crypto text tool."""
     def main(self, ui):
-        ui.message("********** Welcome to Cyprium.Binary! **********")
+        ui.message("********** Welcome to Cyprium.Octopus! **********")
         quit = False
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
                        (self.cypher, "*cypher",
-                                     "Cypher some textual data in binary"),
+                                     "Cypher some textual data in numbers"),
                        (self.decypher, "d*ecypher",
-                                       "Decypher binary into text"),
+                                       "Decypher numbers into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Sema")]
-            msg = "Cyprium.Binary"
+                       ("quit", "*quit", "Quit Cyprium.Octopus")]
+            msg = "Cyprium.Octopus"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
@@ -70,8 +70,8 @@ class Binary(app.cli.Tool):
         ui.message("Back to Cyprium menus! Bye.")
 
     def about(self, ui):
-        ui.message(binary.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.message(octopus.__about__)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -79,43 +79,50 @@ class Binary(app.cli.Tool):
 
         ui.message("--- Encoding ---")
         ui.message("Data to cypher: {}\n".format("Hello World!"))
-        ui.message("Binary cypherd data: {}"
-                   "".format(binary.cypher("Hello World!")))
+        ui.message("Octopus cyphered data (binary, octal, decimal and "
+                   "hexadecimal utf-8):\n    {}"
+                   "".format("\n    ".join(octopus.cypher("Hello World!",
+                                                          bases=(2,8,10,16)))))
         ui.message("")
 
-        htext = "01110111011001010110110001100011011011110110110101100101" \
-                "00100001"
         ui.message("--- Decoding ---")
-        ui.message("“Binary” text used as input: {}".format(htext))
-        ui.message("The decypherd data is: {}".format(binary.decypher(htext)))
+        ui.message("+ In general, you can let Octopus find which base is "
+                   "used.")
+        htext = "127145154143157155145041040040040346254242040350277216041"
+        ui.message("“Numbers” utf-8 text used as input: {}".format(htext))
+        ui.message("The decypherd data is: {}"
+                   "".format(octopus.decypher(htext, codec="utf-8")))
 
         ui.message("+ The input text to decypher may have space-separated "
-                   "octets:")
-        htext = "01110111 01100101 01101100 01100011 01101111 01101101 " \
-                "01100101 00100001"
+                   "bytes:")
+        htext = "1001111 1100011 1110100 1101111 1110000 1110101 1110011"
         ui.message("--- Decoding ---")
-        ui.message("“Binary” text used as input: {}".format(htext))
-        ui.message("The decypherd data is: {}".format(binary.decypher(htext)))
+        ui.message("“Numbers” ascii-7 text used as input: {}".format(htext))
+        ui.message("The decypherd data is: {}"
+                   "".format(octopus.decypher(htext, codec="ascii7")))
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to decypher must be (0, 1) digits only:")
+        ui.message("+ The input text to decypher must be contains only valid "
+                   "digits for the given base:")
         htext = "011001010111211101101100015000110110111101101101011a" \
                 "001010010001"
-        ui.message("“Binary” text used as input: {}".format(htext))
+        ui.message("“Numbers” text used as binary input: {}".format(htext))
         try:
             ui.message("The decypherd data is: {}"
-                       "".format(binary.decypher(htext)))
+                       "".format(octopus.decypher(htext, codec="ascii",
+                                                  base=2)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.message("+ The input text to decypher must have a length multiple "
-                   "of 8 (once spaces have been striped):")
+        ui.message("+ The input text to decypher must have ann integer number "
+                   "of “bytes” (once spaces have been striped):")
         htext = "01100101 0110111 0110110 0110011 0110111 0101101 0110011 " \
                 "0000001"
-        ui.message("“Binary” text used as input: {}".format(htext))
+        ui.message("“Numbers” text used as input: {}".format(htext))
         try:
             ui.message("The decypherd data is: {}"
-                       "".format(binary.decypher(htext)))
+                       "".format(octopus.decypher(htext, codec="ascii",
+                                                  base=2)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
@@ -129,18 +136,32 @@ class Binary(app.cli.Tool):
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to cypher to binary")
+                txt = ui.text_input("Text to cypher to numbers")
                 if txt is None:
                     break  # Go back to main Cypher menu.
 
                 try:
-                    # Will also raise an exception if data is None.
-                    codec = ui.get_data("Type the codec you want to use (e.g. "
-                                        "'utf-8'), or leave empty to use "
-                                        "default 'ascii' one: ")
-                    if not codec:
-                        codec = "ascii"
-                    txt = binary.cypher(txt, codec)
+                    # Get codec to use.
+                    options = [(octopus.DEFAULT, "$utf-8", ""),
+                               (octopus.ASCII, "*ascii", ""),
+                               (octopus.ASCII7, "ascii*7 (binary encode over "
+                                                "7 bits only)", ""),
+                               (None, "or specify another *codec", "")]
+                    codec = ui.get_choice("Do you want to use", options,
+                                          oneline=True)
+                    if codec is None:
+                        codec = ui.get_data("Type the codec you want to use "
+                                            "(e.g. 'latin-9'): ")
+
+                    # Get base(s).
+                    options = [(2, "$binary", ""),
+                               (8, "*octal", ""),
+                               (10, "*decimal", ""),
+                               (16, "and/or he*xadecimal", "")]
+                    bases = ui.get_choice("Do you want to use", options,
+                                          oneline=True, multichoices=",")
+
+                    txt = octopus.cypher(txt, codec, set(bases))
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -158,8 +179,9 @@ class Binary(app.cli.Tool):
                     # Else, retry with another data to hide.
 
             if done:
+                txt = "\n    " + "\n    ".join(txt)
                 ui.text_output("Data successfully converted", txt,
-                               "Binary form of data")
+                               "Octopus form of data")
 
             options = [("redo", "*cypher another data", ""),
                        ("quit", "or go back to *menu", "")]
@@ -173,17 +195,32 @@ class Binary(app.cli.Tool):
         ui.message("===== Decypher Mode =====")
 
         while 1:
-            txt = ui.text_input("Please choose some binary text")
+            txt = ui.text_input("Please choose some numbers text")
 
-            codec = ui.get_data("Type the codec you want to use (e.g. "
-                                "'utf-8'), or leave empty to use "
-                                "default 'ascii' one: ")
-            if not codec:
-                codec = "ascii"
+            # Get codec to use.
+            options = [(octopus.DEFAULT, "$utf-8", ""),
+                       (octopus.ASCII, "*ascii", ""),
+                       (octopus.ASCII7, "ascii*7 (binary encode over 7 bits "
+                                        "only)", ""),
+                       (None, "or specify another *codec", "")]
+            codec = ui.get_choice("Do you want to use", options,
+                                  oneline=True)
+            if codec is None:
+                codec = ui.get_data("Type the codec you want to use "
+                                    "(e.g. 'latin-9'): ")
+
+            # Get base(s).
+            options = [(2, "*binary", ""),
+                       (8, "*octal", ""),
+                       (10, "*decimal", ""),
+                       (16, "he*xadecimal", ""),
+                       (None, "or $auto-detect it", "")]
+            base = ui.get_choice("Do you want to use", options,
+                                 oneline=True)
 
             try:
                 ui.text_output("Data successfully decypherd",
-                               binary.decypher(txt, codec),
+                               octopus.decypher(txt, codec, base),
                                "The hidden data is")
             except Exception as e:
                 if utils.DEBUG:
@@ -198,14 +235,14 @@ class Binary(app.cli.Tool):
                 return
 
 
-NAME = "b*inary"
-TIP = "Tool to convert text to/from “binary” text."
+NAME = "octopus"
+TIP = "Tool to convert text to/from “number” text."
 TYPE = app.cli.Node.TOOL
-CLASS = Binary
+CLASS = Octopus
 
 # Allow tool to be used directly, without using Cyprium menu.
 if __name__ == "__main__":
     import app.cli.ui
     ui = app.cli.ui.UI()
-    tree = app.cli.NoTree("Binary")
-    Binary(tree).main(ui)
+    tree = app.cli.NoTree("Octopus")
+    Octopus(tree).main(ui)
