@@ -6,7 +6,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Ã‚Â© 2012                                                   #
+#   Copyright Ãƒâ€šÃ‚Â© 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -96,9 +96,9 @@ class Baudot(app.cli.Tool):
         ui.message("")
 
         ui.message("--- Won't work ---")
-        text = "salut v-1024 ha! THA"
-        ui.message("+ The input text to cypher must be have only"
-                   "ABCDEFG, digits, sapces and some symbols:")
+        text = "héllo! THA"
+        ui.message("+ The input text to cypher must have only "
+                   "strict ascii chars, digits, and some symbols : ")
         ui.message("Data to cypher: {}\n".format(text))
         try:
             ui.message("Baudot cyphered data: {}"
