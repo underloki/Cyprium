@@ -36,6 +36,11 @@ class UI(app.ui.UI):
              to some expected data...
     """
 
+    CLI_BOLD = "\x1b[1m"
+    CLI_RED = "\x1b[31m"
+    CLI_YELLOW = "\x1b[33m"
+    CLI_CLEAR = "\x1b[0m"
+
     ###########################################################################
     # Helpers (for compatibility...).
     ###########################################################################
@@ -100,11 +105,14 @@ class UI(app.ui.UI):
            the level value.
         """
         if level == app.ui.UI.WARNING:
-            message = "".join(("WARNING: ", message))
+            message = "".join((self.CLI_BOLD, self.CLI_YELLOW, "WARNING: ",
+                               self.CLI_CLEAR, message))
         elif level == app.ui.UI.ERROR:
-            message = "".join(("ERROR: ", message))
+            message = "".join((self.CLI_BOLD, self.CLI_RED, "ERROR: ",
+                               self.CLI_CLEAR, message))
         elif level == app.ui.UI.FATAL:
-            message = "".join(("FATAL ERROR: ", message))
+            message = "".join((self.CLI_BOLD, self.CLI_RED, "FATAL ERROR: ",
+                               self.CLI_CLEAR, message))
         self.cprint(message, "\n")
 
     ###########################################################################
@@ -219,7 +227,7 @@ class UI(app.ui.UI):
                 txt[key_start + 2:], default)
 
     def get_choice(self, message="", options=[], start_opt="", end_opt="",
-                   oneline=False):
+                   oneline=False, multichoices=None):
         """Gives some choices to the user, and get its answer."""
         # Parse the options...
         msg_chc = []
@@ -252,8 +260,12 @@ class UI(app.ui.UI):
             else:
                 msg_chc.append(name)
 
+        mc = ""
+        if isinstance(multichoices, str):
+            mc = "(multiple choices possible, '{}'-separated)" \
+                 "".format(multichoices)
         if oneline:
-            txt_msg = "".join((start_opt, ", ".join(msg_chc), end_opt))
+            txt_msg = "".join((start_opt, ", ".join(msg_chc), mc, end_opt))
             if message:
                 message = " ".join((message, txt_msg))
             else:
@@ -261,19 +273,28 @@ class UI(app.ui.UI):
             message = "".join((message, ": "))
         else:
             txt_msg = "".join((start_opt, "\n    ".join(msg_chc), end_opt))
-            if message:
-                message = ":\n    ".join((message, txt_msg))
-            else:
-                message = txt_msg
+            if mc:
+                message = " ".join(message, mc)
+            message = ":\n    ".join((message, txt_msg))
             message = "".join((message, "\n"))
 
         # TODO: use a getch()-like!
         key = self.cinput(message).lower()
-        while key not in chc_map:
-            if key == "+m":
-                key = self.cinput(message).lower()
-            else:
-                key = self.cinput("Invalid choice, please try "
-                                  "(or show [+m]enu) again: ").lower()
-
-        return chc_map[key]
+        if mc:
+            ret = key.split(multichoices)
+            while set(ret) > set(chc_map.keys()):
+                if key == "+m":
+                    key = self.cinput(message).lower()
+                else:
+                    key = self.cinput("Invalid choice(s), please try "
+                                      "(or show [+m]enu) again: ").lower()
+                ret = key.split(multichoices)
+            return [chc_map[k] for k in ret]
+        else:
+            while key not in chc_map:
+                if key == "+m":
+                    key = self.cinput(message).lower()
+                else:
+                    key = self.cinput("Invalid choice, please try "
+                                      "(or show [+m]enu) again: ").lower()
+            return chc_map[key]

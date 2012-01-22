@@ -80,7 +80,7 @@ class UI:
         return None
 
     def get_choice(self, message="", choices=[], start_opt="", end_opt="",
-                   oneline=False):
+                   oneline=False, multichoices=None):
         """
         Give some choices to the user, and get its answer.
         Message is printed once. Then, choices is a list of tuples:
@@ -99,6 +99,8 @@ class UI:
         option list.
         If the optional oneline is True, all menu choices are concatenated
         on a single line, e.g. "Go back to (M)enu or (T)ry again!".
+        If multichoices is not None, user can choose several options (using
+        multichoices value as separator).
         """
         # Return the default element, if present.
         for c in choices:
