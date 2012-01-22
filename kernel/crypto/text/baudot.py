@@ -31,36 +31,9 @@ import sys
 import os
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
-if __name__ == '__main__':
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 "..", "..", "..")))
-import kernel.utils as utils
-__version__ = "0.5.0"
-__date__ = "2012/01/14"
-__python__ = "3.x"  # Required Python version
-__about__ = "" \
-"""===== About Baudot =====
-Baudot allows you to cypher and decrypt textes in the
-baudot-code.
-Allows chars are: upper-case alphabetic letters, spaces
-digits, and the symbols : '!\x00£"$\'&)(\n\r,/.-;:=x06?'
-they are three modes:
-0 : binary output
-1 : octal output
-2 : hexa output
-with text="THA 12.":
-    cypher(txt, 0) = '11111 00001 00101 11000 00100 11011 11101 11001 00111'
-    cypher(txt, 1) = '037 001 005 030 004 033 035 031 007'
-    cypher(txt, 2) = '1F 01 05 18 04 1B 1D 19 07'
-Cyprium.Baudot version {} ({}).
-Licence GPL3
-Software distributed on the site: http://thehackademy.fr
-Current execution context:
-    Operating System: {}
-    Python version: {}
-""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
-MAP_CHARS = {
+
+MAP_CHARS_UPPER = {
     ' ': '00100',
     'A': '11000',
     'B': '10011',
@@ -88,6 +61,7 @@ MAP_CHARS = {
     'X': '10111',
     'Y': '10101',
     'Z': '10001'}
+
 MAP_DIGITS = {
     '0': '01101',
     '1': '11101',
@@ -99,6 +73,7 @@ MAP_DIGITS = {
     '7': '11100',
     '8': '01100',
     '9': '00011'}
+
 MAP_SYMBOLS = {
     '\x00': '00000',
     '\r': '00010',
@@ -120,11 +95,18 @@ MAP_SYMBOLS = {
     '=': '00100',
     '?': '10011',
     '£': '00101'}
+
 LETTER_MODE = "11111"
 DIGIT_MODE = "11011"
+
+
+MAP_CHARS = dict(MAP_CHARS_UPPER)
+MAP_CHARS.update({k.lower():v for k,v in MAP_CHARS.items()})
+
 MAP = dict(MAP_CHARS)
 MAP.update(MAP_DIGITS)
 MAP.update(MAP_SYMBOLS)
+
 R_MAP = {LETTER_MODE: {}, DIGIT_MODE: {} }
 R_MAP[LETTER_MODE].update({v:k for k,v in MAP_CHARS.items()})
 R_MAP[DIGIT_MODE].update({v:k for k,v in MAP_DIGITS.items()})
@@ -167,11 +149,11 @@ def cypher(text, mode=0):
         base = 2
     # Check for unallowed charsâ€¦
     c_text = set(text)
-    c_allowed = set("".join(MAP_CHARS))
-    c_allowed.update(set("".join(MAP_DIGITS)) | set("".join(MAP_SYMBOLS)))
+    c_allowed = set(MAP)
+    #c_allowed.update(set("".join(MAP_DIGITS)) | set("".join(MAP_SYMBOLS)))
     if not (c_text <= c_allowed):
         raise ValueError("Text contains unallowed chars (only strict ASCII "
-                         "uppercase-chars, digits  and some symbols): '{}'!"
+                         "letters, digits  and some symbols): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
     return " ".join(do_cypher(text, base))
 
@@ -198,7 +180,7 @@ def do_decypher(txt):
     elif mode==5:
         pass
     else:
-        raise Exception("False Baudot-cyphered text!")
+        raise Exception("Bad encoded text!")
     return do_decypher_bin(lst)
 
 def decypher(text):
@@ -210,13 +192,9 @@ def decypher(text):
     c_text = set(text)
     c_allowed = set("0123456789 ABCDEF")
     if not (c_text <= c_allowed):
-        raise ValueError("Text contains unallowed chars (only digits "
-                         "ABCDEF and spaces): '{}'!"
+        raise ValueError("Text contains unallowed chars (only ABCDEFG "
+                         "digits and spaces are allowed): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
-    try:
-        res = do_decypher(text)
-    except Exception as err:
-        raise ValueError("Text contains bad Baudot representations!")
     return "".join(do_decypher(text))
 
 def main():
