@@ -6,7 +6,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Ãƒâ€šÃ‚Â© 2012                                                   #
+#   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -73,52 +73,74 @@ class Baudot(app.cli.Tool):
 
     def about(self, ui):
         ui.message(baudot.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
         ui.message("")
 
-        ui.message("--- Cyphering ---")
-        text = "HELLO WORLD"
+        ui.message("--- Encoding ---")
+        text = "bye bye 2011 :)"
         ui.message("Data to cypher: {}\n".format(text))
-        ui.message("Baudot cyphered data: {}"
-                   "".format(baudot.cypher(text)))
+        ui.message("Baudot cyphered data (binary, octal, decimal and "
+                   "hexadecimal):\n    {}"
+                   "".format("\n    ".join(baudot.cypher(text,
+                                                         bases=(2,8,10,16)))))
         ui.message("")
 
-        ui.message("--- Decyphering ---")
-        htext = '11111 00001 00101 10000 00100 00101 11000 01110 11110 11000 '\
-                '10010 10000 00111 10101 00100 11011 11001 01101 11101 11001'
+        ui.message("--- Decoding ---")
+        ui.message("+ In general, you can let Baudot find which base is used.")
+        htext = "1f1401121218041b131617130d"
         ui.message("Baudot text used as input: {}".format(htext))
-        ui.message("The decyphered data is: {}"
+        ui.message("The decypherd data is: {}"
                    "".format(baudot.decypher(htext)))
         ui.message("")
 
-        ui.message("--- Won't work ---")
-        text = "héllo! THA"
-        ui.message("+ The input text to cypher must have only "
-                   "strict ascii chars, digits, and some symbols : ")
-        ui.message("Data to cypher: {}\n".format(text))
+        ui.message("+ The input text to decypher may have space-separated "
+                   "bytes:")
+        htext = "11111 10100 00001 10010 10010 11000 00100 11011 10011 10110 10111 10011 01101"
+        ui.message("Baudot text used as input: {}".format(htext))
+        ui.message("The decypherd data is: {}"
+                   "".format(baudot.decypher(htext)))
+        ui.message("")
+
+        ui.message("--- Won’t work ---")
+        ui.message("+ The input text to cypher must contain only valid "
+                   "chars (ascii lowercase, digits, and a few others):")
+        text = "Baudot was used by “paper tapes”…"
+        ui.message("Text to cypher: {}".format(text))
         try:
-            ui.message("Baudot cyphered data: {}"
+            ui.message("The cypherd data is: {}"
                        "".format(baudot.cypher(text)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
         ui.message("")
 
-        ui.message("+ The input text to decypher must be valid Baudot "
-                   "encoded text")
-        htext = "010111 01 0 10100 1110 0100101 01  01011011 10101 11001"
-        ui.message("Baudot text used as input: {}".format(htext))
+        ui.message("+ The input text to decypher must contain only valid "
+                   "digits for the given base:")
+        htext = "111111010111211101101100015000110110111101101101011a" \
+                "0010100100201"
+        ui.message("Baudot text used as binary input: {}".format(htext))
         try:
-            ui.message("The decyphered data is: {}"
-                       "".format(baudot.decypher(htext)))
+            ui.message("The decypherd data is: {}"
+                       "".format(baudot.decypher(htext, base=2)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.message("+ The input text to decypher must have an integer number "
+                   "of “bytes” (once spaces have been striped):")
+        htext = "11111 01101 010110 01011 00111 01011 110011 00001"
+        ui.message("Baudot text used as input: {}".format(htext))
+        try:
+            ui.message("The decypherd data is: {}"
+                       "".format(baudot.decypher(htext, base=2)))
+        except Exception as e:
+            ui.message(str(e), ui.ERROR)
+        ui.message("")
+
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -128,13 +150,21 @@ class Baudot(app.cli.Tool):
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to cypher to Baudot")
+                txt = ui.text_input("Text to cypher to Baudot",
+                                    sub_type=ui.LOWER)
                 if txt is None:
                     break  # Go back to main Cypher menu.
 
                 try:
-                    # Will also raise an exception if data is None.
-                    txt = baudot.cypher(txt)
+                    # Get base(s).
+                    options = [(2, "$binary", ""),
+                               (8, "*octal", ""),
+                               (10, "*decimal", ""),
+                               (16, "and/or he*xadecimal", "")]
+                    bases = ui.get_choice("Do you want to use", options,
+                                          oneline=True, multichoices=",")
+
+                    txt = baudot.cypher(txt, set(bases))
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -152,8 +182,9 @@ class Baudot(app.cli.Tool):
                     # Else, retry with another data to hide.
 
             if done:
+                txt = "\n    " + "\n    ".join(txt)
                 ui.text_output("Text successfully converted", txt,
-                               "Baudot version of text")
+                               "Baudot version(s) of text")
 
             options = [("redo", "*cypher another text", ""),
                        ("quit", "or go back to *menu", "")]
@@ -169,9 +200,18 @@ class Baudot(app.cli.Tool):
         while 1:
             txt = ui.text_input("Please choose some Baudot text")
 
+            # Get base.
+            options = [(2, "*binary", ""),
+                       (8, "*octal", ""),
+                       (10, "*decimal", ""),
+                       (16, "he*xadecimal", ""),
+                       (None, "or $auto-detect it", "")]
+            base = ui.get_choice("Do you want to use", options,
+                                 oneline=True)
+
             try:
                 ui.text_output("Text successfully decyphered",
-                               baudot.decypher(txt),
+                               baudot.decypher(txt, base),
                                "The decyphered text is")
             except Exception as e:
                 if utils.DEBUG:
@@ -186,8 +226,8 @@ class Baudot(app.cli.Tool):
                 return
 
 
-NAME = "*baudot"
-TIP = "Tool to convert text to/from Baudot-digits code."
+NAME = "baudot"
+TIP = "Tool to convert text to/from Baudot code."
 TYPE = app.cli.Node.TOOL
 CLASS = Baudot
 

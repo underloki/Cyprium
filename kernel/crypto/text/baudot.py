@@ -31,6 +31,7 @@
 
 import sys
 import os
+import string
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -39,32 +40,6 @@ if __name__ == '__main__':
                                                  "..", "..", "..")))
 
 import kernel.utils as utils
-
-
-__version__ = "0.5.1"
-__date__ = "2012/01/24"
-__python__ = "3.x"  # Required Python version
-__about__ = "" \
-"""===== About Baudot =====
-Baudot allows you to cypher and decypher some text using Baudot codes.
-
-Allowed chars are: upper-case alphabetic letters, spaces
-digits, and the symbols : '!\x00£"$\'&)(\n\r,/.-;:=x06?'
-they are three modes:
-0 : binary output
-1 : octal output
-2 : hexa output
-with text="THA 12.":
-    cypher(txt, 0) = '11111 00001 00101 11000 00100 11011 11101 11001 00111'
-    cypher(txt, 1) = '037 001 005 030 004 033 035 031 007'
-    cypher(txt, 2) = '1F 01 05 18 04 1B 1D 19 07'
-Cyprium.Baudot version {} ({}).
-Licence GPL3
-Software distributed on the site: http://thehackademy.fr
-Current execution context:
-    Operating System: {}
-    Python version: {}
-""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
 L_MODE = 31
@@ -156,6 +131,38 @@ for b in N_DIGITS.keys():
 del _l_m
 del _s_m
 del _m
+
+
+__version__ = "0.6.0"
+__date__ = "2012/01/24"
+__python__ = "3.x"  # Required Python version
+__about__ = "" \
+"""===== About Baudot =====
+Baudot allows you to cypher and decypher some text using Baudot codes.
+
+Allowed chars are: lowercase ASCII chars, digits, newlines, and a few others
+('{}').
+
+You can cypher to/decypher from four bases (binary [over 5 bits], octal,
+decimal and hexadecimal).
+
+E.g. with “hello 2012!”:
+
+
+Note that when decyphering, most of the time, you do not need to specify the
+base, Baudot will detect it automatically.
+
+
+Cyprium.Baudot version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format("', '".join(sorted(((set(ALLOWED_CHARS) - set(string.digits)) -
+                               set(string.ascii_lowercase)) - {'\0', '\n'})),
+           __version__, __date__, utils.__pf__, utils.__pytver__)
 
 
 def _get_mode(c):
