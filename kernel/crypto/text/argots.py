@@ -42,8 +42,8 @@ if __name__ == '__main__':
 
 import kernel.utils as utils
 
-__version__ = "0.1.0"
-__date__ = "2012/01/15"
+__version__ = "0.2.0"
+__date__ = "2012/01/24"
 __python__ = "3.x"  # Required Python version
 
 
