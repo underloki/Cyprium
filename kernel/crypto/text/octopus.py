@@ -130,7 +130,7 @@ def cypher(text, codec=DEFAULT, bases=(2,), sep=""):
     # Check for valid bases.
     b_data = set(bases)
     b_allowed = set(N_DIGITS.keys())
-    if not b_data <= b_allowed):
+    if not (b_data <= b_allowed):
         raise ValueError("Only {} bases are allowed, no '{}'!"
                          .format(sorted(N_DIGITS.keys()),
                                  "', '".join(b_data - b_allowed)))

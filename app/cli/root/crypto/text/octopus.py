@@ -78,10 +78,11 @@ class Octopus(app.cli.Tool):
         ui.message("Running a small demo/testing!")
 
         ui.message("--- Encoding ---")
-        ui.message("Data to cypher: {}\n".format("Hello World!"))
+        text = "Hello World!"
+        ui.message("Data to cypher: {}\n".format(text))
         ui.message("Octopus cyphered data (binary, octal, decimal and "
                    "hexadecimal utf-8):\n    {}"
-                   "".format("\n    ".join(octopus.cypher("Hello World!",
+                   "".format("\n    ".join(octopus.cypher(text,
                                                           bases=(2,8,10,16)))))
         ui.message("")
 
@@ -92,17 +93,18 @@ class Octopus(app.cli.Tool):
         ui.message("“Numbers” utf-8 text used as input: {}".format(htext))
         ui.message("The decypherd data is: {}"
                    "".format(octopus.decypher(htext, codec="utf-8")))
+        ui.message("")
 
         ui.message("+ The input text to decypher may have space-separated "
                    "bytes:")
         htext = "1001111 1100011 1110100 1101111 1110000 1110101 1110011"
-        ui.message("--- Decoding ---")
         ui.message("“Numbers” ascii-7 text used as input: {}".format(htext))
         ui.message("The decypherd data is: {}"
                    "".format(octopus.decypher(htext, codec="ascii7")))
+        ui.message("")
 
         ui.message("--- Won’t work ---")
-        ui.message("+ The input text to decypher must be contains only valid "
+        ui.message("+ The input text to decypher must contain only valid "
                    "digits for the given base:")
         htext = "011001010111211101101100015000110110111101101101011a" \
                 "001010010001"
@@ -113,8 +115,9 @@ class Octopus(app.cli.Tool):
                                                   base=2)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
+        ui.message("")
 
-        ui.message("+ The input text to decypher must have ann integer number "
+        ui.message("+ The input text to decypher must have an integer number "
                    "of “bytes” (once spaces have been striped):")
         htext = "01100101 0110111 0110110 0110011 0110111 0101101 0110011 " \
                 "0000001"
@@ -125,8 +128,9 @@ class Octopus(app.cli.Tool):
                                                   base=2)))
         except Exception as e:
             ui.message(str(e), ui.ERROR)
+        ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -181,7 +185,7 @@ class Octopus(app.cli.Tool):
             if done:
                 txt = "\n    " + "\n    ".join(txt)
                 ui.text_output("Data successfully converted", txt,
-                               "Octopus form of data")
+                               "Octopus form(s) of data")
 
             options = [("redo", "*cypher another data", ""),
                        ("quit", "or go back to *menu", "")]
@@ -209,7 +213,7 @@ class Octopus(app.cli.Tool):
                 codec = ui.get_data("Type the codec you want to use "
                                     "(e.g. 'latin-9'): ")
 
-            # Get base(s).
+            # Get base.
             options = [(2, "*binary", ""),
                        (8, "*octal", ""),
                        (10, "*decimal", ""),

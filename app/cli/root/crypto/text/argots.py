@@ -129,7 +129,7 @@ class Argots(app.cli.Tool):
 
     def about(self, ui):
         ui.message(argots.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
