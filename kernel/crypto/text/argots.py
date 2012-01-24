@@ -74,11 +74,12 @@ LARGONJI_SYLLABLES_C = {"ème", "esse", "i", "ic", "oc", "ouche"}
 # End "vowels" combinations.
 # Higly french-centric... :/
 LARGONJI_VOWELS = {
-    "a", "at", "as",
+    "a", "at", "as", "ât",
     "e", "eu", "eux", "eut", "es",
     "i", "y", "is", "it", "ît", "ie", "ies", "ient", "ys",
     "o", "au", "aux", "ôt", "ôts", "os",
-    "u", "ut", "ût", "us",
+    "u", "ut", "ût", "us", "ue", "ues",
+    "ué", "uée",
     "an", "ant", "en", "ent", "end", "ends", "emps",
     "è", "ai", "ait", "ais", "aie", "aient", "aît",
     "é", "ez", "er", "és", "ée", "ées",
@@ -90,6 +91,7 @@ __about__ = "" \
 """===== About Argots =====
 Argots allows you to cypher and decrypt some text using one of Argot Javanais,
 Langue de Feu (or there generic version), or Largonji des Loucherbems methods.
+
 
 == Argot Javanais, Langue de Feu and Generic ==
 The principle is to insert a syllable (always the same, two letters only,
@@ -142,6 +144,7 @@ E.g. for “Bellville”, with 'av' and a cyphering goal of 0.3:
 WARNING: If the text already contains the obfuscating syllable, it will
          likely be lost a decyphering time!
 
+
 == Largonji des Loucherbems ==
 WARNING: While previous methods, even though french at origin, are quite easily
          extendable to other languages, the Louchébem is tightly related to
@@ -169,7 +172,14 @@ You can specify other sets, but beware, this might make decyphering even more
 complicated and unreliable…
 
 Note that during decyphering, if Argots finds an unknown suffix, it will try
-to use it too – but result may well be quite wrong in this case.
+to use it too – but result may well be quite wrong in this case. And given
+the fuzzyness of this argots, decyphering will systematically output the
+original (cyphered) word, at the end of the lists.
+
+Note also that current code assume “largonji suffixes” are never longer than 5
+chars, and never (de)cyphers words shorter than 4 chars (sorry for
+“loufoque” !).
+
 
 Cyprium.Argots version {} ({}).
 Licence GPL3
@@ -183,7 +193,7 @@ Current execution context:
 
 
 def is_valid_syllable(method, syllable):
-    """Return True if syllable is a valid obsucating one for given type."""
+    """Return True if syllable is a valid obfsucating one for given type."""
     if len(syllable) != 2:
         return False
 
@@ -258,7 +268,7 @@ def _loucherbemize(word, sylb_v, sylb_c):
 
     # Do not affect short words!
     if len(word) < 4:
-        return (word,)  # pseudo-generator...
+        return ("".join((prepnd, word, appnd)),)  # pseudo-generator...
 
     # Get first letter if consonant.
     if word[0].isupper():
@@ -279,14 +289,130 @@ def _loucherbemize(word, sylb_v, sylb_c):
     # If word starts with a vowel, no "fl" to insert, have to check whether
     # it ends with a "vowel" or consonant.
     fl = ''
+    w = word.lower()
     for i in range(-5, 0):
-        if word[i:] in LARGONJI_VOWELS:
+        if w[i:] in LARGONJI_VOWELS:
             # We have a "vowel" end, use a "vowel-compliant" end.
             return _generator(prepnd, word, fl, sylb_v, appnd)
     # At this stage, it’s assumed to end with a consonant.
     return _generator(prepnd, word, fl, sylb_c, appnd)
 
 
+def _unloucherbemize(word, sylb_v, sylb_c):
+    """
+    Yields all possible decypherings of a word (together with its org form).
+    """
+    def _generator(prepnd, words, appnd):
+        for w in words:
+            yield "".join((prepnd, w, appnd))
+
+    prepnd = appnd = ""
+    # Take apart non-alpha starting chars (like quotes, etc.).
+    for idx, c in enumerate(word):
+        if c.isalpha():
+            prepnd = word[:idx]
+            word = word[idx:]
+            break
+    # Take apart non-alpha ending chars (like coma, dots, etc.).
+    for idx, c in enumerate(word):
+        if not c.isalpha():
+            appnd = word[idx:]
+            word = word[:idx]
+            break
+
+    # Do not affect short words, or words not starting by 'l'/'L'!
+    if len(word) < 6 or word[0] not in 'lL':
+        return ("".join((prepnd, word, appnd)),)  # pseudo-generator...
+
+    is_upper = word[0].isupper()
+
+    # Very basic plural handling...
+    if word[-1] in "sS":
+        appnd = word[-1] + appnd
+        word = word[:-1]
+
+    # XXX Here we assume "largonji suffix" is never longer than 5 chars.
+    #     And cyphered words are at least 4 (-1 for possible s,
+    #     +1 for starting l) length.
+    #     Again, all this is quite fuzzy... :/
+    w = word.lower()
+    for i in range(max(-5, 4 - len(w)), 0):
+        if w[i:] in sylb_v:
+            # We have a "vowel-compliant" end, which means the org word started
+            # with a vowel, and ended with "phonetic-vowel".
+            # This is the only case where we can decypher for sure, but return
+            # the cyphered form of the word nevertheless.
+            if is_upper:
+                # Capitalize the word... and remove first l.
+                w1 = word[1].upper() + word[2:i]
+            else:
+                w1 = word[1:i]
+            return _generator(prepnd, (w1, word), appnd)
+        elif w[i:] in sylb_c:
+            # We have a "consonant-compliant" end, which means the org word
+            # either started with a consonant, or started with a vowel and
+            # ended with a consonant.
+            # Return both possibilities (and cyphered word too).
+            if is_upper:
+                # Capitalize the words...
+                w1 = word[i - 1].upper() + word[1:i - 1]
+                w2 = word[1].upper() + word[2:i]
+            else:
+                w1 = word[i - 1] + word[1:i - 1]
+                w2 = word[1:i]
+            return _generator(prepnd, (w1, w2, word), appnd)
+
+    # At this stage, we did not find a known suffix largonji syllable.
+    # Try some blind decyphering...
+    # XXX This is very hackish, boring, and unreliable code!
+    # First, get the two previous syllables as (c1v1, c2v2)
+    v2 = ""
+    c2 = ""
+    
+    for i in range(max(-5, 4 - len(w)), 0):
+        if w[i:] in LARGONJI_VOWELS:
+            if w[i - 1] not in CONSONANTS:
+                # Fuzzy/error, just return unmodified cyphered word.
+                return _generator(prepnd, (word,), appnd)
+            v2 = word[i:]
+            c2 = word[i - 1]
+            word = word[:i - 1]
+            w = w[:i - 1]
+            break
+    if not v2 and w[-1] in CONSONANTS:
+        # Ends like "-ic", "ok", etc.
+        c2 = word[-1]
+        word = word[:-1]
+        w = w[:-1]
+    v1 = ""
+    c1 = ""
+    if len(word) > 5:
+        for i in range(max(-5, 4 - len(w)), 0):
+            if w[i:] in LARGONJI_VOWELS:
+                v1 = word[i:]
+                word = word[:i]
+                w = w[:i]
+                if w[-1] in CONSONANTS:
+                    c1 = word[-1]
+                    word = word[:-1]
+                break
+    # And now, create all possible words...
+    ws = [c2 + word[1:] + c1 + v1,
+          word[1:] + c1 + v1,
+          word[1:] + c1 + v1 + c2]
+    if c1:
+        ws += [c1 + word[1:],
+               word[1:],
+               word[1:] + c1]
+    # Capitalize if needed.
+    if is_upper:
+        ws =  [w[0].upper() + w[1:] for w in ws]
+    # Org word
+    ws.append(word + c1 + v1 + c2 + v2)
+    return _generator(prepnd, ws, appnd)
+
+
+###############################################################################
 def cypher_word(word, syllable):
     """
     Yields all possible cypherings of a word, as tuples
@@ -328,15 +454,6 @@ def do_cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
              likely be lost a decyphering time!
     """
     words = text.split()
-
-    if method == LARGONJI:
-        # In this case, syllable must be a tuple of syllables "vowel-compliant"
-        # and "consonant-compliant".
-        s = tuple(tuple(_loucherbemize(w, syllable[0], syllable[1]))
-                  for w in words)
-        return {"solutions": s,
-                "n_solutions": \
-                    functools.reduce(lambda n, w: n * len(w), s, 1)}
 
     if exhaustive:
         all_s = []
@@ -389,9 +506,9 @@ def cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
     """Wrapper around do_cypher, making some checks."""
     import string
     if not text:
-        raise Exception("No text given!")
+        raise ValueError("No text given!")
     # Check the given syllable is compatible with given method.
-    if method != LARGONJI and not is_valid_syllable(method, syllable):
+    if not is_valid_syllable(method, syllable):
         m_name = "Generic"
         if method == JAVANAIS:
             m_name = "Argot Javanais"
@@ -400,6 +517,46 @@ def cypher(text, method, syllable, exhaustive=False, cypher_goal=0.8):
         raise ValueError("Given syllable ({}) is invalid for “{}” type."
                          "".format(syllable, m_name))
     return do_cypher(text, method, syllable, exhaustive, cypher_goal)
+
+
+def do_cypher_largonji(text, vowel_syllables=LARGONJI_SYLLABLES_V,
+                       consonant_syllables=LARGONJI_SYLLABLES_C):
+    """
+    Cypher (obfuscate) text in "largonji des loucherbems".
+    Syllables must be a tuple(vowel-compliant syllables,
+                              consonant-compliant syllables).
+    Return a dict with following values:
+        solutions: (a tuple of tuples of cyphered words),
+        n_solutions: the total number of solutions.
+    """
+    # In this case, syllable must be a tuple of syllables "vowel-compliant"
+    # and "consonant-compliant".
+    s = tuple(tuple(_loucherbemize(w, vowel_syllables, consonant_syllables))
+              for w in text.split())
+    return {"solutions": s,
+            "n_solutions": functools.reduce(lambda n, w: n * len(w), s, 1)}
+
+
+def cypher_largonji(text, vowel_syllables=LARGONJI_SYLLABLES_V,
+                          consonant_syllables=LARGONJI_SYLLABLES_C):
+    """Wrapper around do_cypher, making some checks."""
+    import string
+    if not text:
+        raise ValueError("No text given!")
+    # Check there are some syllables, and vowels and consonants do not match.
+    if not (vowel_syllables and consonant_syllables):
+        raise ValueError("No suffix syllables given!")
+    vs = set(vowel_syllables)
+    cs = set(consonant_syllables)
+    if vs & cs:
+        raise ValueError("Some vowel and consonant syllables are the same, "
+                         "this would make decyphering really unreliable, "
+                         "please fix that ('{}')!"
+                         "".format("', '".join(vs & cs)))
+    # Be sure to not have doubles...
+    vowel_syllables = tuple(vs)
+    consonant_syllables = tuple(cs)
+    return do_cypher_largonji(text, vowel_syllables, consonant_syllables)
 
 
 #############################################################################
@@ -457,7 +614,7 @@ def do_decypher(text, method, syllable=None):
 def decypher(text, method, syllable=None):
     """Wrapper around do_decypher, making some (very limited!) checks."""
     if not text:
-        raise Exception("No text given!")
+        raise ValueError("No text given!")
     # Check the given syllable (if any) is compatible with given method.
     if syllable and not is_valid_syllable(syllable, method):
         m_name = "Generic"
@@ -468,6 +625,37 @@ def decypher(text, method, syllable=None):
         raise ValueError("Given syllable ({}) is invalid for “{}” type."
                          "".format(syllable, m_name))
     return do_decypher(text, method, syllable)
+
+
+def do_decypher_largonji(text, vowel_syllables=LARGONJI_SYLLABLES_V,
+                         consonant_syllables=LARGONJI_SYLLABLES_C):
+    """
+    Decypher text, by removing trailing syllables, and starting 'l'.
+    syllables is a tuple (syllables_for_vowels, syllables_for_consonants).
+    Return a list of tuples containing each possible decipher for each word.
+    """
+    ret = [tuple(_unloucherbemize(w, vowel_syllables, consonant_syllables))
+           for w in text.split()]
+    return ret
+
+
+def decypher_largonji(text, vowel_syllables=LARGONJI_SYLLABLES_V,
+                      consonant_syllables=LARGONJI_SYLLABLES_C):
+    """Wrapper around do_decypher_largonji, making some checks."""
+    if not text:
+        raise ValueError("No text given!")
+    # Check vowels and consonants do not match.
+    vs = set(vowel_syllables)
+    cs = set(consonant_syllables)
+    if vs & cs:
+        raise ValueError("Some vowel and consonant syllables are the same, "
+                         "this would make decyphering really unreliable, "
+                         "please fix that ('{}')!"
+                         "".format("', '".join(vs & cs)))
+    # Be sure to not have doubles...
+    vowel_syllables = tuple(vs)
+    consonant_syllables = tuple(cs)
+    return do_decypher_largonji(text, vowel_syllables, consonant_syllables)
 
 
 def main():
@@ -486,75 +674,74 @@ def main():
 
     sparsers = parser.add_subparsers(dest="command")
 
-    cypher_parser = sparsers.add_parser('cypher', help="Cypher text.")
-    cypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                                help="A file containing the text to cypher.")
-    cypher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                                help="A file into which write the cyphered "
-                                     "text.")
-    cypher_parser.add_argument('-d', '--data', help="The text to cypher.")
-    cypher_parser.add_argument('-s', '--syllable', help="Obfuscating syllable "
-                                                        "to insert in text.")
-    cypher_parser.add_argument('-j', '--javanais', action="store_true",
-                               help="Restrict allowed obfuscating syllables "
-                                    "to ja, av and va (and their case "
-                                    "variants).")
-    cypher_parser.add_argument('-f', '--feu', action="store_true",
-                               help="Restrict allowed obfuscating syllablse "
-                                    "to a f and a vowel (and their case "
-                                    "variants).")
-    cypher_parser.add_argument('--exhaustive', action="store_true",
-                               help="Use a complete search of all possible "
-                                    "cypherings. WARNING: with long words, it "
-                                    "will take a *very* long time to compute "
-                                    "(seconds with 20 chars word, and "
-                                    "increasing at a high rate)!")
-    cypher_parser.add_argument('--cypher_goal', type=float, default=0.2,
-                               help="Minimum level of cyphering, if possible. "
-                                    "Only relevant with --exhaustive!"
-                                    "Note typical good cypher level is 0.3 "
-                                    "(nbr of syllables added/nbr of chars, "
-                                    "for each word), defaults to 0.2.")
-    cypher_parser.add_argument('-l', '--largonji', action="store_true",
-                               help="Use Largonji des Loucherbems cyphering.")
-    cypher_parser.add_argument('--vowel_syllables', nargs='*',
-                               default = LARGONJI_SYLLABLES_V,
-                               help="Largonji: syllables to add after a "
-                                    "vowel, at the end of words (defaults "
-                                    "to '{}')."
-                                    "".format("', '"
-                                              "".join(LARGONJI_SYLLABLES_V)))
-    cypher_parser.add_argument('--consonant_syllables', nargs='*',
-                               default = LARGONJI_SYLLABLES_C,
-                               help="Largonji: syllables to add after a "
-                                    "consonant, at the end of words "
-                                    "(defaults to '{}')."
-                                    "".format("', '"
-                                              "".join(LARGONJI_SYLLABLES_C)))
+    cparser = sparsers.add_parser('cypher', help="Cypher text.")
+    cparser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                         help="A file containing the text to cypher.")
+    cparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                         help="A file into which write the cyphered text.")
+    cparser.add_argument('-d', '--data', help="The text to cypher.")
+    cparser.add_argument('-s', '--syllable',
+                         help="Obfuscating syllable to insert in text.")
+    cparser.add_argument('-j', '--javanais', action="store_true",
+                         help="Restrict allowed obfuscating syllables to ja, "
+                              "av and va (and their case variants).")
+    cparser.add_argument('-f', '--feu', action="store_true",
+                         help="Restrict allowed obfuscating syllables to a f "
+                              "and a vowel (and their case variants).")
+    cparser.add_argument('--exhaustive', action="store_true",
+                         help="Use a complete search of all possible "
+                              "cypherings. WARNING: with long words, it will "
+                              "take a *very* long time to compute (seconds "
+                              "with 20 chars word, and increasing at a high "
+                              "rate)!")
+    cparser.add_argument('--cypher_goal', type=float, default=0.2,
+                         help="Minimum level of cyphering, if possible. Only "
+                              "relevant with --exhaustive! Note typical good "
+                              "cypher level is 0.3 (nbr of syllables added/"
+                              "nbr of chars, for each word), defaults to 0.2.")
+    cparser.add_argument('-l', '--largonji', action="store_true",
+                         help="Use Largonji des Loucherbems cyphering.")
+    cparser.add_argument('--vowel_syllables', nargs='*',
+                         default = LARGONJI_SYLLABLES_V,
+                         help="Largonji: syllables to add after a vowel, at "
+                              "the end of words (defaults to '{}')."
+                              "".format("', '".join(LARGONJI_SYLLABLES_V)))
+    cparser.add_argument('--consonant_syllables', nargs='*',
+                         default = LARGONJI_SYLLABLES_C,
+                         help="Largonji: syllables to add after a consonant, "
+                              "at the end of words (defaults to '{}')."
+                              "".format("', '".join(LARGONJI_SYLLABLES_C)))
 
-    decypher_parser = sparsers.add_parser('decypher', help="Decypher text.")
-    decypher_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                                 help="A file containing the text to "
-                                      "decypher.")
-    decypher_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                                 help="A file into which write the decyphered "
-                                      "text.")
-    decypher_parser.add_argument('-d', '--data', help="The text to decypher.")
-    decypher_parser.add_argument('-s', '--syllable',
-                                 help="Obfuscating syllable to remove from "
-                                      "text (if none given, the most common "
-                                      "one compatible with choosen method "
-                                      "will be used).")
-    decypher_parser.add_argument('-j', '--javanais', action="store_true",
-                               help="Restrict allowed obfuscating syllables "
-                                    "to ja, av and va (and their case "
-                                    "variants).")
-    decypher_parser.add_argument('-f', '--feu', action="store_true",
-                               help="Restrict allowed obfuscating syllables "
-                                    "to a f and a vowel (and their case "
-                                    "variants).")
+    dparser = sparsers.add_parser('decypher', help="Decypher text.")
+    dparser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                         help="A file containing the text to decypher.")
+    dparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                         help="A file into which write the decyphered text.")
+    dparser.add_argument('-d', '--data', help="The text to decypher.")
+    dparser.add_argument('-s', '--syllable',
+                         help="Obfuscating syllable to remove from text (if "
+                              "none given, the most common one compatible "
+                              "with choosen method will be used).")
+    dparser.add_argument('-j', '--javanais', action="store_true",
+                         help="Restrict allowed obfuscating syllables to ja, "
+                              "av and va (and their case variants).")
+    dparser.add_argument('-f', '--feu', action="store_true",
+                         help="Restrict allowed obfuscating syllables to a f "
+                              "and a vowel (and their case variants).")
+    dparser.add_argument('-l', '--largonji', action="store_true",
+                         help="Use Largonji des Loucherbems decyphering.")
+    dparser.add_argument('--vowel_syllables', nargs='*',
+                         default = LARGONJI_SYLLABLES_V,
+                         help="Largonji: syllables to search for vowels, at "
+                              "the end of words (defaults to '{}')."
+                              "".format("', '".join(LARGONJI_SYLLABLES_V)))
+    dparser.add_argument('--consonant_syllables', nargs='*',
+                         default = LARGONJI_SYLLABLES_C,
+                         help="Largonji: syllables to search for consonants, "
+                              "at the end of words (defaults to '{}')."
+                              "".format("', '".join(LARGONJI_SYLLABLES_C)))
 
-    sparsers.add_parser('about', help="About ArgotJavanais|LangueDeFeu…")
+    sparsers.add_parser('about', help="About Argots…")
 
     args = parser.parse_args()
     utils.DEBUG = args.debug
@@ -579,28 +766,8 @@ def main():
                           "'fe' default one.")
                     syllable = "fe"
             if args.largonji:
-                method = LARGONJI
-                args.syllable = (args.vowel_syllables,
-                                 args.consonant_syllables)
-            elif args.syllable in data:
-                print("WARNING: The choosen obfuscating syllable is already "
-                      "present in the text, decyphering will likely give "
-                      "wrong results…")
-            out = cypher(data, method, args.syllable, args.exhaustive,
-                         args.cypher_goal)
-            if args.exhaustive:
-                print("Exaustive found {} solutions for a minimum "
-                      "cyphering of {}, among which {} solutions with the "
-                      "highest possible cyphering ({}):"
-                      "".format(out["n_solutions"], args.cypher_goal,
-                                out["best_n_solutions"],
-                                out["best_cypher"]))
-                text = "\n".join(utils.format_multiwords(out["solutions"],
-                                                         sep=" "))
-                b_text = \
-                    "\n".join(utils.format_multiwords(out["best_solutions"],
-                                                      sep=" "))
-            elif args.largonji:
+                out = cypher_largonji(data, args.vowel_syllables,
+                                      args.consonant_syllables)
                 print("Largonji found {} solutions."
                       "".format(out["n_solutions"]))
                 print(out["solutions"])
@@ -608,8 +775,26 @@ def main():
                                                          sep=" "))
                 btext = ""
             else:
-                text = out
-                b_text = ""
+                if args.syllable in data:
+                    print("WARNING: The chosen obfuscating syllable is "
+                          "already present in the text, decyphering will "
+                          "likely give wrong results…")
+                out = cypher(data, method, args.syllable, args.exhaustive,
+                             args.cypher_goal)
+                if args.exhaustive:
+                    print("Exhaustive found {} solutions for a minimum "
+                          "cyphering of {}, among which {} solutions with the "
+                          "highest possible cyphering ({}):"
+                          "".format(out["n_solutions"], args.cypher_goal,
+                                    out["best_n_solutions"],
+                                    out["best_cypher"]))
+                    text = "\n".join(utils.format_multiwords(out["solutions"],
+                                                             sep=" "))
+                    b_text = "\n".join(utils.format_multiwords(
+                                             out["best_solutions"], sep=" "))
+                else:
+                    text = out
+                    b_text = ""
             if args.ofile:
                 args.ofile.write(text)
                 if b_text:
@@ -642,11 +827,15 @@ def main():
                 method = JAVANAIS
             if args.feu:
                 method = FEU
+
             if args.largonji:
-                method = LARGONJI
-            out = decypher(data, method, args.syllable)
-            text = "\n\n".join(["Using '{}':\n    {}"
-                                "".format(o[0], o[1]) for o in out])
+                out = decypher_largonji(data, args.vowel_syllables,
+                                        args.consonant_syllables)
+                text = "\n".join(utils.format_multiwords(out))
+            else:
+                out = decypher(data, method, args.syllable)
+                text = "\n\n".join(["Using '{}':\n    {}"
+                                    "".format(o[0], o[1]) for o in out])
             if args.ofile:
                 args.ofile.write(text)
             else:

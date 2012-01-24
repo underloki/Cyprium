@@ -137,7 +137,7 @@ class Argots(app.cli.Tool):
         ui.message("")
 
         ui.message("--- Cyphering ---")
-        ui.message("+ Argot Javanais.")
+        ui.message("+ Argot Javanais & co.")
         text = "Les « Blousons Noirs » vous parlent…"
         ui.message("Data to cypher: {}".format(text))
         out = argots.cypher(text, argots.JAVANAIS, 'av')
@@ -147,14 +147,14 @@ class Argots(app.cli.Tool):
         ui.message("+ Largonji des Loucherbèmes.")
         text = "Les bouchers de la Villette osent un tango langoureux !"
         ui.message("Data to cypher: {}".format(text))
-        out = argots.cypher(text, argots.LARGONJI,
-                            (argots.LARGONJI_SYLLABLES_V,
-                             argots.LARGONJI_SYLLABLES_C))
+        out = argots.cypher_largonji(text, argots.LARGONJI_SYLLABLES_V,
+                                     argots.LARGONJI_SYLLABLES_C)
         out = self._get_largonji_txt(out, ui, act="rand")
         ui.message("Largonji des Loucherbèmes: {}".format(out))
         ui.message("")
 
         ui.message("--- Decyphering ---")
+        ui.message("+ Argot Javanais & co.")
         htext = "LEfes EfApEfachEfes sEfont sEfur lEfe sEfentEfier dEfes HEfallEfes."
         ui.message("Note that most of the time, you can use default options "
                    "here (i.e. Generic, and give no obfuscating syllable), "
@@ -165,10 +165,21 @@ class Argots(app.cli.Tool):
                    "".format(out[0][0], out[0][1]))
         ui.message("")
 
+        ui.message("+ Largonji des Loucherbèmes.")
+        htext = "La mie du loucherbouche lricottefesse lavecouche le " \
+                "loulangerbesse !"
+        ui.message("Largonji de Loucherbems text used as input: {}"
+                   "".format(htext))
+        out = argots.decypher_largonji(htext)
+        ui.message("The decyphered data is:\n    {}"
+                   "".format("\n    ".join(utils.format_multiwords(out))))
+        ui.message("")
+
         ui.message("--- Notes ---")
-        ui.message("+ You can choose the optionnal Exhaustive option, to get "
-                   "all possible encodings of each words higher than the "
-                   "given goal of cyphering (or the highest possible):")
+        ui.message("+ With Argot Javanais & co, you can choose the optional "
+                   "Exhaustive option, to get all possible encodings of each "
+                   "words higher than the given goal of cyphering (or the "
+                   "highest possible):")
         text = "Do you know Ménilmuche and Belleville ?"
         ui.message("Data to cypher: {}".format(text))
         out = argots.cypher(text, argots.GENERIC, 'uz', exhaustive=True,
@@ -179,9 +190,21 @@ class Argots(app.cli.Tool):
         ui.message(out)
         ui.message("")
 
+        ui.message("+ Here is what you’ll get if you try to decypher some "
+                   "largonji without giving any suffix syllables (note how "
+                   "some words aren’t decyphered well at all):")
+        htext = "La mie du loucherbouche lricottefesse lavecouche le " \
+                "loulangerbesse !"
+        ui.message("Largonji de Loucherbems text used as input: {}"
+                   "".format(htext))
+        out = argots.decypher_largonji(htext, (), ())
+        ui.message("The decyphered data is:\n    {}"
+                   "".format("\n    ".join(utils.format_multiwords(out))))
+        ui.message("")
+
         ui.message("--- Won’t work ---")
-        ui.message("+ The obfuscating syllable must comply to the choosen "
-                   "method!")
+        ui.message("+ With Argot Javanais & co, the obfuscating syllable "
+                   "must comply to the chosen method!")
         text = "Hello WORLD !"
         ui.message("Data to cypher, using Javanais and 'eh': {}\n"
                    "".format(text))
@@ -222,23 +245,24 @@ class Argots(app.cli.Tool):
                                        oneline=True)
 
                 if method == argots.LARGONJI:
-                    syllable = [argots.LARGONJI_SYLLABLES_V,
-                                argots.LARGONJI_SYLLABLES_C]
+                    # Get sets of suffix syllables.
+                    v_sylb = argots.LARGONJI_SYLLABLES_V
                     s = ui.get_data("Suffix vowel-compliant syllables, comma "
                                     "separated (or nothing to use default "
                                     "'{}' ones): "
-                                    "".format("', '".join(syllable[0])),
+                                    "".format("', '".join(v_sylb)),
                                     allow_void=True)
                     if s:
-                        syllable[0] = [s.strip() for s in s.split(",")]
+                        v_sylb = [s.strip() for s in s.split(",")]
 
+                    c_sylb = argots.LARGONJI_SYLLABLES_C
                     s = ui.get_data("Suffix consonant-compliant syllables, "
                                     "comma separated (or nothing to use "
                                     "default '{}' ones): "
-                                    "".format("', '".join(syllable[1])),
+                                    "".format("', '".join(c_sylb)),
                                     allow_void=True)
                     if s:
-                        syllable[1] = [s.strip() for s in s.split(",")]
+                        c_sylb = [s.strip() for s in s.split(",")]
 
                 else:
                     if method == argots.JAVANAIS:
@@ -269,15 +293,16 @@ class Argots(app.cli.Tool):
                             goal = t
 
                 try:
-                    # Will also raise an exception if data is None.
-                    txt = argots.cypher(txt, method, syllable,
-                                        exhaustive=exhaustive,
-                                        cypher_goal=goal)
-                    if exhaustive:
-                        txt = self._get_exhaustive_txt(txt, ui,
-                                                       cypher_goal=goal)
-                    elif method == argots.LARGONJI:
+                    if method == argots.LARGONJI:
+                        txt = argots.cypher_largonji(txt, v_sylb, c_sylb)
                         txt = self._get_largonji_txt(txt, ui)
+                    else:
+                        txt = argots.cypher(txt, method, syllable,
+                                            exhaustive=exhaustive,
+                                            cypher_goal=goal)
+                        if exhaustive:
+                            txt = self._get_exhaustive_txt(txt, ui,
+                                                           cypher_goal=goal)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -288,7 +313,7 @@ class Argots(app.cli.Tool):
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
-                                         "atomic digits, please", options,
+                                         "argot, please", options,
                                          oneline=True)
                     if answ in {None, "menu"}:
                         return  # Go back to main Sema menu.
@@ -325,28 +350,55 @@ class Argots(app.cli.Tool):
             options = [(argots.JAVANAIS,
                         "*javanais decyphering", ""),
                        (argots.FEU, "langue de *feu", ""),
-                       (argots.GENERIC, "or $generic one", "")]
+                       (argots.GENERIC, "$generic", ""),
+                       (argots.LARGONJI,
+                        "or *largonji des loucherbèmes one", "")]
             method = ui.get_choice("Do you want to use", options,
                                    oneline=True)
 
-            # Get obfuscating syllable.
-            s = ui.get_data("Obfuscating syllable (or nothing to search "
-                            "for the most common one): ", allow_void=True,
-                            validate=self._validate,
-                            validate_kwargs={'method': method})
-            if s:
-                syllable = s
+            if method == argots.LARGONJI:
+                # Get sets of suffix syllables.
+                v_sylb = argots.LARGONJI_SYLLABLES_V
+                s = ui.get_data("Suffix vowel-compliant syllables, comma "
+                                "separated (or nothing to use default "
+                                "'{}' ones): "
+                                "".format("', '".join(v_sylb)),
+                                allow_void=True)
+                if s:
+                    v_sylb = [s.strip() for s in s.split(",")]
+
+                c_sylb = argots.LARGONJI_SYLLABLES_C
+                s = ui.get_data("Suffix consonant-compliant syllables, "
+                                "comma separated (or nothing to use "
+                                "default '{}' ones): "
+                                "".format("', '".join(c_sylb)),
+                                allow_void=True)
+                if s:
+                    c_sylb = [s.strip() for s in s.split(",")]
+
+            else:
+                # Get obfuscating syllable.
+                s = ui.get_data("Obfuscating syllable (or nothing to search "
+                                "for the most common one): ", allow_void=True,
+                                validate=self._validate,
+                                validate_kwargs={'method': method})
+                if s:
+                    syllable = s
 
             try:
-                txt = argots.decypher(txt, method, syllable)
-                if len(txt) > 1:
-                    txt = "\n    " + \
-                          "\n".join(["Using '{}':\n    {}"
-                                     "".format(t[0], t[1]) for t in txt])
-                elif txt:
-                    txt = txt[0][1]
+                if method == argots.LARGONJI:
+                    txt = argots.decypher_largonji(txt, v_sylb, c_sylb)
+                    txt = "\n    " + "\n    ".join(utils.format_multiwords(txt))
                 else:
-                    txt = ""
+                    txt = argots.decypher(txt, method, syllable)
+                    if len(txt) > 1:
+                        txt = "\n    " + \
+                              "\n".join(["Using '{}':\n    {}"
+                                         "".format(t[0], t[1]) for t in txt])
+                    elif txt:
+                        txt = txt[0][1]
+                    else:
+                        txt = ""
                 ui.text_output("Text successfully decyphered",
                                txt, "The decyphered text is")
             except Exception as e:
