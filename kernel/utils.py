@@ -30,6 +30,7 @@
 import sys
 import itertools
 import time
+import string
 
 
 ###############################################################################
@@ -83,6 +84,9 @@ def msgerr():
     return " ".join((sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
 
+###############################################################################
+# Bases ops.
+###############################################################################
 def num_to_base(num, base, min_digits=1):
     """
     Returns a string with the integer num encoded in base.
@@ -92,7 +96,7 @@ def num_to_base(num, base, min_digits=1):
     """
     b = len(base)
     out = []
-    # Standard â€œdecimal to base nâ€ algo...
+    # Standard "decimal to base n" algo...
     # Note that that algo generates digits in "reversed" order...
     while num != 0:
         r = num % b
@@ -101,6 +105,50 @@ def num_to_base(num, base, min_digits=1):
     if len(out) < min_digits:
         out += [str(base[0])] * (min_digits - len(out))
     return "".join(reversed(out))
+
+
+BASE_DIGITS_ALLOWED = tuple((string.digits + string.ascii_lowercase))
+
+
+def base_autodetect(text, n_digits, allowed_bases=(16, 10, 8, 2)):
+    """
+    Try to auto-detect base of cyphered text...
+    It determines the most probable base, that's all!
+    n_digits is a mapping of the number of digits per number, for each base
+    (e.g. typically 8, 16, 32, etc. for binary).
+    Note: bases must from higher to lower!
+    """
+    c_data = set(text)
+    ln_txt = len(text)
+    allowed_bases = list(allowed_bases) + [0]
+    for idx, b in enumerate(allowed_bases):
+        if b > 36:
+            continue  # Max base (digits + ascii letters).
+        if b == 0:
+            break  # End of process (last 0 base is just used for code below).
+        b_spe = set(BASE_DIGITS_ALLOWED[allowed_bases[idx + 1]:b])
+        if b > 10:
+            # Add uppercase version of "digits".
+            b_spe |= {d.upper() for d in b_spe}
+        if b_spe & c_data:
+            if ln_txt % n_digits[b] == 0:
+                return b  # Found a valid base.
+            # If length does not match, try a upper base.
+            for bb in allowed_bases[:idx]:
+                if ln_txt % n_digits[bb] == 0:
+                    return bb  # Found a valid base.
+            # Else, return None!
+            return None
+
+
+def get_allowed_digits(base):
+    """Return a set of all allowed digits for a given base."""
+    if 0 >= base > 36:
+        return None  # Invalid base.
+    d_allowed = set(BASE_DIGITS_ALLOWED[:base])
+    if base > 10:
+        d_allowed |= {d.upper() for d in d_allowed}
+    return d_allowed
 
 
 ###############################################################################
@@ -208,7 +256,7 @@ def format_multiwords(words, sep=' '):
     """
     Format words as multi-lines text output.
     Returns a list of lines.
-    (this) (is,was,will be) (a) (test) â†’
+    (this) (is,was,will be) (a) (test):
            is
     this   was   a test
          will be

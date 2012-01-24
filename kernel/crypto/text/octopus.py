@@ -72,51 +72,7 @@ ASCII = "ascii"
 DEFAULT = "utf-8"
 
 N_DIGITS = {2: 8, 8: 3, 10: 3, 16: 2}
-D_ALLOWED = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-             'a', 'b', 'c', 'd', 'e')
-
-
-def get_allowed_digits(base):
-    """Return a set of all allowed digits for a given base."""
-    d_allowed = set(D_ALLOWED[:base])
-    return d_allowed | {d.upper() for d in d_allowed}
-
-
-def base_autodetect(text):
-    """
-    Try to auto-detect base of cyphered text...
-    It determines the most probable base, that's all!
-    """
-    c_data = set(text)
-    # Hexadecimal.
-    hex_specifics = set(D_ALLOWED[10:])
-    hex_specifics |= {d.upper() for d in hex_specifics}
-    if hex_specifics & c_data:
-        return 16
-    # Decimal.
-    elif set(D_ALLOWED[8:10]) & c_data:
-        if len(text) % N_DIGITS[10]:
-            # Might be hexa, after all...
-            return 16
-        return 10
-    # Octal.
-    elif set(D_ALLOWED[2:8]) & c_data:
-        if len(text) % N_DIGITS[8]:
-            # Might be deci or hexa, after all...
-            if len(text) % N_DIGITS[10]:
-                return 16
-            return 10
-        return 8
-    # Binary.
-    else:
-        if len(text) % N_DIGITS[2] and len(text) % 7:
-            # Might be octo, deci or hexa, after all...
-            if len(text) % N_DIGITS[8]:
-                if len(text) % N_DIGITS[10]:
-                    return 16
-                return 10
-            return 8
-        return 2
+D_ALLOWED = utils.BASE_DIGITS_ALLOWED
 
 
 def do_cypher(text, codec=DEFAULT, bases=(2,), sep=""):
@@ -171,12 +127,20 @@ def cypher(text, codec=DEFAULT, bases=(2,), sep=""):
     except Exception as e:
         raise ValueError("The text could not be cyphered into given '{}' "
                          "encoding ({})".format(cdc, str(e)))
+    # Check for valid bases.
+    b_data = set(bases)
+    b_allowed = set(N_DIGITS.keys())
+    if not b_data <= b_allowed):
+        raise ValueError("Only {} bases are allowed, no '{}'!"
+                         .format(sorted(N_DIGITS.keys()),
+                                 "', '".join(b_data - b_allowed)))
     return do_cypher(text, codec, bases, sep)
 
 
 def do_decypher(text, codec=DEFAULT, base=2):
     """
     Function to convert binary/octal/decimal/hexadecimal text into text.
+    Note: expect "unspaced" text as input!
     """
     n_digits = {k: v for k, v in N_DIGITS.items()}
     if codec == ASCII7:
@@ -208,14 +172,15 @@ def decypher(text, codec=DEFAULT, base=None):
         n_digits[2] = 7
 
     if base is None:
-        base = base_autodetect(text)
+        base = utils.base_autodetect(text, n_digits,
+                                     sorted(n_digits.keys(), reverse=True))
 
     if len(text) % n_digits[base] != 0:
         raise ValueError("No integer number of bytes, please add some "
                          "digits, to get a total length multiple of {}."
                          "".format(n_digits[base]))
     # Get allowed digits.
-    c_allowed = get_allowed_digits(base)
+    c_allowed = utils.get_allowed_digits(base)
     if not (c_data <= c_allowed):
         raise ValueError("Only {} digits and spaces are allowed, no '{}'!"
                          .format(base_names[base],
@@ -276,7 +241,7 @@ def main():
                          choices=_bases.values(), default=None,
                          help="In which base(s) ouput the cyphered text "
                               "([b]inary, [o]ctal, [d]ecimal, he[x]adecimal, "
-                              "default to auto-detection).")
+                              "default for auto-detection).")
 
     sparsers.add_parser('about', help="About Octopus…")
 

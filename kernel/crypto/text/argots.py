@@ -89,7 +89,7 @@ LARGONJI_VOWELS = {
 
 __about__ = "" \
 """===== About Argots =====
-Argots allows you to cypher and decrypt some text using one of Argot Javanais,
+Argots allows you to cypher and decypher some text using one of Argot Javanais,
 Langue de Feu (or there generic version), or Largonji des Loucherbems methods.
 
 
