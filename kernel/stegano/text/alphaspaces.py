@@ -47,7 +47,6 @@ __date__ = "2012/01/10"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 """===== About AlphaSpaces =====
-
 AlphaSpaces is a steganographic tool which simply hides a short sentence
 into the spaces of a bigger text.
 
@@ -55,6 +54,15 @@ This obviously implies that the hiding text must have at least as many spaces
 as letters to hide!
 
 Example:
+    Input text to hide data into: “This is a quite simple steganographic tool”
+    Data to hide: “stegano”
+    Hidden data: “This                   is                    a     """ \
+                 """quite       simple steganographic              tool”
+
+Note: That type of steganography is mostly useful for web content, as html
+browsers never show more than one space between words, it is invisible on
+screen. But obviously, easy to see if you have a look at the raw html code!
+
 
 Cyprium.AlphaSpaces version {} ({}).
 Licence GPL3

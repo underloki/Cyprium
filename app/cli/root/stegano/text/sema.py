@@ -72,7 +72,7 @@ class Sema(app.cli.Tool):
 
     def about(self, ui):
         ui.message(sema.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -128,7 +128,7 @@ class Sema(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def hide(self, ui):
         """Interactive version of hide()."""
@@ -171,7 +171,7 @@ class Sema(app.cli.Tool):
                                "Text with hidden data")
 
             options = [("redo", "*hide another data", ""),
-                       ("quit", "or go back to *menu", "")]
+                       ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
@@ -196,13 +196,13 @@ class Sema(app.cli.Tool):
                     ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*unhide another data", ""),
-                       ("quit", "or go back to *menu", "")]
+                       ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":
                 return
 
 
-NAME = "*sema"
+NAME = "sema"
 TIP = "Tool to hide some text into a much bigger one, " \
       "by placing small dots below some letters."
 TYPE = app.cli.Node.TOOL

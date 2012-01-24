@@ -70,7 +70,7 @@ class AlphaSpaces(app.cli.Tool):
 
     def about(self, ui):
         ui.message(alphaspaces.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -115,7 +115,7 @@ class AlphaSpaces(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def hide(self, ui):
         """Interactive version of hide()."""
@@ -159,7 +159,7 @@ class AlphaSpaces(app.cli.Tool):
                                "Text with hidden data")
 
             options = [("redo", "*hide another data", ""),
-                       ("quit", "or go back to *menu", "")]
+                       ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
@@ -184,13 +184,13 @@ class AlphaSpaces(app.cli.Tool):
                     ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*unhide another data", ""),
-                       ("quit", "or go back to *menu", "")]
+                       ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":
                 return
 
 
-NAME = "*alphaspaces"
+NAME = "alphaspaces"
 TIP = "Tool to hide some text into a much bigger one, " \
       "by modifying the lengths of its spaces."
 TYPE = app.cli.Node.TOOL
