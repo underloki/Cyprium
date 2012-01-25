@@ -6,7 +6,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Â© 2012                                                   #
+#   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -73,7 +73,7 @@ class Prime(app.cli.Tool):
 
     def about(self, ui):
         ui.message(prime.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -81,23 +81,26 @@ class Prime(app.cli.Tool):
         ui.message("")
 
         ui.message("--- Cyphering ---")
-        text = "HELLO WORLD"
+        text = "prime numbers are widely used in cryptography"
         ui.message("Data to cypher: {}\n".format(text))
-        ui.message("Prime cyphered data: {}"
-                   "".format(prime.cypher(text)))
+        ui.message("Prime cyphered data, base 1: {}"
+                   "".format(prime.cypher(text, 1)))
+        ui.message("Prime cyphered data, base 79: {}"
+                   "".format(prime.cypher(text, 79)))
         ui.message("")
 
         ui.message("--- Decyphering ---")
-        htext = '1  71 19 11 19 2 5 31 2 7 11 41 97'
-        ui.message("Prime text used as input: {}".format(htext))
+        htext = "457 383 389 449  389 449  421 431  383 347 449 383  " \
+                "457 347 349 409 367"
+        ui.message("Prime text used as input (base 69): {}".format(htext))
         ui.message("The decyphered data is: {}"
-                   "".format(prime.decypher(htext)))
+                   "".format(prime.decypher(htext, 69)))
         ui.message("")
 
-        ui.message("--- Won#t work ---")
-        text = "salut v-1024 ha! THA"
+        ui.message("--- Won’t work ---")
+        text = "The next prime year is 2017!"
         ui.message("+ The input text to cypher must be strict "
-                   "ascii upper-case letters and spaces:")
+                   "ascii lowercase chars and spaces:")
         ui.message("Data to cypher: {}\n".format(text))
         try:
             ui.message("Prime cyphered data: {}"
@@ -107,10 +110,10 @@ class Prime(app.cli.Tool):
         ui.message("")
 
         ui.message("+ The input text to decypher must be valid Prime "
-                   "encoded text")
-        htext = "13447 24 14 15  as- sf! 15 234 2345 6  24 234 1345 3457 2345  " \
+                   "encoded text:")
+        htext = "13447 24 14 15  15 234 2345 6  24 234 1345 3457 2345  " \
                 "24 2345 1778 1456"
-        ui.message("Prime text used as input: {}".format(htext))
+        ui.message("Prime text used as input (base 1): {}".format(htext))
         try:
             ui.message("The decyphered data is: {}"
                        "".format(prime.decypher(htext)))
@@ -118,7 +121,7 @@ class Prime(app.cli.Tool):
             ui.message(str(e), ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -128,13 +131,19 @@ class Prime(app.cli.Tool):
         while 1:
             done = False
             while 1:
-                txt = ui.text_input("Text to cypher to Prime")
+                txt = ui.text_input("Text to cypher to Prime",
+                                    sub_type=ui.LOWER)
                 if txt is None:
                     break  # Go back to main Cypher menu.
 
+                # Get base.
+                base = 1
+                b = ui.text_input("Base prime to use", sub_type=ui.INT)
+                if b:
+                    base = b
+
                 try:
-                    # Will also raise an exception if data is None.
-                    txt = prime.cypher(txt)
+                    txt = prime.cypher(txt, base)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -156,7 +165,7 @@ class Prime(app.cli.Tool):
                                "Prime version of text")
 
             options = [("redo", "*cypher another text", ""),
-                       ("quit", "or go back to *menu", "")]
+                       ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ in {None, "quit"}:
                 return
@@ -169,9 +178,15 @@ class Prime(app.cli.Tool):
         while 1:
             txt = ui.text_input("Please choose some Prime text")
 
+            # Get base.
+            base = 1
+            b = ui.text_input("Base prime to use", sub_type=ui.INT)
+            if b:
+                base = b
+
             try:
                 ui.text_output("Text successfully decyphered",
-                               prime.decypher(txt),
+                               prime.decypher(txt, base),
                                "The decyphered text is")
             except Exception as e:
                 if utils.DEBUG:
@@ -180,14 +195,14 @@ class Prime(app.cli.Tool):
                 ui.message(str(e), ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),
-                       ("quit", "or go back to *menu", "")]
+                       ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":
                 return
 
 
-NAME = "*prime"
-TIP = "Tool to convert text to/from Prime-digits code."
+NAME = "prime"
+TIP = "Tool to convert text to/from Prime numbers code."
 TYPE = app.cli.Node.TOOL
 CLASS = Prime
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#! /usr/bin/python3
 
 ########################################################################
 #                                                                      #
@@ -31,6 +31,7 @@
 
 import sys
 import os
+import string
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -40,24 +41,33 @@ if __name__ == '__main__':
 
 import kernel.utils as utils
 
-__version__ = "0.5.0"
-__date__ = "2012/01/16"
+
+PRIMES = tuple(utils.all_primes(1000))
+
+BASE_MIN = 1
+BASE_MAX = len(PRIMES) - 26
+
+
+__version__ = "0.5.1"
+__date__ = "2012/01/25"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 """===== About Prime =====
-Prime allows you to cypher and decrypt textes in the
-prime-code.
-Allows chars are: upper-case alphabetic letters and spaces
+Prime allows you to cypher and decypher texts using prime numbers below 1000.
 
-the cypher-methode take an argument "base":
-    the base-argument represent the first prime number to use
-    in the representation.
-    base = 1 ==> A=2, B=3, C=5, ...
-    base = 2 ==> A=3, B=5, C=7, ...
+Allowed chars are: strict ASCII lowercase and space.
 
-with text="HELLO WORLD":
-    cypher(txt, 1) = '1  19 11 37 37 47  83 47 61 37 7'
-    cypher(txt, 2) = '2  23 13 41 41 53  89 53 67 41 11'
+The cypher method takes an optional “base” (defaults to 1), which represent
+the nth prime number to be used to encode 'a':
+    base 1 ==> A = 2, B = 3, C = 5, …
+    base 2 ==> A = 3, B = 5, C = 7, …
+
+Base can be in [{}, {}].
+
+E.g. with “a prime pair”:
+    base 1: 2  53 61 23 41 11  53 2 23 61
+    base 101: 547  641 647 599 617 571  641 547 599 647
+
 
 Cyprium.Prime version {} ({}).
 Licence GPL3
@@ -66,240 +76,49 @@ Software distributed on the site: http://thehackademy.fr
 Current execution context:
     Operating System: {}
     Python version: {}
-""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+""".format(BASE_MIN, BASE_MAX,
+           __version__, __date__, utils.__pf__, utils.__pytver__)
 
-LIST = ['2',
-    '3',
-    '5',
-    '7',
-    '11',
-    '13',
-    '17',
-    '19',
-    '23',
-    '29',
-    '31',
-    '37',
-    '41',
-    '43',
-    '47',
-    '53',
-    '59',
-    '61',
-    '67',
-    '71',
-    '73',
-    '79',
-    '83',
-    '89',
-    '97',
-    '101',
-    '103',
-    '107',
-    '109',
-    '113',
-    '127',
-    '131',
-    '137',
-    '139',
-    '149',
-    '151',
-    '157',
-    '163',
-    '167',
-    '173',
-    '179',
-    '181',
-    '191',
-    '193',
-    '197',
-    '199',
-    '211',
-    '223',
-    '227',
-    '229',
-    '233',
-    '239',
-    '241',
-    '251',
-    '257',
-    '263',
-    '269',
-    '271',
-    '277',
-    '281',
-    '283',
-    '293',
-    '307',
-    '311',
-    '313',
-    '317',
-    '331',
-    '337',
-    '347',
-    '349',
-    '353',
-    '359',
-    '367',
-    '373',
-    '379',
-    '383',
-    '389',
-    '397',
-    '401',
-    '409',
-    '419',
-    '421',
-    '431',
-    '433',
-    '439',
-    '443',
-    '449',
-    '457',
-    '461',
-    '463',
-    '467',
-    '479',
-    '487',
-    '491',
-    '499',
-    '503',
-    '509',
-    '521',
-    '523',
-    '541',
-    '547',
-    '557',
-    '563',
-    '569',
-    '571',
-    '577',
-    '587',
-    '593',
-    '599',
-    '601',
-    '607',
-    '613',
-    '617',
-    '619',
-    '631',
-    '641',
-    '643',
-    '647',
-    '653',
-    '659',
-    '661',
-    '673',
-    '677',
-    '683',
-    '691',
-    '701',
-    '709',
-    '719',
-    '727',
-    '733',
-    '739',
-    '743',
-    '751',
-    '757',
-    '761',
-    '769',
-    '773',
-    '787',
-    '797',
-    '809',
-    '811',
-    '821',
-    '823',
-    '827',
-    '829',
-    '839',
-    '853',
-    '857',
-    '859',
-    '863',
-    '877',
-    '881',
-    '883',
-    '887',
-    '907',
-    '911',
-    '919',
-    '929',
-    '937',
-    '941',
-    '947',
-    '953',
-    '967',
-    '971',
-    '977',
-    '983',
-    '991',
-    '997']
-
-BASE_MIN = 1
-BASE_MAX = len(LIST) - 26
-
-def do_cypher_char(c, base=1):
-    """cypher a char in Prime-code, using the base <base>"""
-    id_c = ord(c)
-    if id_c>=65 and id_c<=97:
-        return LIST[ord(c)-65+base-1]
-    elif c=="":
-        return ""
-    else:
-        return " "
-
-def do_cypher_word(word, base=1):
-    """cypher a word in Prime-code, using the base <base>"""
-    lst = [do_cypher_char(c,base) for c in word]
-    return " ".join(lst)
 
 def do_cypher(text, base=1):
-    """cypher a text in Prime-code, using the base <base>"""
-    lst = [do_cypher_word(wrd,base) for wrd in text.split()]
-    lst.insert(0, str(base))
-    return lst
+    """Cypher a word in Prime code,from given base."""
+    # Let’s rather build a dict, will be much quicker with long texts.
+    maps = {k: str(PRIMES[v + base - 1])  # -1 because first base is 1...
+            for v, k in enumerate(string.ascii_lowercase)}
+    maps[' '] = ''
+    return " ".join((maps[c] for c in text))
+
 
 def cypher(text, base=1):
     """Just a wrapper around do_cypher"""
-    # Check for unallowed chars
+    if not text:
+        raise ValueError("No text given!")
+    # Check for unallowed chars.
     c_text = set(text)
-    c_allowed = set(" ABCDEFGHIJKLMNOPARSTUVWXYZ")
+    c_allowed = set(string.ascii_lowercase) | {' '}
     if not (c_text <= c_allowed):
         raise ValueError("Text contains unallowed chars (only strict ASCII "
-                         "uppercase-chars and spaces): '{}'!"
+                         "lowercase-chars and spaces): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
-    if base not in range(BASE_MIN, BASE_MAX):
-        raise ValueError("The base must be a digit in range({}, {})"
-                            "".format(BASE_MIN, BASE_MAX))
-    return "  ".join(do_cypher(text, base))
+    # Check for invalid base.
+    if BASE_MIN > base > BASE_MAX:
+        raise ValueError("The base must be a digit in [{}, {}]."
+                         "".format(BASE_MIN, BASE_MAX))
+    return do_cypher(text, base)
 
-def do_decypher_char(c, base=1):
-    """decypher a Prime-coded char"""
-    if c in LIST:
-        id_c = LIST.index(c)
-        return chr(id_c + 65 -base + 1)
-    elif c=="":
-        return ""
-    else:
-        return " "
 
-def do_decypher_word(word, base=1):
-    """decypher a Prime-coded word"""
-    res = [do_decypher_char(c, base) for c in word.split()]
-    return "".join(res)
+def do_decypher(text, base=1):
+    """Decypher a Prime-coded text."""
+    # Let’s rather build a dict, will be much quicker with long texts.
+    maps = {str(PRIMES[k + base - 1]): v
+            for k, v in enumerate(string.ascii_lowercase)}
+    maps[''] = ' '
+    # split(' ') to get empty string for double spaces.
+    return "".join((maps[c] for c in text.split(' ')))
 
-def do_decypher(text):
-    """decypher a Prime-coded text"""
-    lst = text.split("  ")
-    base = int(lst[0])
-    res = [do_decypher_word(wrd, base) for wrd in lst[1:]]
-    return res
 
-def decypher(text):
+def decypher(text, base=1):
     """Just a wrapper around do_decypher, with some checks."""
-    import string
     if not text:
         raise ValueError("No text given!")
     # Check for unallowed chars...
@@ -309,7 +128,20 @@ def decypher(text):
         raise ValueError("Text contains unallowed chars (only digits "
                          "and spaces are allowed): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
-    return " ".join(do_decypher(text))
+    # Check for invalid base.
+    if BASE_MIN > base > BASE_MAX:
+        raise ValueError("The base must be a digit in [{}, {}]."
+                         "".format(BASE_MIN, BASE_MAX))
+    # Check for invalid codes (numbers).
+    c_codes = {int(i) for i in set(text.split())}
+    c_allowed = set(PRIMES[base - 1:base + 26])
+    if not (c_codes <= c_allowed):
+        raise ValueError("Text contains unallowed codes for given base {}: "
+                         "'{}'!"
+                         .format(base,
+                                 "', '".join((str(i) for i in
+                                              sorted(c_codes - c_allowed)))))
+    return do_decypher(text, base)
 
 
 def main():
@@ -317,78 +149,79 @@ def main():
     # Try 'program.py -h' to see! ;)
     import argparse
     parser = argparse.ArgumentParser(description=""
-                                     "Encrypt/decypher some text in "
+                                     "Cypher/decypher some text in "
                                      "prime code.")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
+
     sparsers = parser.add_subparsers(dest="command")
 
-    hide_parser = sparsers.add_parser('cypher', help="Encrypt text in "
-                                                     "prime.")
-    hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                             help="A file containing the text to convert to "
-                                  "prime.")
-    hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                             help="A file into which write the prime "
-                                  "text.")
-    hide_parser.add_argument('-d', '--data',
-                             help="The text to cypher in prime.")
+    cparser = sparsers.add_parser('cypher', help="Encrypt text in prime.")
+    cparser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                         help="A file containing the text to cypher.")
+    cparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                         help="A file into which write the cyphered text.")
+    cparser.add_argument('-d', '--data', help="The text to cypher.")
+    cparser.add_argument('-b', '--base', type=int, default=1,
+                         help="Which base to use to cypher the text "
+                              "(1: A = 2; 2: A = 3; 3: A = 5; etc.).")
 
-    unhide_parser = sparsers.add_parser('decypher',
-                                        help="Decypher prime to text.")
-    unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
-                               help="A file containing the text to convert "
-                                    "from prime.")
-    unhide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
-                               help="A file into which write the decyphered "
-                                    "text.")
-    unhide_parser.add_argument('-d', '--data',
-                               help="The text to decypher.")
+    dparser = sparsers.add_parser('decypher', help="Decypher prime to text.")
+    dparser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                         help="A file containing the text to decypher.")
+    dparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                         help="A file into which write the decyphered text.")
+    dparser.add_argument('-d', '--data', help="The text to decypher.")
+    dparser.add_argument('-b', '--base', type=int, default=1,
+                         help="Which base to use to decypher the text "
+                              "(1: 5 = C; 2: 5 = B; 3: 5 = A; etc.).")
 
-    sparsers.add_parser('about', help="About Prime")
+    sparsers.add_parser('about', help="About Prime.")
 
     args = parser.parse_args()
+    utils.DEBUG = args.debug
 
     if args.command == "cypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = cypher(data)
-            text = out
-            b_text = ""
+            out = cypher(data, args.base)
             if args.ofile:
-                args.ofile.write(text)
-                if b_text:
-                    args.ofile.write("\n\n")
-                    args.ofile.write(b_text)
+                args.ofile.write(out)
             else:
-                print(text)
+                print(out)
         except Exception as e:
+            if utils.DEBUG:
+                raise e
             raise e
         finally:
             if args.ifile:
                 args.ifile.close()
             if args.ofile:
                 args.ofile.close()
-        return 0
+        return
 
-    elif args.command == "decypher":
+    if args.command == "decypher":
         try:
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            out = decypher(data)
+            out = decypher(data, args.base)
             if args.ofile:
                 args.ofile.write(out)
             else:
-                print("\n".join(utils.format_multiwords(out)))
+                print(out)
         except Exception as e:
-            print(e, "\n\n")
+            if utils.DEBUG:
+                raise e
+            raise e
         finally:
             if args.ifile:
                 args.ifile.close()
             if args.ofile:
                 args.ofile.close()
-        return 0
+        return
 
     elif args.command == "about":
         print(__about__)
