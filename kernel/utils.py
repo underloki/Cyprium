@@ -313,7 +313,7 @@ def all_primes(n):
 
     # Create a list for all odd numbers.
     # Note: theorically, 1 is not prime, but as we never test it...
-    lst = [True] * (n // 2)
+    lst = [True] * ((n // 2) + [0,1][n % 2])
     yield 2  # 2 is a prime number.
     # Use **0.5 instead of Math.sqrt().
     root = int(n ** 0.5) // 2
