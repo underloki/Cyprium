@@ -148,13 +148,12 @@ def do_decypher(text, codec=DEFAULT, base=2):
         n_digits[2] = 7
 
     if base != 16:
-        # XXX Their might be a better way to create a bytes from ints, but
-        #     for now it will do the trick!
-        hex_s = "".join(["{:0>2x}".format(int(''.join(p), base))
-                         for p in utils.grouper(text, n_digits[base], '')])
+        ints = (int(''.join(p), base)
+                for p in utils.grouper(text, n_digits[base], ''))
+        byts = utils.int8_to_bytes(ints)
     else:
-        hex_s = text
-    return bytes.fromhex(hex_s).decode(codec)
+        byts = bytes.fromhex(text)
+    return byts.decode(codec)
 
 
 def decypher(text, codec=DEFAULT, base=None):

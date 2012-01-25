@@ -84,6 +84,16 @@ def msgerr():
     return " ".join((sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
 
+def int8_to_bytes(int8):
+    """
+    Return a bytes string made from the given sequence of [0..255] integers.
+    """
+    # XXX Why in hell python does not feature such conversion???
+    # XXX Just ignores ints out of bounds.
+    hex_s = "".join(("{:0>2x}".format(i) for i in int8 if 0 <= i <= 255))
+    return bytes.fromhex(hex_s)
+
+
 ###############################################################################
 # Bases ops.
 ###############################################################################
