@@ -177,13 +177,25 @@ class UI:
                    completion=None, completion_kwargs={},
                    validate=None, validate_kwargs={}):
         """Helper to get some text, either from console or from a file."""
+        if sub_type == self.UPPER:
+            prompt = "(Text, uppercase): "
+        elif sub_type == self.LOWER:
+            prompt = "(Text, lowercase): "
+        elif sub_type == self.PATH:
+            prompt = "(Text, path): "
+        elif sub_type == self.INT:
+            prompt = "(Integer number): "
+        elif sub_type == self.FLOAT:
+            prompt = "(Float number): "
+        else:
+            prompt = "(Text): "
         while 1:
             options = [("console", "directly from $console", ""),
                        ("file", "or reading a *file", "")]
             answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
                                    oneline=True)
             if answ == "console":
-                return self.get_data("Please type the text: ",
+                return self.get_data(prompt,
                                      sub_type=sub_type, allow_void=allow_void,
                                      completion=completion,
                                      completion_kwargs=completion_kwargs,

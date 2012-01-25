@@ -186,6 +186,11 @@ def grouper2(lst, n, gap=0):
     last element), and lst must be subscriptable (i.e. not an iterator).
     But you can get groups of n elements separated (spaced) by gap elements.
     Also, it is quicker than grouper, except for small n (tipically <10).
+
+    Note: you can use negative gap (not below -n+1, though) to get "crossing"
+    groups:
+    >>> grouper('ABCDEFGHI', 5, -3)
+    ABCDE CDEFG EFGHI
     """
     return (lst[i:i + n] for i in range(0, len(lst), n + gap))
 
