@@ -285,6 +285,13 @@ def main():
                  "*A+H.[-]+e.+7..+3.*B+32.*A+8.-8.+3.[-]+d."]
         for t in texts:
             print(t, "\n\n=>", decypher(t, "ascii"), "\n\n\n")
+        t = texts[-1]
+        print(t, "\n\n=>", brainfuck.BrainFuck().convert(t, brainfuck.BRAINFUCK), "\n\n\n")
+        t = texts[0]
+        print(t, "\n\n=>", brainfuck.BrainFuck().convert(t, brainfuck.OOK), "\n\n\n")
+        print(t, "\n\n=>", brainfuck.BrainFuck().convert(t, brainfuck.FASTOOK), "\n\n\n")
+        print(t, "\n\n=>", brainfuck.BrainFuck().convert(t, brainfuck.SPOON), "\n\n\n")
+        print(t, "\n\n=>", brainfuck.BrainFuck().convert(t, brainfuck.SIGSEV), "\n\n\n")
         return
 
 
