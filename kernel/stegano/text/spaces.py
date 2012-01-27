@@ -1,10 +1,12 @@
-﻿########################################################################
+#! /usr/bin/python3
+
+########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright © 2012                                                   #
+#   Copyright ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -26,178 +28,192 @@
 #                                                                      #
 ########################################################################
 
+
 import sys
 import os
+import string
+import re
 
-# In case we directly run that file, we need to add the whole cyprium to path,
-# to get access to CLI stuff!
-if __name__ == "__main__":
+# In case we directly run that file, we need to add the kernel to path,
+# to get access to generic stuff in kernel.utils!
+if __name__ == '__main__':
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 "..", "..", "..", "..",
-                                                 "..")))
+                                                 "..", "..", "..")))
 
-import app.cli
-import kernel.stegano.text.spaces as spaces
 import kernel.utils as utils
 
+__version__ = "0.5.0"
+__date__ = "2012/01/27"
+__python__ = "3.x"  # Required Python version
+__about__ = "" \
+"""===== About Spaces =====
 
-class Spaces(app.cli.Tool):
-    """CLI wrapper for spaces stegano text tool."""
-    def main(self, ui):
-        ui.message("********** Welcome to Cyprium.Spaces! **********")
-        quit = False
-        while not quit:
-            options = [(self.about, "*about", "Show some help!"),
-                       (self.demo, "*demo", "Show some examples"),
-                       (self.hide, "*hide", "Hide some data into a text"),
-                       (self.unhide, "*unhide",
-                                     "Find the data hidden into the given "
-                                     "text"),
-                       ("", "-----", ""),
-                       ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Spaces")]
-            msg = "Cyprium.Spaces"
-            answ = ui.get_choice(msg, options)
+Spaces is a steganographic tool which simply hides a short sentence
+into the letters of a bigger text. Alowed chars in text are strict lowercase
+chars. Digits, spaces and ponctuation are also allowed.
 
-            if answ == 'tree':
-                self._tree.print_tree(ui, self._tree.FULL)
-            elif answ == 'quit':
-                self._tree.current = self._tree.current.parent
-                quit = True
+This obviously implies that the hiding text must have at least 8 times
+more letters + 1 as the length of the text to hide.
+The mode give what one space represent:
+    mode 0: " "==0, "  "==1
+    mode 1: " "==1, "  "==0
+
+Example:
+    hide('a b c d e f g h i j k l m n o p q r s t u v w x y z',"YOU")
+        ==> 'a b c  d e  f  g h i  j k  l m n  o  p  q  r s  t u  v w  x y  z'
+    unhide('a b c  d e f  g  h i  j k  l m n o  p q  r s t u v w x y z')
+        ==> 'ME'
+
+
+Cyprium.Spaces version {} ({}).
+Licence GPL3
+Software distributed on the site: http://thehackademy.fr
+
+Current execution context:
+    Operating System: {}
+    Python version: {}
+""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+
+
+MAP = [" ", "  "]
+R_MAP = {0:{" ":'0',"  ":'1'},1:{" ":'1', "  ":'0'}}
+#mode=0: " "==0
+#mode=1: " "==1
+
+
+def do_hide(words, data, mode=0):
+    """hide a text in another text"""
+    res = []
+    res.append(words[0])
+    res.append(MAP[mode])
+    #index = 1, we have already added words[0]
+    index = 1
+    c_mode = str(mode)
+    for c in data:
+        bits = bin(ord(c))[2:].rjust(8,'0')
+        for i in range(8):
+            res.append(words[index])
+            if bits[i]==c_mode:
+                res.append(MAP[mode])
             else:
-                answ(ui)
-        ui.message("Back to Cyprium menus! Bye.")
+                res.append(MAP[(mode+1)%2])
+            index += 1
+    length = len(words)
+    res.append(MAP[mode].join(words[index:length]))
+    return res
 
-    def about(self, ui):
-        ui.message(spaces.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
-    def demo(self, ui):
-        ui.message("===== Demo Mode =====")
-        ui.message("Running a small demo/testing!")
+def hide(text, data, mode=0):
+    """Just a wrapper around do_hide, with some checks."""
+    if not data:
+        raise ValueError("No data to hide given!")
+    elif not text:
+        raise ValueError("No text into which to hide given!")
+    #should probably rise an error.
+    if mode not in (0,1):
+        mode = 0
 
-        text = "En ces créations esthétiques d'une nature nouvelle, la "\
-            "perception du «texte» se transforme en effet. Certes, lorsqu'on "\
-            "consulte un numéro de la revue alire, ce qui est d'abord "\
-            "«affiché» sur un écran d'ordinateur et qui est ensuite «vu», "\
-            "puis «lu» et «interprété» comme étant un «texte poétique» "\
-            "demeure agencé en des mots, des lettres ou des énoncés dont "\
-            "l'entrelacs constitue le «tissu» de significations d'où "\
-            "sourdent des émotions et des réflexions."
-        ui.message("--- Hiding ---")
-        data = "Hacker"
-        ui.message("Text used as source (input file): {}".format(text))
-        ui.message("Data to hide: {}\n".format(data))
-        ui.message("Text with hidden data (output file): {}"
-                   "".format(spaces.hide(text, data)))
-        ui.message("")
+    words = re.split(" +", text)
+    nb_words = len(words)
+    #times 8 while we encrypt 1 octect with 8 letters
+    #1 bit for the header (mode)
+    #1 word for to close
+    if len(data) * 8 + 2 > nb_words:
+        raise ValueError("Hiding text not long enough (needs at least {} "
+                         "words, only have {} currently)!"
+                         "".format(len(data)*8 +2,nb_words))
+    return "".join(do_hide(words, data, mode))
 
-        ui.message("--- Unhiding ---")
-        htext = "'La vitalité de  la création  littéraire par ordinateur  a"\
-            "  été réaffirmée  en  ce début du XXIe siècle,  à Paris,  au  "\
-            "Salon du  livre,  avec la parution le  21  mars  2000 du  "\
-            "numéro 11  de la  revue  de  poésie électronique  alire avec 28"\
-            " créations poétiques  inédites, présentées sur un cédérom  "\
-            "multimédia."
-        ui.message("Text used as source (input file): {}".format(htext))
-        ui.message("The hidden data is: {}"
-                   "".format(spaces.unhide(htext)))
 
-        ui.message("--- Won't work ---")
-        data = "morderegrippipiotabirofreluchamburelurecoquelurintimpanemens"
-        ui.message("+ The input text must be long enough (have enough letters)"
-                   " for the given data to hide:")
-        ui.message("Data to hide: {}".format(data))
+def do_unhide(text):
+    """unhide a spaces-encoded text!"""
+    res = []
+    lst = re.findall('  | ', text)
+    mode = MAP.index(lst[0])
+    index = 1
+    length = len(lst)
+    bits = ""
+    for elt in lst[1:]:
+        bit = R_MAP[mode][elt]
+        bits += bit
+        if len(bits)==8:
+            if bits=="00000000":
+                break
+            res.append(int(bits,2))
+            bits = ""
+    return res
+
+
+def unhide(text):
+    """Just a wrapper around do_unhide (no checks currently)."""
+    if not text:
+        raise ValueError("No text into which to hide given!")
+    if re.search("   ",text):
+        raise ValueError("Bad space-text")
+    #check the mode, pos[0]
+    return "".join(chr(c) for c in do_unhide(text))
+
+
+def main():
+    # The argparse is much nicer than directly using sys.argv...
+    # Try 'program.py -h' to see! ;)
+    import argparse
+    parser = argparse.ArgumentParser(description=""
+                                     "Hide/unhide a word or short sentence "
+                                     "into the spaces of a long text (which "
+                                     "hence must have as much spaces as the "
+                                     "number of letters in data to hide).")
+    parser.add_argument('--debug', action="store_true", default = False,
+                        help="Enable debug mode.")
+
+    sparsers = parser.add_subparsers(dest="command")
+
+    hide_parser = sparsers.add_parser('hide', help="Hide data in text.")
+    hide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                             help="A file containing the text into which "
+                                  "hide the data.")
+    hide_parser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
+                             help="A file into which write the stegano text.")
+    hide_parser.add_argument('-d', '--data',
+                             help="The data to hide into the text.")
+
+    unhide_parser = sparsers.add_parser('unhide',
+                                        help="Unhide data from text.")
+    unhide_parser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
+                               help="A file containing the text with "
+                                    "hidden data.")
+
+    sparsers.add_parser('about', help="About Spaces")
+
+    args = parser.parse_args()
+
+    if args.command == "hide":
         try:
-            ui.message("Text with hidden data (output file): {}"
-                       "".format(spaces.hide(text, data)))
+            args.ofile.write(hide(args.ifile.read().strip(), args.data))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            if utils.DEBUG:
+                raise e
+            print(e, "\n\n")
+        finally:
+            args.ifile.close()
+            args.ofile.close()
+        return
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+    elif args.command == "unhide":
+        try:
+            print(unhide(args.ifile.read()))
+        except Exception as e:
+            if utils.DEBUG:
+                raise e
+            print(e, "\n\n")
+        finally:
+            args.ifile.close()
+        return
 
-    def hide(self, ui):
-        """Interactive version of hide()."""
-        txt = ""
-        ui.message("===== Hide Mode =====")
-
-        while 1:
-            done = False
-            while not done:
-                txt = ui.text_input("Text into which hide data")
-                if txt is None:
-                    break  # Go back to main Hide menu.
-
-                while 1:
-                    data = ui.text_input("Data to hide into the text",
-                                         sub_type=ui.LOWER)
-                    try:
-                        # Will also raise an exception if data is None.
-                        txt = spaces.hide(txt, data)
-                        done = True  # Out of those loops, output result.
-                        break
-                    except Exception as e:
-                        if utils.DEBUG:
-                            import traceback
-                            traceback.print_tb(sys.exc_info()[2])
-                        ui.message(str(e), ui.ERROR)
-                        options = [("retry", "*try again", ""),
-                                   ("file", "choose another *input file", ""),
-                                   ("menu", "or go back to *menu", "")]
-                        msg = "Could not hide that data into the given " \
-                              "text, please"
-                        answ = ui.get_choice(msg, options, oneline=True)
-                        if answ == "file":
-                            break  # Go back to input file selection.
-                        elif answ in {None, "menu"}:
-                            return  # Go back to main Sema menu.
-                        # Else, retry with another data to hide.
-
-            if done:
-                ui.text_output("Data successfully hidden", txt,
-                               "Text with hidden data")
-
-            options = [("redo", "*hide another data", ""),
-                       ("quit", "or go back to *menu", "")]
-            answ = ui.get_choice("Do you want to", options, oneline=True)
-            if answ in {None, "quit"}:
-                return
-
-    def unhide(self, ui):
-        """Interactive version of unhide()."""
-        txt = ""
-        ui.message("===== Unhide Mode =====")
-
-        while 1:
-            txt = ui.text_input("Please choose some text with hidden data")
-
-            if txt is not None:
-                try:
-                    ui.text_output("Data successfully unhidden",
-                                   spaces.unhide(txt),
-                                   "The hidden data is")
-                except Exception as e:
-                    if utils.DEBUG:
-                        import traceback
-                        traceback.print_tb(sys.exc_info()[2])
-                    ui.message(str(e), ui.ERROR)
-
-            options = [("redo", "*unhide another data", ""),
-                       ("quit", "or go back to *menu", "")]
-            answ = ui.get_choice("Do you want to", options, oneline=True)
-            if answ == "quit":
-                return
+    elif args.command == "about":
+        print(__about__)
+        return
 
 
-NAME = "*Spaces"
-TIP = "Tool to hide some text into a much bigger one, " \
-      "by modifying the lengths of its spaces."
-TYPE = app.cli.Node.TOOL
-CLASS = Spaces
-
-# Allow tool to be used directly, without using Cyprium menu.
 if __name__ == "__main__":
-    import app.cli.ui
-    ui = app.cli.ui.UI()
-    tree = app.cli.NoTree("Spaces")
-    Spaces(tree).main(ui)
+    main()
