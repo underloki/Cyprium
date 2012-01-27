@@ -6,7 +6,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Â© 2012                                                   #
+#   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -78,15 +78,20 @@ Current execution context:
 """.format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 _MODES = ['0', '1']
-_NOT_ASCII_LOWER_ORDS = (225, 224, 226, 228, 233, 232,
-    234, 237, 236, 238, 243, 242, 244, 246,
-    250, 249, 251, 252)
-_NOT_ASCII = str(bytes(_NOT_ASCII_LOWER_ORDS).decode("latin-1"))
-_LOWER_CASES = _NOT_ASCII + string.ascii_lowercase
+
+_LOWER_CASES = "".join(chr(c) for c in range(256) if chr(c).islower() and
+    ord(chr(c).upper())<256)
+
+_LOWER_CASES = b'abcdefghijklmnopqrstuvwxyz\xc2\xaa\xc2\xba\xc3\x9f\xc3\xa0'\
+    b'\xc3\xa1\xc3\xa2\xc3\xa3\xc3\xa4\xc3\xa5\xc3\xa6\xc3\xa7\xc3\xa8\xc3'\
+    b'\xa9\xc3\xaa\xc3\xab\xc3\xac\xc3\xad\xc3\xae\xc3\xaf\xc3\xb0\xc3\xb1'\
+    b'\xc3\xb2\xc3\xb3\xc3\xb4\xc3\xb5\xc3\xb6\xc3\xb8\xc3\xb9\xc3\xba\xc3'\
+    b'\xbb\xc3\xbc\xc3\xbd\xc3\xbe'.decode("utf-8")
 
 
 def _count_letters(text):
     """count the number of letters in text"""
+    #faster as char.isalpha for long texts!
     res = 0
     for c in _LOWER_CASES:
         res += text.count(c)
@@ -105,7 +110,7 @@ def do_hide(text, data, mode=1):
     for c in data:
         bits = bin(ord(c))[2:].rjust(8,'0')
         for i in range(8):
-            while (text[index] not in _LOWER_CASES):
+            while (not text[index].islower()):
                 res.append(text[index])
                 index += 1
             if bits[i]==mode:
