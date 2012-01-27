@@ -32,7 +32,7 @@
 import sys
 import os
 import string
-import itertools
+import re
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -43,32 +43,29 @@ if __name__ == '__main__':
 import kernel.utils as utils
 
 __version__ = "0.5.0"
-__date__ = "2012/01/21"
+__date__ = "2012/01/27"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
-"""===== About Upper-Lower =====
+"""===== About Spaces =====
 
-Upper-Lower is a steganographic tool which simply hides a short sentence
+Spaces is a steganographic tool which simply hides a short sentence
 into the letters of a bigger text. Alowed chars in text are strict lowercase
 chars. Digits, spaces and ponctuation are also allowed.
 
 This obviously implies that the hiding text must have at least 8 times
 more letters + 1 as the length of the text to hide.
-They are two modes:
-    0: use lower-case as 0, upper-case as 1
-    1: use lower-case as 1, upper-case as 0
+The mode give what one space represent:
+    mode 0: " "==0, "  "==1
+    mode 1: " "==1, "  "==0
 
 Example:
-    hide("welcome to all of you to thehackademy.fr!","2012", mode=1) ==>
-        'WelCOme To alL Of you to THehaCkaDEmy.Fr!'
-    hide("welcome to all of you to thehackademy.fr!","2012", mode=0) ==>
-        'wELcoME tO ALl oF YOU TO thEHAcKAdeMY.fR!'
-
-    unhide('wELcoME tO ALl oF YOU TO thEHAcKAdeMY.fR!') ==>
-        'tha'
+    hide('a b c d e f g h i j k l m n o p q r s t u v w x y z',"YOU")
+        ==> 'a b c  d e  f  g h i  j k  l m n  o  p  q  r s  t u  v w  x y  z'
+    unhide('a b c  d e f  g  h i  j k  l m n o  p q  r s t u v w x y z')
+        ==> 'ME'
 
 
-Cyprium.Upper-Lower version {} ({}).
+Cyprium.Spaces version {} ({}).
 Licence GPL3
 Software distributed on the site: http://thehackademy.fr
 
@@ -77,51 +74,32 @@ Current execution context:
     Python version: {}
 """.format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
-_MODES = ['0', '1']
 
-_LOWER_CASES = "".join(chr(c) for c in range(256) if chr(c).islower() and
-    ord(chr(c).upper())<256)
-
-_LOWER_CASES = b'abcdefghijklmnopqrstuvwxyz\xc2\xaa\xc2\xba\xc3\x9f\xc3\xa0'\
-    b'\xc3\xa1\xc3\xa2\xc3\xa3\xc3\xa4\xc3\xa5\xc3\xa6\xc3\xa7\xc3\xa8\xc3'\
-    b'\xa9\xc3\xaa\xc3\xab\xc3\xac\xc3\xad\xc3\xae\xc3\xaf\xc3\xb0\xc3\xb1'\
-    b'\xc3\xb2\xc3\xb3\xc3\xb4\xc3\xb5\xc3\xb6\xc3\xb8\xc3\xb9\xc3\xba\xc3'\
-    b'\xbb\xc3\xbc\xc3\xbd\xc3\xbe'.decode("utf-8")
+MAP = [" ", "  "]
+R_MAP = {0:{" ":'0',"  ":'1'},1:{" ":'1', "  ":'0'}}
+#mode=0: " "==0
+#mode=1: " "==1
 
 
-def _count_letters(text):
-    """count the number of letters in text"""
-    #faster as char.isalpha for long texts!
-    res = 0
-    for c in _LOWER_CASES:
-        res += text.count(c)
-    return res
-
-
-def do_hide(text, data, mode=1):
+def do_hide(words, data, mode=0):
     """hide a text in another text"""
     res = []
-    if mode==1:
-        res.append(text[0].upper())
-    else:
-        res.append(text[0])
+    res.append(words[0])
+    res.append(MAP[mode])
+    #index = 1, we have already added words[0]
     index = 1
-    mode = _MODES[mode]
+    c_mode = str(mode)
     for c in data:
         bits = bin(ord(c))[2:].rjust(8,'0')
         for i in range(8):
-            while (not text[index].islower()):
-                res.append(text[index])
-                index += 1
-            if bits[i]==mode:
-                res.append(text[index].upper())
+            res.append(words[index])
+            if bits[i]==c_mode:
+                res.append(MAP[mode])
             else:
-                res.append(text[index])
+                res.append(MAP[(mode+1)%2])
             index += 1
-    length = len(text)
-    while (index<length):
-        res.append(text[index])
-        index += 1
+    length = len(words)
+    res.append(MAP[mode].join(words[index:length]))
     return res
 
 
@@ -134,51 +112,46 @@ def hide(text, data, mode=0):
     #should probably rise an error.
     if mode not in (0,1):
         mode = 0
-    nb_letters = _count_letters(text)
+
+    words = re.split(" +", text)
+    nb_words = len(words)
     #times 8 while we encrypt 1 octect with 8 letters
     #1 bit for the header (mode)
-    if len(data) * 8 + 1 > nb_letters:
+    #1 word for to close
+    if len(data) * 8 + 2 > nb_words:
         raise ValueError("Hiding text not long enough (needs at least {} "
-                         "alphabetic letters, only have {} currently)!"
-                         "".format(len(data)*8 +1,nb_letters))
-    # Check for unallowed chars
-    c_text = set(text)
-    c_allowed = set(_LOWER_CASES + string.digits +
-        string.punctuation + " ")
-    if not (c_text <= c_allowed):
-        raise ValueError("Text contains unallowed chars (only lowercase "
-                         "letters, digits and punctuation is allowed): '{}'!"
-                         "".format("', '".join(sorted(c_text - c_allowed))))
-    return "".join(do_hide(text, data, mode))
+                         "words, only have {} currently)!"
+                         "".format(len(data)*8 +2,nb_words))
+    return "".join(do_hide(words, data, mode))
 
 
-def do_unhide(text, mode=0):
-    chars = []
-    bits = ''
-    for c in text:
-        if c.isalpha():
-            if c.islower():
-                bits += _MODES[(mode+1)%2]
-            else:
-                bits += _MODES[mode]
-            if len(bits)==8:
-                if bits==_MODES[(mode+1)%2]*8:
-                    break
-                chars.append(chr(int(bits, 2)))
-                bits = ''
-    return "".join(chars)
+def do_unhide(text):
+    """unhide a spaces-encoded text!"""
+    res = []
+    lst = re.findall('  | ', text)
+    mode = MAP.index(lst[0])
+    index = 1
+    length = len(lst)
+    bits = ""
+    for elt in lst[1:]:
+        bit = R_MAP[mode][elt]
+        bits += bit
+        if len(bits)==8:
+            if bits=="00000000":
+                break
+            res.append(int(bits,2))
+            bits = ""
+    return res
 
 
 def unhide(text):
     """Just a wrapper around do_unhide (no checks currently)."""
     if not text:
         raise ValueError("No text into which to hide given!")
+    if re.search("   ",text):
+        raise ValueError("Bad space-text")
     #check the mode, pos[0]
-    if text[0].isupper():
-        mode = 1
-    else:
-        mode = 0
-    return do_unhide(text[1:], mode)
+    return "".join(chr(c) for c in do_unhide(text))
 
 
 def main():
@@ -210,7 +183,7 @@ def main():
                                help="A file containing the text with "
                                     "hidden data.")
 
-    sparsers.add_parser('about', help="About Upper-Lower")
+    sparsers.add_parser('about', help="About Spaces")
 
     args = parser.parse_args()
 
