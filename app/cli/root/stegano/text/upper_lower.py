@@ -180,7 +180,7 @@ class Upper_Lower(app.cli.Tool):
 
 NAME = "*upper_lower"
 TIP = "Tool to hide some text into a much bigger one, " \
-      "by modifying the lengths of its spaces."
+      "by modifying the case of its letters."
 TYPE = app.cli.Node.TOOL
 CLASS = Upper_Lower
 
