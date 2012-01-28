@@ -191,7 +191,7 @@ class Spaces(app.cli.Tool):
 
 NAME = "*Spaces"
 TIP = "Tool to hide some text into a much bigger one, " \
-      "by modifying the lengths of its spaces."
+      "by spacing words with one or two spaces"
 TYPE = app.cli.Node.TOOL
 CLASS = Spaces
 
