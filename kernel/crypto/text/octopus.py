@@ -70,6 +70,7 @@ Current execution context:
 ASCII7 = "ascii7"
 ASCII = "ascii"
 DEFAULT = "utf-8"
+EBCDIC = "cp500"
 
 N_DIGITS = {2: 8, 8: 3, 10: 3, 16: 2}
 D_ALLOWED = utils.BASE_DIGITS_ALLOWED
