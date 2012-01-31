@@ -120,9 +120,13 @@ class Upper_Lower(app.cli.Tool):
                 while 1:
                     data = ui.text_input("Data to hide into the text",
                                          sub_type=ui.LOWER)
+                    options = [(0,"$0==lower-case",''),
+                                (1,"*1==lower-case",'')]
+                    msg = "Choose the hiding-mode :"
+                    mode = ui.get_choice(msg, options, oneline=True)
                     try:
                         # Will also raise an exception if data is None.
-                        txt = upper_lower.hide(txt, data)
+                        txt = upper_lower.hide(txt, data, mode)
                         done = True  # Out of those loops, output result.
                         break
                     except Exception as e:
