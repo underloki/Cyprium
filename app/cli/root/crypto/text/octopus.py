@@ -103,6 +103,14 @@ class Octopus(app.cli.Tool):
                    "".format(octopus.decypher(htext, codec="ascii7")))
         ui.message("")
 
+        ui.message("+ The input text to decypher may have space-separated "
+                   "bytes:")
+        htext = "110001011100001011000011110001001100100111000011"
+        ui.message("“Numbers” ebcdic text used as input: {}".format(htext))
+        ui.message("The decypherd data is: {}"
+                   "".format(octopus.decypher(htext, codec="cp500")))
+        ui.message("")
+
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to decypher must contain only valid "
                    "digits for the given base:")
@@ -148,6 +156,7 @@ class Octopus(app.cli.Tool):
                     # Get codec to use.
                     options = [(octopus.DEFAULT, "$utf-8", ""),
                                (octopus.ASCII, "*ascii", ""),
+                               (octopus.EBCDIC, "*ebcdic", ""),
                                (octopus.ASCII7, "ascii*7 (binary encode over "
                                                 "7 bits only)", ""),
                                (None, "or specify another *codec", "")]
