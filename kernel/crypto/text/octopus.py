@@ -40,12 +40,11 @@ if __name__ == '__main__':
 
 import kernel.utils as utils
 
-__version__ = "0.6.0"
-__date__ = "2012/01/21"
+__version__ = "0.6.1"
+__date__ = "2012/02/02"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 """===== About Octopus =====
-
 Octopus is a simple numbers/text converter. It allows you to cypher and
 decypher text to/from binary, octal, decimal or hexadecimal.
 
@@ -54,8 +53,12 @@ It can also cut the output into bytes separated by spaces.
 You can use special characters and accents, if you specify a compatible
 encoding (e.g. default one, utf-8).
 
-You can also choose ASCII 7bit to get binary encoded over 7 bits instead
-of 8.
+You can also choose ASCII 7bit to get binary encoded over 7 bits instead of 8.
+
+Note: when decyphering, most of the time you can let Octopus auto-detect which
+base to use. However, somtimes this will fail (e.g. a decimal-cyphered text
+with no '8' nor '9' will be detected as octal…).
+
 
 Cyprium.Octopus version {} ({}).
 Licence GPL3

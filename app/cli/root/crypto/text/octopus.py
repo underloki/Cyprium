@@ -138,6 +138,17 @@ class Octopus(app.cli.Tool):
             ui.message(str(e), ui.ERROR)
         ui.message("")
 
+        ui.message("+ Auto-detection of the base might fail, especially with "
+                   "short messages. In the example below (decimal EBCDIC), as "
+                   "there are no '8' nor '9', the tool detect it as octal.")
+        htext = "131136133131146064137163064150164163"
+        ui.message("“Numbers” EBCDIC text used as input: {}".format(htext))
+        ui.message("The auto-detected decypherd data is: {}"
+                   "".format(octopus.decypher(htext, codec="cp500")))
+        ui.message("The decimal decypherd data is: {}"
+                   "".format(octopus.decypher(htext, codec="cp500", base=10)))
+        ui.message("")
+
         ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
@@ -213,6 +224,7 @@ class Octopus(app.cli.Tool):
             # Get codec to use.
             options = [(octopus.DEFAULT, "$utf-8", ""),
                        (octopus.ASCII, "*ascii", ""),
+                       (octopus.EBCDIC, "*ebcdic", ""),
                        (octopus.ASCII7, "ascii*7 (binary encode over 7 bits "
                                         "only)", ""),
                        (None, "or specify another *codec", "")]
