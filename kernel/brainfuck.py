@@ -121,17 +121,7 @@ class BrainFuck():
         self.input = inpt
         self.output = outpt
         self.seed = seed
-        self.reset_state()
         pass
-
-    def reset_state(self):
-        """Reset the internal code and state of the virtual machine."""
-        self._code = []
-        self._bracemap = {}
-        self._cells = [0]
-        self._cellptr = 0
-        self._codeptr = 0
-        self._max_codeptr = 0
 
     def reset_random(self):
         """Reset random generator."""
@@ -142,27 +132,31 @@ class BrainFuck():
 
     ###########################################################################
     # Core code.
+    # XXX Using instance vars here, as it might help debugging?
     ###########################################################################
     def prepare(self, code):
         """Convert code to machine, and validate the final code."""
         tp = detect_type(code)
-        self._code = self.optimize(self.CONVERT_FUNCS[tp][0](self, code))
-        self.buildbracemap()
-        return self._code
+        code = self.optimize(self.CONVERT_FUNCS[tp][0](self, code))
+        return code
 
-    def buildbracemap(self):
+    def buildbracemap(self, code):
         """Build the matching braces map of given machine code."""
         open_braces = []
-        self._bracemap = {}
-        for self._codeptr, opc in enumerate(self._code):
+        bracemap = {}
+        codeptr = 0
+        for codeptr, opc in enumerate(code):
             opc = opc[0]  # Get opcode!
             if opc == self.BOPEN:
-                open_braces.append(self._codeptr)
+                open_braces.append(codeptr)
             elif opc == self.BCLOSE:
-                self._bracemap[self._codeptr] = open_braces[-1]
-                self._bracemap[open_braces[-1]] = self._codeptr
+                bracemap[codeptr] = open_braces[-1]
+                bracemap[open_braces[-1]] = codeptr
                 del open_braces[-1]
-        return self._bracemap
+        if open_braces:
+            raise ValueError("Not enough closing braces (missing {} ones)"
+                             "".format(len(open_braces)))
+        return bracemap
 
     def evaluate(self, code):
         """
@@ -170,74 +164,72 @@ class BrainFuck():
         """
         ret = []
 
-        self.reset_state()
-
         # Convert code to machine, and validate.
-        self.prepare(code)
+        code = self.prepare(code)
+        bracemap = self.buildbracemap(code)
 
-        self._max_codeptr = len(self._code) - 1
-        self._cellptr = 0
-        self._codeptr = 0
+        max_codeptr = len(code) - 1
+        cells = []
+        cellptr = 0
+        codeptr = 0
 
-        while self._codeptr <= self._max_codeptr:
-            cmd, val = self._code[self._codeptr]
+        while codeptr <= max_codeptr:
+            cmd, val = code[codeptr]
 
             if cmd == self.PTRINC:
                 if val is None:
                     val = 1
-                self._cellptr = min(self._cellptr + val, self.MAXCELLS - 1)
-                if self._cellptr >= len(self._cells):
-                    self._cells += [0] * (self._cellptr - len(self._cells) + 1)
+                cellptr = min(cellptr + val, self.MAXCELLS - 1)
+                if cellptr >= len(cells):
+                    cells += [0] * (cellptr - len(cells) + 1)
 
             elif cmd == self.PTRDEC:
                 if val is None:
                     val = 1
-                self._cellptr = max(0, self._cellptr - val)
+                cellptr = max(0, cellptr - val)
 
             elif cmd == self.PTRSET:
                 # XXX Do nothing if no value given!
                 if val is not None:
-                    self._cellptr = max(0, min(val, self.MAXCELLS - 1))
-                    if self._cellptr >= len(self._cells):
-                        self._cells += [0] * \
-                                       (self._cellptr - len(self._cells) + 1)
+                    cellptr = max(0, min(val, self.MAXCELLS - 1))
+                    if cellptr >= len(cells):
+                        cells += [0] * (cellptr - len(cells) + 1)
 
             elif cmd == self.INC:
                 if val is None:
                     val = 1
-                self._cells[self._cellptr] = \
-                          (self._cells[self._cellptr] + val) % 255
+                cells[cellptr] = (cells[cellptr] + val) % 255
 
             elif cmd == self.DEC:
                 if val is None:
                     val = 1
-                self._cells[self._cellptr] = \
-                          (self._cells[self._cellptr] - val) % 255
+                cells[cellptr] = (cells[cellptr] - val) % 255
 
-            elif cmd == self.BOPEN and self._cells[self._cellptr] == 0:
-                self._codeptr = self._bracemap[self._codeptr]
+            elif cmd == self.BOPEN and cells[cellptr] == 0:
+                codeptr = bracemap[codeptr]
 
-            elif cmd == self.BCLOSE and self._cells[self._cellptr] != 0:
-                self._codeptr = self._bracemap[self._codeptr]
+            elif cmd == self.BCLOSE and cells[cellptr] != 0:
+                codeptr = bracemap[codeptr]
 
             elif cmd == self.OUTPUT:
-                self.output(self._cells[self._cellptr])
+                self.output(cells[cellptr])
 
             elif cmd == self.INPUT:
                 inpt = self.input()
                 if inpt:
                     # XXX If user can input non-ascii chars, this can raise
                     #     an exception... Might need better way to do this.
-                    self._cells[self._cellptr] = ord(inpt[0].encode('ascii'))
+                    cells[cellptr] = ord(inpt[0].encode('ascii'))
 
-            self._codeptr += 1
+            codeptr += 1
 
     ###########################################################################
-    def optimize(self, code):
+    def optimize(self, code, compress=True):
         """
         Optimize opcode (using SegFaultProg features).
         In other words, produce an opcode with values as often as possible,
         gathering together similar (compatible) opcodes.
+        If compress is True, will call compress_cells on optimized code.
         """
         # Compatible opcodes...
         _compat_ptr = {self.PTRINC, self.PTRDEC, self.PTRSET}
@@ -266,11 +258,12 @@ class BrainFuck():
                 # Else, if we have to first finalize the previous set of
                 # value opcodes.
                 elif curr_cat == _compat_val:
-                    dlt = int((abs(dlt) % 255) * (dlt / abs(dlt)))
-                    if dlt > 0:
-                        ret.append((self.INC, dlt))
-                    elif dlt < 0:
-                        ret.append((self.DEC, -dlt))
+                    if dlt:
+                        dlt = int((abs(dlt) % 255) * (dlt / abs(dlt)))
+                        if dlt > 0:
+                            ret.append((self.INC, dlt))
+                        elif dlt < 0:
+                            ret.append((self.DEC, -dlt))
                     curr_cat = set()
 
             # If we remain in a same category of opcodes, or have to start
@@ -298,12 +291,46 @@ class BrainFuck():
             else:
                 ret.append((opc, val))  # XXX val should always be None here...
 
+        if compress:
+            ret = self.compress_cells(ret)
         return ret
 
-    def unoptimize(self, code):
+    def compress_cells(self, code):
+        """
+        Moves all used cells as near as possible to first (0) one.
+        Can reduce quite higly Brainfuck & co code length!
+        """
+        ret = []
+        cells = {}
+        curr_ptr = 0
+        new_ptr = 0
+        _opptr = {self.PTRINC, self.PTRDEC, self.PTRSET}
+        in_ptr_op = True  # We are at cell 0 at the begining, so...
+        for opc, val in code:
+            if opc not in _opptr:
+                if in_ptr_op:
+                    if curr_ptr not in cells:
+                        cells[curr_ptr] = new_ptr
+                        new_ptr += 1
+                    ret.append((self.PTRSET, cells[curr_ptr]))
+                    in_ptr_op = False
+                ret.append((opc, val))
+            else:
+                if opc == self.PTRSET:
+                    curr_ptr = val
+                elif opc == self.PTRINC:
+                    curr_ptr = min(curr_ptr + val, self.MAXCELLS)
+                elif opc == self.PTRDEC:
+                    curr_ptr = max(curr_ptr - val, 0)
+                in_ptr_op = True
+
+        return ret
+
+    def no_values(self, code):
         """
         Move back opcode to be directly usable by Brainfuck & co.
         In other words, produce an opcode without any values (all are None).
+        And obviously, no PTRSET either!
         """
         ret = []
         ptr = 0
@@ -336,10 +363,163 @@ class BrainFuck():
         get 30 opcodes as ouput.
         Note: It’s the caller responsability to handle random generator reset,
               if needed.
+        Note: Number of opcodes applies directly to SegFaultProg, but not to
+              Brainfuck and co (will be much more longer).
         """
-        return code
+        # We work in two passes: one to "parse" the code and detect points
+        # where we have to "nullify" obfuscation effects on some cells, and
+        # The other where we really generate the obfs code.
+        cell_ptr = 0
 
-    def convert(self, code, target, factor = 1.0):
+        # First pass.
+        # key: opcode ptr, value: cell(s) to reset, with for each cell, wether
+        #                         to really reset value, or just mark it as
+        #                         reset.
+        null_points = {}
+        in_loop = 0
+        # We need to reset all cells involved in a loop, before it starts, and
+        # after each run, else things are un-manageable!
+        # Level 0 is main program, no need to fill it currently.
+        lstack = [(0, {})]
+
+        def _null_point(null_points, idx, ptr, do):
+            if idx in null_points:
+                null_points[idx].append((ptr, do))
+            else:
+                null_points[idx] = [(ptr, do)]
+
+        for idx, opc_val in enumerate(code):
+            opc, val = opc_val
+            if opc == self.OUTPUT:
+                _null_point(null_points, idx, cell_ptr, True)
+            elif opc == self.INPUT:
+                # No need to effectively reset the cell value here!
+                _null_point(null_points, idx, cell_ptr, False)
+            elif opc == self.BOPEN:
+                in_loop += 1
+                lstack.append((idx, {cell_ptr}))
+            elif opc == self.BCLOSE:
+                init_idx, cells = lstack[in_loop]
+                for c in cells:
+                    _null_point(null_points, init_idx, c, True)
+                    _null_point(null_points, idx, c, True)
+                del lstack[in_loop]
+                in_loop -= 1
+            elif opc == self.PTRSET:
+                cell_ptr = val
+            elif opc == self.PTRINC:
+                cell_ptr = min(self.MAXCELLS - 1, cell_ptr + val)
+            elif opc == self.PTRDEC:
+                cell_ptr = max(0, cell_ptr - val)
+            elif opc in {self.INC, self.DEC} and in_loop:
+                # In loops, we have to systematically reset values before
+                # modifying them, as we don’t know how much times the
+                # obfuscating code affecting it is run...
+                lstack[in_loop][1].add(cell_ptr)
+
+        # Second pass.
+        # This is a map of used cells, to control their modifications in
+        # obfuscation process.
+        cells = {}
+        cell_ptr = 0
+        factor -= 1
+        if not factor:
+            return code
+
+        if code[0][0] not in {self.PTRSET, self.PTRINC, self.PTRDEC}:
+            cells[0] = 0
+
+        curr_nbr = factor
+        ret = []
+        for idx, opc_val in enumerate(code):
+            opc, val = opc_val
+            obfs, nbr_done = self.rand_null_opcode(cells, cell_ptr, curr_nbr)
+            ret += obfs
+
+            # If needed, reset the needed cell(s).
+            tmp_ptr = cell_ptr
+            for ptr, do in null_points.get(idx, []):
+                if do and ptr in cells and cells[ptr]:
+                    if ptr != tmp_ptr:
+                        ret.append((self.PTRSET, ptr))
+                        tmp_ptr = ptr
+                        nbr_done += 1
+                    if cells[ptr] > 127:
+                        ret.append((self.INC, 255 - cells[ptr]))
+                    else:
+                        ret.append((self.DEC, cells[ptr]))
+                    nbr_done += 1
+                cells[ptr] = 0
+
+            # update current cell pointer, if needed!
+            if opc == self.PTRSET:
+                cell_ptr = val
+            elif opc == self.PTRINC:
+                cell_ptr = min(self.MAXCELLS - 1, cell_ptr + val)
+            elif opc == self.PTRDEC:
+                cell_ptr = max(0, cell_ptr - val)
+            elif tmp_ptr != cell_ptr:
+                ret.append((self.PTRSET, cell_ptr))
+                nbr_done += 1
+
+            ret.append((opc, val))
+            curr_nbr += factor - nbr_done
+
+        return ret
+
+    def rand_null_opcode(self, cells, org_ptr, nbr):
+        """
+        Generate some amount of opcode that does nothing!
+        """
+        # Avoid too big changes, would be over-verbose in Brainfuck & co.
+        MAX_PTRSHIFT = 10
+        MAX_VALSHIFT = 10
+        # Randomize length of nop code.
+        nbr = int(random.uniform(nbr * 0.5, nbr * 1.5))
+        curr_ptr = org_ptr
+        # We need at least two opcodes for obfuscation.
+        if nbr < 2:
+            return ([], 0)
+
+        ret = []
+        n = 0
+        # We keep the last two opcodes to reset (cell pointer and/or value).
+        while n < nbr - 1:
+            # 3/10 to change current value, 1/10 to make a dummy loop (if
+            # possible), 6/10 to change current pointer (cell).
+            r = random.randint(1, 10)
+            if r < 3:
+                # Random value change.
+                dlt = random.randint(0, MAX_VALSHIFT)
+                if random.randint(0, 1):
+                    ret.append((self.INC, dlt))
+                    cells[curr_ptr] = (cells.get(curr_ptr, 0) + dlt) % 255
+                else:
+                    ret.append((self.DEC, dlt))
+                    cells[curr_ptr] = (cells.get(curr_ptr, 0) - dlt) % 255
+                n += 1
+            elif r > 4:
+                curr_ptr = random.randint(max(0, curr_ptr - MAX_PTRSHIFT),
+                                          min(self.MAXCELLS - 1,
+                                              curr_ptr + MAX_PTRSHIFT))
+                ret.append((self.PTRSET, curr_ptr))
+                n += 1
+            elif n > 4 and curr_ptr not in cells:  # Only affect unsed cells!
+                # Simple dummy loop reseting cell to zero, for now...
+                if random.randint(0, 1):
+                    ret += [(self.BOPEN, None), (self.INC, None),
+                            (self.BCLOSE, None)]
+                else:
+                    ret += [(self.BOPEN, None), (self.DEC, None),
+                            (self.BCLOSE, None)]
+                n += 3
+        # Finalize NOP code by returning to org_ptr cell (if needed).
+        if curr_ptr != org_ptr:
+            ret.append((self.PTRSET, org_ptr))
+            n += 1
+        return (ret, n)
+
+    def convert(self, code, target, factor=1.0):
         """
         Convert some (textual form of) language to another one.
         Note that the ouput form is by default optimized, use the factor option
@@ -347,7 +527,116 @@ class BrainFuck():
         """
         tp = detect_type(code)
         code = self.optimize(self.CONVERT_FUNCS[tp][0](self, code))
+        self.reset_random()
         return self.CONVERT_FUNCS[target][1](self, self.obfuscate(code, factor))
+
+    def bytes_to_opcode(self, bytes):
+        """
+        Convert a sequence of bytes into some (relatively optimized) opcode.
+
+        Rough algo is that:
+        * Find out all bytes (values) that are higly used. They will get
+          “constant” cells.
+        * Find out all other “blocks” of power-of-2 continuous values
+          which contain some used bytes (values).
+        E.g. if we have values 33, 64, 196, 178, 179, 222, and 33 and 196 are
+        highly used, we’ll have:
+        * cell 0 used as counter for loop which will init var cells.
+        * a loop to init cell 1 (64), cell 2 (176), and cell 3 (208),
+          provided we use at most 16 blocks (cells) for vars.
+        * A static init of cell 4 to 33, and cell 5 to 196.
+
+        Then it’s just a matter off going forth and back between defined
+        cells, adjusting variable ones as needed, and ouputting values!
+        """
+        # Threshold under which a byte is common enough to get its own
+        # "constant" cell.
+        # XXX Seems that option is not really usefull, as it tend to
+        #     produce longer code when not zero...
+        CONST_T = 0
+        # Number of variable cells, for other bytes values.
+        # Must be a power of two, up to 256.
+        BLOCKS = 32
+        STEP = 256 // BLOCKS
+
+        nbr = [0]*256
+        ln_bytes = 0
+        for b in bytes:
+            nbr[b] += 1
+            ln_bytes += 1
+        # Find out bytes common enough to get a "const" cell for them own.
+        consts = {}
+        # Temp cell pointer, need to later offset all constant ones by the
+        # room taken by variable ones.
+        cell_ptr = 0
+        for c, n in enumerate(nbr):
+            if n and ln_bytes / n < CONST_T:
+                consts[c] = cell_ptr
+                cell_ptr += 1
+                nbr[c] = 0  # We do not need this value anymore.
+        # Now, find out the blocks we can avoid to init (i.e. those for wich
+        # all values in nbr are 0).
+        cell_ptr = 1  # We need the first cell as loop controller!
+        var = {}
+        var_val = {}
+        STEP = 256 // BLOCKS
+        idx = 0
+        while idx < 256:
+            if set(nbr[idx:idx + STEP]) != {0}:
+                var[idx // STEP] = cell_ptr
+                cell_ptr += 1
+                var_val[idx // STEP] = idx
+            idx += STEP
+        # Now wa can offset constant pointers!
+        off = len(var) + 1
+        for c in consts:
+            consts[c] += off
+
+        ret = []
+        # Let's init our cells (both variable and constant ones).
+        ret.append((self.INC, STEP))
+        # Loop to init var cells.
+        if var:
+            ret.append((self.BOPEN, None))
+            idx = 1  # First var cell starts at zero (if needed).
+            while idx < (256 // STEP):
+                if idx in var:
+                    ret.append((self.PTRSET, var[idx]))
+                    ret.append((self.INC, idx))
+                idx += 1
+            ret.append((self.PTRSET, 0))
+            ret.append((self.DEC, 1))
+            ret.append((self.BCLOSE, None))
+        # End of loop.
+        # And now, constants (XXX Unordered init, not optimal...).
+        for c, idx in consts.items():
+            ret.append((self.PTRSET, idx))
+            ret.append((self.INC, c))
+
+        # And now, we can finally encode our bytes. Note idx is our current
+        # cell pointer...
+        cell_ptr = idx
+        for b in bytes:
+            if b in consts:
+                if cell_ptr != consts[b]:
+                    cell_ptr = consts[b]
+                    ret.append((self.PTRSET, cell_ptr))
+            else:
+                idx = b // STEP
+                if cell_ptr != var[idx]:
+                    cell_ptr = var[idx]
+                    ret.append((self.PTRSET, cell_ptr))
+                if b != var_val[idx]:
+                    dlt = b - var_val[idx]
+                    if dlt > 0:
+                        ret.append((self.INC, dlt))
+                    elif dlt < 0:
+                        ret.append((self.DEC, -dlt))
+                    var_val[idx] = b
+            ret.append((self.OUTPUT, None))
+
+        # And we are done!
+        return ret
 
     ###########################################################################
     # Convert functions.
@@ -361,7 +650,7 @@ class BrainFuck():
     def opc2bf(self, code):
         """Convert opcode to brainfuck."""
         # Get Brainfuck & co compatible opcode.
-        code = self.unoptimize(code)
+        code = self.no_values(code)
         return "".join((self.TO_BRAINFUCK[opc] for opc, v in code))
 
     CONVERT_FUNCS[BRAINFUCK] = (bf2opc, opc2bf)
@@ -377,20 +666,20 @@ class BrainFuck():
     def opc2ook(self, code):
         """Convert opcode to ook (without "Ook" if full is False."""
         # Get Brainfuck & co compatible opcode.
-        code = self.unoptimize(code)
-        ret = []
-        for opc, v in code:
-            ret += self.TO_OOK[opc]
-        return "".join(ret)
-
-    def opc2fastook(self, code):
-        """Convert opcode to ook (without "Ook" if full is False."""
-        # Get Brainfuck & co compatible opcode.
-        code = self.unoptimize(code)
+        code = self.no_values(code)
         ret = []
         for opc, v in code:
             ret += self.TO_OOK[opc]
         return " Ook".join(ret).lstrip()  # Remove first space...
+
+    def opc2fastook(self, code):
+        """Convert opcode to ook (without "Ook" if full is False."""
+        # Get Brainfuck & co compatible opcode.
+        code = self.no_values(code)
+        ret = []
+        for opc, v in code:
+            ret += self.TO_OOK[opc]
+        return "".join(ret)
 
     CONVERT_FUNCS[OOK] = (ook2opc, opc2ook)
     CONVERT_FUNCS[FASTOOK] = (ook2opc, opc2fastook)
@@ -430,7 +719,7 @@ class BrainFuck():
     def opc2spoon(self, code):
         """Convert opcode to spoon."""
         # Get Brainfuck & co compatible opcode.
-        code = self.unoptimize(code)
+        code = self.no_values(code)
         return "".join((self.TO_SPOON[opc] for opc, v in code))
 
     CONVERT_FUNCS[SPOON] = (spoon2opc, opc2spoon)
@@ -488,7 +777,7 @@ class BrainFuck():
                     dlt = val - ptr
                     ptr = val
                     val = abs(dlt)
-                    if dlt > 0:
+                    if dlt >= 0:
                         opc = self.PTRINC
                     elif dlt < 0:
                         opc = self.PTRDEC
@@ -528,11 +817,30 @@ def detect_type(code):
     raise ValueError("Unknown language!")
 
 
+def cypher(bytes, lang=BRAINFUCK, obfs_fact=0.0, seed=None):
+    """Simple wrapper to return bytes as code."""
+    fact = obfs_fact * 5 + 1
+    bf = BrainFuck(seed=seed)
+    code = bf.bytes_to_opcode(bytes)
+    bf.reset_random()
+    code = bf.obfuscate(code, fact)
+    bf.reset_random()
+    txt = bf.CONVERT_FUNCS[lang][1](bf, code)
+    return txt
+
+
 def decypher(code):
     """Simple wrapper to return code interpreted output as bytes."""
     out = BytesOutput()
     BrainFuck(outpt=out).evaluate(code)
     return bytes(out)
+
+
+def convert(code, lang=BRAINFUCK, obfs_fact=0.0, seed=None):
+    """Simple wrapper to convert code to code."""
+    fact = obfs_fact * 5 + 1
+    bf = BrainFuck(seed=seed)
+    return bf.convert(code, lang, fact)
 
 
 class BytesOutput():
