@@ -95,20 +95,18 @@ class Octopus(app.cli.Tool):
                    "".format(octopus.decypher(htext, codec="utf-8")))
         ui.message("")
 
+        htext = "110001011100001011000011110001001100100111000011"
+        ui.message("“Numbers” ebcdic text used as input: {}".format(htext))
+        ui.message("The decypherd data is: {}"
+                   "".format(octopus.decypher(htext, codec="cp500")))
+        ui.message("")
+
         ui.message("+ The input text to decypher may have space-separated "
                    "bytes:")
         htext = "1001111 1100011 1110100 1101111 1110000 1110101 1110011"
         ui.message("“Numbers” ascii-7 text used as input: {}".format(htext))
         ui.message("The decypherd data is: {}"
                    "".format(octopus.decypher(htext, codec="ascii7")))
-        ui.message("")
-
-        ui.message("+ The input text to decypher may have space-separated "
-                   "bytes:")
-        htext = "110001011100001011000011110001001100100111000011"
-        ui.message("“Numbers” ebcdic text used as input: {}".format(htext))
-        ui.message("The decypherd data is: {}"
-                   "".format(octopus.decypher(htext, codec="cp500")))
         ui.message("")
 
         ui.message("--- Won’t work ---")
