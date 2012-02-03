@@ -151,7 +151,7 @@ def main():
     parser = argparse.ArgumentParser(description=""
                                      "Cypher/decypher some text in "
                                      "prime code.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

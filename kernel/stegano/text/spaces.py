@@ -76,7 +76,8 @@ Current execution context:
 
 
 MAP = [" ", "  "]
-R_MAP = {0:{" ":'0',"  ":'1'},1:{" ":'1', "  ":'0'}}
+R_MAP = {0: {" ": '0', "  ": '1'},
+         1: {" ": '1', "  ": '0'}}
 #mode=0: " "==0
 #mode=1: " "==1
 
@@ -90,13 +91,13 @@ def do_hide(words, data, mode=0):
     index = 1
     c_mode = str(mode)
     for c in data:
-        bits = bin(ord(c))[2:].rjust(8,'0')
+        bits = bin(ord(c))[2:].rjust(8, '0')
         for i in range(8):
             res.append(words[index])
-            if bits[i]==c_mode:
+            if bits[i] == c_mode:
                 res.append(MAP[mode])
             else:
-                res.append(MAP[(mode+1)%2])
+                res.append(MAP[(mode + 1) % 2])
             index += 1
     length = len(words)
     res.append(MAP[mode].join(words[index:length]))
@@ -110,7 +111,7 @@ def hide(text, data, mode=0):
     elif not text:
         raise ValueError("No text into which to hide given!")
     #should probably rise an error.
-    if mode not in (0,1):
+    if mode not in (0, 1):
         mode = 0
 
     words = re.split(" +", text)
@@ -121,7 +122,7 @@ def hide(text, data, mode=0):
     if len(data) * 8 + 2 > nb_words:
         raise ValueError("Hiding text not long enough (needs at least {} "
                          "words, only have {} currently)!"
-                         "".format(len(data)*8 +2,nb_words))
+                         "".format(len(data) * 8 + 2, nb_words))
     return "".join(do_hide(words, data, mode))
 
 
@@ -136,10 +137,10 @@ def do_unhide(text):
     for elt in lst[1:]:
         bit = R_MAP[mode][elt]
         bits += bit
-        if len(bits)==8:
-            if bits=="00000000":
+        if len(bits) == 8:
+            if bits == "00000000":
                 break
-            res.append(int(bits,2))
+            res.append(int(bits, 2))
             bits = ""
     return res
 
@@ -148,7 +149,7 @@ def unhide(text):
     """Just a wrapper around do_unhide (no checks currently)."""
     if not text:
         raise ValueError("No text into which to hide given!")
-    if re.search("   ",text):
+    if re.search("   ", text):
         raise ValueError("Bad space-text")
     #check the mode, pos[0]
     return "".join(chr(c) for c in do_unhide(text))
@@ -163,7 +164,7 @@ def main():
                                      "into the spaces of a long text (which "
                                      "hence must have as much spaces as the "
                                      "number of letters in data to hide).")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

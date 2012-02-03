@@ -44,7 +44,7 @@ import kernel.utils as utils
 
 __version__ = "0.2.0"
 __date__ = "2012/02/18"
-__python__ = "3.x" # Required Python version
+__python__ = "3.x"  # Required Python version
 __about__ = "" \
 """===== About Morse|Wabun =====
 Morse|Wabun is a tool which can “(de)cypher” text to/from morse, or its
@@ -165,7 +165,7 @@ FI_MAP = {'A': '.-',
           'Ŝ': '...-.',
           'Þ': '.--..',
           'Ü': '..--',    'Ŭ': '..--',
-          '1': '.----', 
+          '1': '.----',
           '2': '..---',
           '3': '...--',
           '4': '....-',
@@ -435,7 +435,8 @@ def do_cypher(text, method=INTER, variant=STANDARD, exhaustive=False,
                     "best_n_solutions": \
                         functools.reduce(lambda n, w: n * len(w), best_s, 1),
                     "best_cypher": \
-                        functools.reduce(lambda n, c: n + c, best_c) / len(best_c)}
+                        functools.reduce(lambda n, c: n + c, best_c) / \
+                        len(best_c)}
 
         else:
             enc_w = []
@@ -444,11 +445,11 @@ def do_cypher(text, method=INTER, variant=STANDARD, exhaustive=False,
                 i = 0
                 ln_w = len(w)
                 while i < ln_w:
-                    if w[i:i+3] in c_map:
-                        els.append(c_map[w[i:i+3]])
+                    if w[i:i + 3] in c_map:
+                        els.append(c_map[w[i:i + 3]])
                         i += 3
-                    elif w[i:i+2] in c_map:
-                        els.append(c_map[w[i:i+2]])
+                    elif w[i:i + 2] in c_map:
+                        els.append(c_map[w[i:i + 2]])
                         i += 2
                     elif w[i] in c_map:
                         els.append(c_map[w[i]])
@@ -569,7 +570,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="Cypher/decypher some text "
                                                  "in morse or Wabun code.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

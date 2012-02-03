@@ -149,7 +149,7 @@ def main():
                                      "cell phones' keyboard.\n"
                                      "Example: 'c' => '222'.\n"
                                      "Allowed chars: a..z + space.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

@@ -125,7 +125,7 @@ def do_unhide(text):
         if sp == 27:
             break
         elif 0 < sp < 27:
-            chars.append(string.ascii_lowercase[sp-1])
+            chars.append(string.ascii_lowercase[sp - 1])
     return "".join(chars)
 
 
@@ -143,7 +143,7 @@ def main():
                                      "into the spaces of a long text (which "
                                      "hence must have as much spaces as the "
                                      "number of letters in data to hide).")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

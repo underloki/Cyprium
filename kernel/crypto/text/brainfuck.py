@@ -372,6 +372,7 @@ def main():
               'fastook': brainfuck.FASTOOK, 'f': brainfuck.FASTOOK,
               'spoon': brainfuck.SPOON, 's': brainfuck.SPOON,
               'segfaultprog': brainfuck.SIGSEV, 'g': brainfuck.SIGSEV}
+
     def _2ilang(b):
         return _langs.get(b, None)
 
@@ -379,7 +380,7 @@ def main():
     parser = argparse.ArgumentParser(description=""
                                      "Cypher/decypher some text in "
                                      "prime code.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

@@ -83,7 +83,7 @@ class Octopus(app.cli.Tool):
         ui.message("Octopus cyphered data (binary, octal, decimal and "
                    "hexadecimal utf-8):\n    {}"
                    "".format("\n    ".join(octopus.cypher(text,
-                                                          bases=(2,8,10,16)))))
+                                                       bases=(2, 8, 10, 16)))))
         ui.message("")
 
         ui.message("--- Decoding ---")

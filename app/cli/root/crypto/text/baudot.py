@@ -86,7 +86,7 @@ class Baudot(app.cli.Tool):
         ui.message("Baudot cyphered data (binary, octal, decimal and "
                    "hexadecimal):\n    {}"
                    "".format("\n    ".join(baudot.cypher(text,
-                                                         bases=(2,8,10,16)))))
+                                                     bases=(2, 8, 10, 16)))))
         ui.message("")
 
         ui.message("--- Decoding ---")
@@ -99,7 +99,8 @@ class Baudot(app.cli.Tool):
 
         ui.message("+ The input text to decypher may have space-separated "
                    "bytes:")
-        htext = "11111 10100 00001 10010 10010 11000 00100 11011 10011 10110 10111 10011 01101"
+        htext = "11111 10100 00001 10010 10010 11000 00100 11011 10011 " \
+                "10110 10111 10011 01101"
         ui.message("Baudot text used as input: {}".format(htext))
         ui.message("The decypherd data is: {}"
                    "".format(baudot.decypher(htext)))

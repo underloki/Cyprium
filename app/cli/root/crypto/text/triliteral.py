@@ -106,7 +106,6 @@ class Triliteral(app.cli.Tool):
         ui.message("The base 13 decyphered data is: {}".format(out))
         ui.message("")
 
-
         ui.message("--- Won’t work ---")
         ui.message("+ The input text to cypher must be ASCII lowercase "
                    "chars only:")

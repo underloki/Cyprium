@@ -178,7 +178,7 @@ def do_cypher_bin(txt):
     mode = get_mode(txt[0])
     lst.append(mode)
     for c in txt:
-        if mode!= get_mode(c):
+        if mode != get_mode(c):
             mode = get_mode(c)
             lst.append(mode)
         lst.append(MAP[c])
@@ -279,6 +279,7 @@ def main():
 
     # Helper func.
     _bases = {'b': 2, 'o': 8, 'd': 10, 'x': 16}
+
     def _2ibase(b):
         return _bases.get(b, None)
 
@@ -286,7 +287,7 @@ def main():
     parser = argparse.ArgumentParser(description=""
                                      "Cypher/decypher some text in binary/"
                                      "octal/decimal/hexadecimal Baudot code.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

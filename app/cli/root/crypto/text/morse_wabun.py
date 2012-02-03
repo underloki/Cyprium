@@ -155,7 +155,8 @@ class MorseWabun(app.cli.Tool):
         ui.message("Data to cypher: {}".format(text))
         out = morse_wabun.cypher(text, morse_wabun.WABUN, morse_wabun.FAST,
                                  exhaustive=True, min_cypher=0.6)
-        out = self._get_exhaustive_txt(out, ' / ', ui, min_cypher=0.6, act="all")
+        out = self._get_exhaustive_txt(out, ' / ', ui,
+                                       min_cypher=0.6, act="all")
         ui.message("Cyphered solutions with cypher factor higher than 0.6:")
         ui.message(out)
         ui.message("")
@@ -224,8 +225,8 @@ class MorseWabun(app.cli.Tool):
                                          oneline=True)
                     if answ == "exhst":
                         exhaustive = True
-                        t = ui.get_data("Cypher threshold (nothing to use default "
-                                        "{} one): ".format(threshold),
+                        t = ui.get_data("Cypher threshold (nothing to use "
+                                        "default {} one): ".format(threshold),
                                         sub_type=ui.FLOAT, allow_void=True)
                         if t is not None:
                             threshold = t

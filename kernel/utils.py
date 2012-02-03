@@ -217,7 +217,7 @@ def cut_iter(iterable, *cuts):
         curr = next
 
 
-def _rec_all_groups_in_order(iterable, lengths=(1,2)):
+def _rec_all_groups_in_order(iterable, lengths=(1, 2)):
     """lengths is assumed sorted!"""
     # This will recursively cut iterable in all possible sets of chunks which
     # lengths are in the given values.
@@ -240,7 +240,7 @@ def _rec_all_groups_in_order(iterable, lengths=(1,2)):
             yield base + list(els)
 
 
-def all_groups_in_order(iterable, lengths=(1,2)):
+def all_groups_in_order(iterable, lengths=(1, 2)):
     """
     abc, (1,2,3) -> a,b,c   ab,c   a,bc   abc
     abcd, (2, 3) -> ab,cd
@@ -328,11 +328,11 @@ def all_primes(n):
 
     # Create a list for all odd numbers.
     # Note: theorically, 1 is not prime, but as we never test it...
-    lst = [True] * ((n // 2) + [0,1][n % 2])
+    lst = [True] * ((n // 2) + [0, 1][n % 2])
     yield 2  # 2 is a prime number.
     # Use **0.5 instead of Math.sqrt().
     root = int(n ** 0.5) // 2
-    root = root + [1,0][root % 2]  # Get an odd root.
+    root = root + [1, 0][root % 2]  # Get an odd root.
     for i in range(1, root + 1):
         if lst[i]:
             y = i * 2 + 1
@@ -374,7 +374,7 @@ def prime_range(end, start=2):
         for p in all_primes(end):
             yield p
 
-    start = start + [1,0][start % 2]  # Get an odd start.
+    start = start + [1, 0][start % 2]  # Get an odd start.
     for i in range(start, end + 1, 2):
         if is_prime(i):
             yield i

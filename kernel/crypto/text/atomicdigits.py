@@ -404,7 +404,7 @@ def main():
                                      "Encrypt/decypher some text in "
                                      "atomic digits code.")
     sparsers = parser.add_subparsers(dest="command")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     hide_parser = sparsers.add_parser('cypher', help="Encryptcode text in "

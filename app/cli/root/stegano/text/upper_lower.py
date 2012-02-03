@@ -4,7 +4,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Â© 2012                                                   #
+#   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -25,6 +25,7 @@
 #   COPYING attached file. If not, see : http://www.gnu.org/licenses   #
 #                                                                      #
 ########################################################################
+
 
 import sys
 import os
@@ -120,8 +121,8 @@ class Upper_Lower(app.cli.Tool):
                 while 1:
                     data = ui.text_input("Data to hide into the text",
                                          sub_type=ui.LOWER)
-                    options = [(0,"$0==lower-case",''),
-                                (1,"*1==lower-case",'')]
+                    options = [(0, "$0==lower-case", ''),
+                                (1, "*1==lower-case", '')]
                     msg = "Choose the hiding-mode :"
                     mode = ui.get_choice(msg, options, oneline=True)
                     try:

@@ -230,7 +230,7 @@ def main():
                              "to further obfuscate hidden data.")
     parser.add_argument('-m', '--marker', default=b"\xcc\xa3".decode("utf8"),
                         help="The unicode char marker.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

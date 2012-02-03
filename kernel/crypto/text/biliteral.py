@@ -149,7 +149,7 @@ def main():
                                      "Cypher/decypher some lowercase-"
                                      "no-space text to/from biliteral"
                                      "code.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

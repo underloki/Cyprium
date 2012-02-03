@@ -155,7 +155,8 @@ class Argots(app.cli.Tool):
 
         ui.message("--- Decyphering ---")
         ui.message("+ Argot Javanais & co.")
-        htext = "LEfes EfApEfachEfes sEfont sEfur lEfe sEfentEfier dEfes HEfallEfes."
+        htext = "LEfes EfApEfachEfes sEfont sEfur lEfe sEfentEfier dEfes " \
+                "HEfallEfes."
         ui.message("Note that most of the time, you can use default options "
                    "here (i.e. Generic, and give no obfuscating syllable), "
                    "as that kind of “cyphering” is really easy to break!")
@@ -388,7 +389,8 @@ class Argots(app.cli.Tool):
             try:
                 if method == argots.LARGONJI:
                     txt = argots.decypher_largonji(txt, v_sylb, c_sylb)
-                    txt = "\n    " + "\n    ".join(utils.format_multiwords(txt))
+                    txt = "\n    " + \
+                          "\n    ".join(utils.format_multiwords(txt))
                 else:
                     txt = argots.decypher(txt, method, syllable)
                     if len(txt) > 1:

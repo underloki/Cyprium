@@ -79,8 +79,9 @@ Current execution context:
 
 _MODES = ['0', '1']
 
-_LOWER_CASES = "".join(chr(c) for c in range(256) if chr(c).islower() and
-    ord(chr(c).upper())<256)
+_LOWER_CASES = "".join(chr(c) for c in range(256) if
+                                       chr(c).islower() and
+                                       ord(chr(c).upper()) < 256)
 
 _LOWER_CASES = b'abcdefghijklmnopqrstuvwxyz\xc2\xaa\xc2\xba\xc3\x9f\xc3\xa0'\
     b'\xc3\xa1\xc3\xa2\xc3\xa3\xc3\xa4\xc3\xa5\xc3\xa6\xc3\xa7\xc3\xa8\xc3'\
@@ -101,25 +102,25 @@ def _count_letters(text):
 def do_hide(text, data, mode=1):
     """hide a text in another text"""
     res = []
-    if mode==1:
+    if mode == 1:
         res.append(text[0].upper())
     else:
         res.append(text[0])
     index = 1
     mode = _MODES[mode]
     for c in data:
-        bits = bin(ord(c))[2:].rjust(8,'0')
+        bits = bin(ord(c))[2:].rjust(8, '0')
         for i in range(8):
             while (not text[index].islower()):
                 res.append(text[index])
                 index += 1
-            if bits[i]==mode:
+            if bits[i] == mode:
                 res.append(text[index].upper())
             else:
                 res.append(text[index])
             index += 1
     length = len(text)
-    while (index<length):
+    while index < length:
         res.append(text[index])
         index += 1
     return res
@@ -132,7 +133,7 @@ def hide(text, data, mode=0):
     elif not text:
         raise ValueError("No text into which to hide given!")
     #should probably rise an error.
-    if mode not in (0,1):
+    if mode not in (0, 1):
         mode = 0
     nb_letters = _count_letters(text)
     #times 8 while we encrypt 1 octect with 8 letters
@@ -140,7 +141,7 @@ def hide(text, data, mode=0):
     if len(data) * 8 + 1 > nb_letters:
         raise ValueError("Hiding text not long enough (needs at least {} "
                          "alphabetic letters, only have {} currently)!"
-                         "".format(len(data)*8 +1,nb_letters))
+                         "".format(len(data) * 8 + 1, nb_letters))
     # Check for unallowed chars
     c_text = set(text)
     c_allowed = set(_LOWER_CASES + string.digits +
@@ -158,11 +159,11 @@ def do_unhide(text, mode=0):
     for c in text:
         if c.isalpha():
             if c.islower():
-                bits += _MODES[(mode+1)%2]
+                bits += _MODES[(mode + 1) % 2]
             else:
                 bits += _MODES[mode]
-            if len(bits)==8:
-                if bits==_MODES[(mode+1)%2]*8:
+            if len(bits) == 8:
+                if bits == _MODES[(mode + 1) % 2] * 8:
                     break
                 chars.append(chr(int(bits, 2)))
                 bits = ''
@@ -190,7 +191,7 @@ def main():
                                      "into the spaces of a long text (which "
                                      "hence must have as much spaces as the "
                                      "number of letters in data to hide).")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

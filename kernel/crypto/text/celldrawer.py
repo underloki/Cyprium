@@ -154,7 +154,7 @@ def main():
                                      "Cypher/decypher some text in "
                                      "celldrawer code.")
     sparsers = parser.add_subparsers(dest="command")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     hide_parser = sparsers.add_parser('cypher', help="Cypher text in "

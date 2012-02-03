@@ -197,6 +197,7 @@ def main():
 
     # Helper func.
     _bases = {'b': 2, 'o': 8, 'd': 10, 'x': 16}
+
     def _2ibase(b):
         return _bases.get(b, None)
 
@@ -204,7 +205,7 @@ def main():
     parser = argparse.ArgumentParser(description="Cypher/decypher some text "
                                                  "in binary/octal/decimal/"
                                                  "hexadecimal form.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

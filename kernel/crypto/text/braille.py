@@ -398,7 +398,7 @@ def main():
                                      "to informatic Braille code us-437.\n"
                                      "example: 'the' ==> ''2345 125 15'.\n"
                                      "allowed chars: cp1252 charset.")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")

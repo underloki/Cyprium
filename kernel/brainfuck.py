@@ -61,9 +61,10 @@ class BrainFuck():
     PTRSET = 3   # Set cell pointer to <v>, between [0..MAXCELLS].
     INC = 20     # Increment cell value by <v> (8bits, cyclic).
     DEC = 21     # Decrement cell value by <v> (8bits, cyclic).
-    # Opening brace, skip to matching closing brace is current cell is NULL.
+    # Opening brace, skip to matching closing brace if current cell is NULL.
     BOPEN = 30
-    # Closing brace, back to matching opening brace is current cell is not NULL.
+    # Closing brace, back to matching opening brace if current cell is not
+    # NULL.
     BCLOSE = 31
     OUTPUT = 40  # Output cell value.
     INPUT = 41   # Set cell value with input.
@@ -252,7 +253,7 @@ class BrainFuck():
                     new_ptr += dlt
                     if new_ptr != org_ptr:
                         new_ptr = org_ptr = min(max(0, new_ptr),
-                                                self.MAXCELLS-1)
+                                                self.MAXCELLS - 1)
                         ret.append((self.PTRSET, org_ptr))
                     curr_cat = set()
                 # Else, if we have to first finalize the previous set of
@@ -528,7 +529,8 @@ class BrainFuck():
         tp = detect_type(code)
         code = self.optimize(self.CONVERT_FUNCS[tp][0](self, code))
         self.reset_random()
-        return self.CONVERT_FUNCS[target][1](self, self.obfuscate(code, factor))
+        return self.CONVERT_FUNCS[target][1](self,
+                                             self.obfuscate(code, factor))
 
     def bytes_to_opcode(self, bytes):
         """
@@ -559,7 +561,7 @@ class BrainFuck():
         BLOCKS = 32
         STEP = 256 // BLOCKS
 
-        nbr = [0]*256
+        nbr = [0] * 256
         ln_bytes = 0
         for b in bytes:
             nbr[b] += 1

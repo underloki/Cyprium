@@ -43,7 +43,7 @@ if __name__ == "__main__":
                                      "Cyprium: main app regrouping many "
                                      "cryptographic/steganographic tools, "
                                      "as well as some cryptanalysis ones.")
-    parser.add_argument('-d', '--debug', action="store_true", default = False,
+    parser.add_argument('-d', '--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     args = parser.parse_args()
@@ -54,4 +54,3 @@ if __name__ == "__main__":
     ui = app.cli.ui.UI()
 
     tree.main(ui)
-

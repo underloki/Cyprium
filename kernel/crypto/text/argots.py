@@ -368,7 +368,7 @@ def _unloucherbemize(word, sylb_v, sylb_c):
     # First, get the two previous syllables as (c1v1, c2v2)
     v2 = ""
     c2 = ""
-    
+
     for i in range(max(-5, 4 - len(w)), 0):
         if w[i:] in LARGONJI_VOWELS:
             if w[i - 1] not in CONSONANTS:
@@ -406,7 +406,7 @@ def _unloucherbemize(word, sylb_v, sylb_c):
                word[1:] + c1]
     # Capitalize if needed.
     if is_upper:
-        ws =  [w[0].upper() + w[1:] for w in ws]
+        ws = [w[0].upper() + w[1:] for w in ws]
     # Org word
     ws.append(word + c1 + v1 + c2 + v2)
     return _generator(prepnd, ws, appnd)
@@ -420,7 +420,7 @@ def cypher_word(word, syllable):
     factor_cyphered = nbr added syllables / nbr letters.
     """
     ln_w = len(word)
-    for grps in utils.all_groups_in_order(word, (1,2)):
+    for grps in utils.all_groups_in_order(word, (1, 2)):
         cyphered = 0
         y = []
         first = True
@@ -669,7 +669,7 @@ def main():
                                      "adding an obfuscating syllable between "
                                      "consonants and vowels.\n"
                                      "Example: 'Test' => 'Tavest'.\n")
-    parser.add_argument('--debug', action="store_true", default = False,
+    parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
 
     sparsers = parser.add_subparsers(dest="command")
@@ -702,12 +702,12 @@ def main():
     cparser.add_argument('-l', '--largonji', action="store_true",
                          help="Use Largonji des Loucherbems cyphering.")
     cparser.add_argument('--vowel_syllables', nargs='*',
-                         default = LARGONJI_SYLLABLES_V,
+                         default=LARGONJI_SYLLABLES_V,
                          help="Largonji: syllables to add after a vowel, at "
                               "the end of words (defaults to '{}')."
                               "".format("', '".join(LARGONJI_SYLLABLES_V)))
     cparser.add_argument('--consonant_syllables', nargs='*',
-                         default = LARGONJI_SYLLABLES_C,
+                         default=LARGONJI_SYLLABLES_C,
                          help="Largonji: syllables to add after a consonant, "
                               "at the end of words (defaults to '{}')."
                               "".format("', '".join(LARGONJI_SYLLABLES_C)))
@@ -731,12 +731,12 @@ def main():
     dparser.add_argument('-l', '--largonji', action="store_true",
                          help="Use Largonji des Loucherbems decyphering.")
     dparser.add_argument('--vowel_syllables', nargs='*',
-                         default = LARGONJI_SYLLABLES_V,
+                         default=LARGONJI_SYLLABLES_V,
                          help="Largonji: syllables to search for vowels, at "
                               "the end of words (defaults to '{}')."
                               "".format("', '".join(LARGONJI_SYLLABLES_V)))
     dparser.add_argument('--consonant_syllables', nargs='*',
-                         default = LARGONJI_SYLLABLES_C,
+                         default=LARGONJI_SYLLABLES_C,
                          help="Largonji: syllables to search for consonants, "
                               "at the end of words (defaults to '{}')."
                               "".format("', '".join(LARGONJI_SYLLABLES_C)))
