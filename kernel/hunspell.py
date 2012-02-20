@@ -28,10 +28,13 @@
 
 
 import sys
+import os
 import itertools
-import time
-import string
 import re
+
+
+ZIP_DICS = os.path.join(os.path.dirname(__file__), "dics.zip")
+MAXLEN = 10000  # XXX We assume no generated word can be longer than that!
 
 
 class Hunspell(object):
@@ -43,22 +46,57 @@ class Hunspell(object):
     def __init__(self):
         self.reset()
 
-    def reset(self):
-        self.flag_mode = "ASCII"
-        self.af_map = {}
-        self.af_classes = {}
-        self.base_words = []
+    def reset(self, idname=None):
+        if idname:
+            self.dics[idname] = {"flag_mode": "ASCII",
+                                 "af_map": {},
+                                 "af_classes": {},
+                                 "base_words": []}
+        else:
+            self.dics = {}
 
-    def load_dic(self, dic_path, aff_path=None):
-        self.reset()
+    def load_dic_file(self, dic_path, aff_path=None, idname=None):
+        """
+        Load the given dic file.
+        If aff_path is None, it will be (dic_path[:-4].aff).
+        idname is the identifier of the dic, dic_path if None.
+        """
         if aff_path is None:
             aff_path = dic_path[:-3] + "aff"
+        if idname == None:
+            idname = dic_path
+        self.reset(idname)
         with open(aff_path) as lines:
-            self.parse_aff(lines)
+            self.parse_aff(self.dics[idname], lines)
         with open(dic_path) as lines:
-            self.parse_dic(lines)
+            self.parse_dic(self.dics[idname], lines)
 
-    def parse_aff(self, lines):
+    def load_dic_zip(self, zip_path, names=[]):
+        """
+        Load some dics from a zip archive.
+        names is an iterable of dic names (withour .dic/.aff extensions), if
+        empty all dics from archive will be loaded.
+        """
+        def bytes2str(lines):
+            for l in lines:
+                # XXX For now, we assume encoding is utf-8!
+                yield l.decode("utf-8")
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zip_arch:
+            files = set(zip_arch.namelist())
+            if not names:
+                names = (f[:-4] for f in files if f.endswith(".dic"))
+            names = ((n, n + ".dic", n + ".aff") for n in names
+                     if {n + ".dic", n + ".aff"} <= files)
+            for idname, dic, aff in names:
+                self.reset(idname)
+                lines = zip_arch.open(aff)
+                self.parse_aff(self.dics[idname], bytes2str(lines))
+                lines = zip_arch.open(dic)
+                self.parse_dic(self.dics[idname], bytes2str(lines))
+
+    def parse_aff(self, dic, lines):
         """
         Parse an .aff hunspell file, handling only a subset of features.
         """
@@ -91,29 +129,31 @@ class Hunspell(object):
             else:
                 return re.compile("[".join(ret) + ".*")
 
+        af_map = dic["af_map"]
+        af_classes = dic["af_classes"]
         for l in lines:
             l = l.split()
             if not l:
                 continue
             if l[0] == "FLAG":
-                self.flag_mode = l[1]
+                dic["flag_mode"] = l[1]
             elif l[0] == "AF":
                 if af:
-                    self.af_map[str(af)] = l[1]
+                    af_map[str(af)] = l[1]
                 af += 1
             elif l[0] in {"PFX", "SFX"}:
                 if l[1] != curr:
                     # Add a new prefix/suffix class.
                     curr = l[1]
                     if l[0] == "SFX":
-                        self.af_classes[curr] = {"sfx": True}
+                        af_classes[curr] = {"sfx": True}
                     else:
-                        self.af_classes[curr] = {"sfx": False}
+                        af_classes[curr] = {"sfx": False}
                     if l[2] == "Y":
-                        self.af_classes[curr]["crossp"] = True
+                        af_classes[curr]["crossp"] = True
                     else:
-                        self.af_classes[curr]["crossp"] = False
-                    self.af_classes[curr]["rules"] = []
+                        af_classes[curr]["crossp"] = False
+                    af_classes[curr]["rules"] = []
                 else:
                     # Parse/add a new rule to current class.
                     # XXX We do not handle "recursive" affixes here!
@@ -126,11 +166,10 @@ class Hunspell(object):
                         l[3] = l[3].replace('\\', '')
                         l[3] = l[3].replace("##", '\\')
                     r = {"strip": l[2], "add": (l[3], []),
-                         "if": _if_preprocess(l[4],
-                                              self.af_classes[curr]["sfx"])}
-                    self.af_classes[curr]["rules"].append(r)
+                         "if": _if_preprocess(l[4], af_classes[curr]["sfx"])}
+                    af_classes[curr]["rules"].append(r)
 
-    def parse_dic(self, lines):
+    def parse_dic(self, dic, lines):
         """
         Parse a .dic hunspell file.
         """
@@ -173,6 +212,10 @@ class Hunspell(object):
             return ret
 
         first_l = True
+        flag_mode = dic["flag_mode"]
+        af_map = dic["af_map"]
+        af_classes = dic["af_classes"]
+        base_words = dic["base_words"]
         for l in lines:
             l = l.rstrip("\n\r")
             if first_l:
@@ -188,39 +231,53 @@ class Hunspell(object):
             classes = []
             if len(l) > 1:
                 l[1] = l[1].split()[0]
-                l[1] = self.af_map.get(l[1], l[1])
-                l[1] = _classes_split(self.flag_mode, l[1])
-                classes = _classes_preprocess(self.af_classes, l[1])
-            self.base_words.append((l[0], classes))
+                l[1] = af_map.get(l[1], l[1])
+                l[1] = _classes_split(flag_mode, l[1])
+                classes = _classes_preprocess(af_classes, l[1])
+            base_words.append((l[0], classes))
 
-    def gen_words(self, minlen=0, maxlen=0):
+    def gen_words(self, dics=None, minlen=0, maxlen=MAXLEN, unique=False):
         """
         Yield words, generated from content of self.base_words and
         self.af_classes.
-        if minlen or maxlen are not > 0, they limit minimal/maximal
-        length of generated words.
+        If dics is not None, it must be an iterable of dic names present in
+        self.dics.
+        minlen and maxlen limit minimal/maximal length of generated words.
+        If unique is True, you can be sure it will not yield twice a same word.
+        However, this option is heavy on memory (several hundreds of Mo with
+        current four dics in dics.zip…)
         """
-        for w, af in self.base_words:
-            yield w
-            # XXX Avoid to yield several times the same word...
-            #     Only per-baseword guard, though.
-            words = {w}
-            pfx = []
-            sfx = []
-            comb = []
-            for c1, c2 in af:
-                for _w in self.apply_class(w, c1, c2):
-                    if _w not in words:
-                        yield _w
-                        words.add(_w)
+        words = set()
+        if dics == None:
+            dics = self.dics
+        for k in dics:
+            dic = self.dics[k]
+            for w, af in dic["base_words"]:
+                # XXX Avoid to yield several times the same word...
+                #     Only per-baseword guard, though.
+                if not unique or w not in words:
+                    if minlen < len(w) < maxlen:
+                        yield w
+                    if unique:
+                        words.add(w)
+                    else:
+                        words = {w}
+                pfx = []
+                sfx = []
+                comb = []
+                for c1, c2 in af:
+                    for _w in self.apply_class(dic, w, c1, c2):
+                        if minlen < len(_w) < maxlen and _w not in words:
+                            yield _w
+                            words.add(_w)
 
-    def apply_class(self, word, c, *clss):
+    def apply_class(self, dic, word, c, *clss):
         if clss:
-            for _w in self.apply_class(word, *clss):
+            for _w in self.apply_class(dic, word, *clss):
                 yield _w
-        if c not in self.af_classes:
+        if c not in dic["af_classes"]:
             return
-        c = self.af_classes[c]
+        c = dic["af_classes"][c]
         for r in c["rules"]:
             if r["if"] and not r["if"].match(word):
                 continue
@@ -239,6 +296,6 @@ class Hunspell(object):
                 yield _w
             # Recursive process of other classes.
             if clss:
-                for _w in self.apply_class(_w, *clss):
+                for _w in self.apply_class(dic, _w, *clss):
                     yield _w
 
