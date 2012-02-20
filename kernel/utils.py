@@ -4,7 +4,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Â© 2012                                                   #
+#   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -179,7 +179,7 @@ def grouper2(lst, n, gap=0):
     """
     Return an iterator of n-length chunks of iterable.
 
-    >>> grouper('ABCDEFG', 3, 1)
+    >>> grouper2('ABCDEFG', 3, 1)
     ABC EFG
 
     Compared to grouper, it has no fillvalue (thus returning a truncated
