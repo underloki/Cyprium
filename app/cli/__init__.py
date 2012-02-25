@@ -32,6 +32,7 @@ import os
 import importlib
 
 import kernel.utils as utils
+import settings
 
 
 class Node:
@@ -167,12 +168,13 @@ class Tree:
         """Print a menu (choices) with current level nodes."""
         import time
 
+        dl = settings.UI_SPLASH_DELAY / 1000
         ui.message(self.MSG_LOGO)
-        time.sleep(1)
+        time.sleep(dl)
         ui.message(self.MSG_WELCOME)
         if self.WARNINGS:
             ui.message(self.WARNINGS, ui.WARNING)
-        time.sleep(1)
+        time.sleep(dl)
 
         quit = False
         while not quit:

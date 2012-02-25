@@ -30,13 +30,31 @@
 import os
 
 
+# The path to cyprium!
+ROOT_DIR = os.path.dirname(__file__)
+
+
 ###############################################################################
 ### kernel.
 
+## Dics.
+
+# The path for zip archive containing language dics to use.
+HUNSPELL_ZIP_DICS = os.path.join(ROOT_DIR, "kernel", "dics.zip")
+
+
 ## Cache settings.
 
-CCH_BASE_DIR = "./.cache"
+# Use disk cache to save processed versions of heavy data which creation is CPU-intensive.
+# Used e.g. by language-words code (hunspell.py and matchdic.py).
+# Warning: these files will take quite some room (currently ~60Mo).
+CCH_USE = True
 
+# Where to store cache files.
+CCH_BASE_DIR = os.path.join(ROOT_DIR, ".cache")
+
+# Hash algo to use as cache id.
+CHC_HASH_TYPE = "sha512"
 
 
 ###############################################################################
