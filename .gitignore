@@ -1,3 +1,5 @@
 # Ignore all pycache files!
 *__pycache__
 TODO
+.cache
+tests.py
