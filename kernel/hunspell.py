@@ -32,8 +32,12 @@ import os
 import itertools
 import re
 
+import settings
+import kernel.cache as cache
 
-ZIP_DICS = os.path.join(os.path.dirname(__file__), "dics.zip")
+
+ZIP_DICS = settings.HUNSPELL_ZIP_DICS
+DO_CACHE = settings.CCH_USE
 
 
 class Hunspell(object):
@@ -42,6 +46,10 @@ class Hunspell(object):
     simple lists of words.
     """
 
+    # Used to ensure cached data was cached with same version.
+    # Change that when modifying parse code!
+    _hash_salt = b"1.0.0"
+
     def __init__(self):
         self.reset()
 
@@ -49,16 +57,56 @@ class Hunspell(object):
         return self.dics.keys()
     ids = property(_get_ids, doc="ids of dics currently loaded")
 
-    def reset(self, idname=None):
-        if idname:
-            self.dics[idname] = {"flag_mode": "ASCII",
-                                 "af_map": {},
-                                 "af_classes": {},
-                                 "base_words": []}
+    def get_hash(self, uid):
+        """
+        Returns a copy of aff hash, updated with dic hash value.
+        """
+        if uid in self.dics:
+            hsh = self.dics[uid]["aff_hash"].copy()
+            hsh.update(self.dics[uid]["dic_hash"].digest())
+            return hsh
+
+    def reset(self, uid=None):
+        """
+        Reset generating parsed data for a given uid, or for all if None.
+        """
+        if uid:
+            self.dics[uid] = {"flag_mode": "ASCII",
+                              "af_map": {},
+                              "af_classes": {},
+                              "base_words": [],
+                              "aff_hash": None,
+                              "dic_hash": None}
         else:
             self.dics = {}
 
-    def load_dic_file(self, dic_path, aff_path=None, idname=None):
+    def _load_dic(self, uid, aff, dic):
+        """
+        Helper func.
+        """
+        # aff (rules) part.
+        if DO_CACHE and self.dics[uid]["aff_hash"] in cache.cache:
+            c = cache.cache.get(self.dics[uid]["aff_hash"])
+            self.dics[uid]["flag_mode"] = c[0]
+            self.dics[uid]["af_map"] = c[1]
+            self.dics[uid]["af_classes"] = c[2]
+        else:
+            self.parse_aff(self.dics[uid], aff)
+            if DO_CACHE:
+                c = (self.dics[uid]["flag_mode"], self.dics[uid]["af_map"],
+                     self.dics[uid]["af_classes"])
+                cache.cache.cache(self.dics[uid]["aff_hash"], c)
+        # dicc (base words) part.
+        if DO_CACHE and self.dics[uid]["dic_hash"] in cache.cache:
+            bw = cache.cache.get(self.dics[uid]["dic_hash"])
+            self.dics[uid]["base_words"] = bw
+        else:
+            self.parse_dic(self.dics[uid], dic)
+            if DO_CACHE:
+                cache.cache.cache(self.dics[uid]["dic_hash"],
+                                  self.dics[uid]["base_words"])
+
+    def load_dic_file(self, dic_path, aff_path=None, uid=None):
         """
         Load the given dic file.
         If aff_path is None, it will be (dic_path[:-4].aff).
@@ -66,13 +114,17 @@ class Hunspell(object):
         """
         if aff_path is None:
             aff_path = dic_path[:-3] + "aff"
-        if idname == None:
-            idname = dic_path
-        self.reset(idname)
-        with open(aff_path) as lines:
-            self.parse_aff(self.dics[idname], lines)
-        with open(dic_path) as lines:
-            self.parse_dic(self.dics[idname], lines)
+        if uid == None:
+            uid = dic_path
+        with open(aff_path) as aff, open(dic_path) as dic:
+            self.reset(uid)
+            # First compute hashes.
+            self.dics[uid]["aff_hash"] = cache.cache.hashfile(aff_path,
+                                                              self._hash_salt)
+            self.dics[uid]["dic_hash"] = cache.cache.hashfile(dic_path,
+                                                              self._hash_salt)
+            # And then, parse data (or load from cache).
+            self._load_dic(uid, aff, dic)
 
     def load_dic_zip(self, zip_path, names=[]):
         """
@@ -92,12 +144,19 @@ class Hunspell(object):
                 names = (f[:-4] for f in files if f.endswith(".dic"))
             names = ((n, n + ".dic", n + ".aff") for n in names
                      if {n + ".dic", n + ".aff"} <= files)
-            for idname, dic, aff in names:
-                self.reset(idname)
-                lines = zip_arch.open(aff)
-                self.parse_aff(self.dics[idname], bytes2str(lines))
-                lines = zip_arch.open(dic)
-                self.parse_dic(self.dics[idname], bytes2str(lines))
+            for uid, dic_path, aff_path in names:
+                self.reset(uid)
+                # First compute hashes.
+                aff = zip_arch.open(aff_path)
+                dic = zip_arch.open(dic_path)
+                self.dics[uid]["aff_hash"] = \
+                    cache.cache.hashiostream(aff, self._hash_salt)
+                self.dics[uid]["dic_hash"] = \
+                    cache.cache.hashiostream(dic, self._hash_salt)
+                # And then, parse data (or load from cache).
+                aff = zip_arch.open(aff_path)
+                dic = zip_arch.open(dic_path)
+                self._load_dic(uid, bytes2str(aff), bytes2str(dic))
 
     # -------------------------------------------------------------------------
     # Parsing!
@@ -105,6 +164,9 @@ class Hunspell(object):
     # First, two helper funcs.
     @staticmethod
     def _classes_split(fmode, clss):
+        """
+        Splits a string into a list of aff classes, from given fmode flag mode.
+        """
         if fmode in {"ASCII", "UTF-8"}:
             return clss
         elif fmode == "long":
@@ -118,7 +180,7 @@ class Hunspell(object):
     @staticmethod
     def _classes_preprocess(af, clss):
         """
-        Generate all possible combinaisons for a given set of classes.
+        Generates all possible combinaisons for a given set of classes.
         """
         spfx = []
         cpfx = [None]
@@ -146,7 +208,7 @@ class Hunspell(object):
     # And now, real parser funcs.
     def parse_aff(self, dic, lines):
         """
-        Parse an .aff hunspell file, handling only a subset of features.
+        Parses an .aff hunspell file, handling only a subset of features.
         """
 
         af = 0
@@ -154,7 +216,7 @@ class Hunspell(object):
 
         def _if_preprocess(regex, is_sfx):
             """
-            Parse the pseudo-regex syntax of hunspell conditions, generating
+            Parses the pseudo-regex syntax of hunspell conditions, generating
             a valid regex one.
             """
             if regex == '.':
@@ -235,7 +297,7 @@ class Hunspell(object):
 
     def parse_dic(self, dic, lines):
         """
-        Parse a .dic hunspell file.
+        Parses a .dic hunspell file.
         """
         first_l = True
         flag_mode = dic["flag_mode"]
@@ -265,22 +327,22 @@ class Hunspell(object):
 
     def gen_words(self, dics=None, minlen=None, maxlen=None, unique=False):
         """
-        Yield words, generated from content of self.base_words and
-        self.af_classes.
-        If dics is not None, it must be an iterable of dic names present in
-        self.dics.
+        Yields words, generated from content of base_words and af_classes of
+        given uid(s).
+        If dics is not None, it must be an iterable of dic names (uids) present
+        in self.dics.
         Is not None, minlen and maxlen limit minimal/maximal length of
         generated words.
         If unique is True, you can be sure it will not yield twice a same word.
         However, this option is heavy on memory (several hundreds of Mo with
-        current four dics in dics.zip…)
+        current four dics in dics.zip…).
         """
         words = set()
         if minlen or maxlen:
             if not minlen:
                 minlen = 1
             if not maxlen:
-                maxlen = 32767  # XXX ...
+                maxlen = 32767  # XXX Arbitrary high value.
             bypass_len = False
         else:
             bypass_len = True
@@ -303,7 +365,7 @@ class Hunspell(object):
                 comb = []
                 for clss in af:
                     for _w in self.apply_class(dic, w, *clss):
-                        if (bypass_len or minlen < len(_w) < maxlen) and \
+                        if (bypass_len or minlen <= len(_w) < maxlen) and \
                            _w not in words:
                             yield _w
                             words.add(_w)
@@ -348,4 +410,3 @@ class Hunspell(object):
                         if clss:
                             for _r_w in self.apply_class(dic, _rc_w, *clss):
                                 yield _r_w
-
