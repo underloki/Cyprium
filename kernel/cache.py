@@ -92,7 +92,6 @@ class DiskCache(object):
         """
         if hasattr(uid, "hexdigest"):
             uid = uid.hexdigest()
-        print(uid)
         path = os.path.join(CCH_DIR, uid)
         with open(path, "wb") as f:
             pickle.dump(data, f)

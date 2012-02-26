@@ -35,6 +35,18 @@ import re
 import settings
 import kernel.cache as cache
 
+__about__="""
+Cyprium currently uses Hunspell dictionaries to generate lists of words on a
+per-language basis.
+
+These dics are packed into kernel/dics.zip, which currently only contains
+de_DE, en_US, es and fr ones. Feel free to add others if you need them.
+
+Please note that, to save processing time (several tens of seconds), the
+processed forms of those dics are saved into .cache files. This takes many
+spaces, though (several tens of Mb).
+"""
+
 
 ZIP_DICS = settings.HUNSPELL_ZIP_DICS
 DO_CACHE = settings.CCH_USE
@@ -91,20 +103,24 @@ class Hunspell(object):
             self.dics[uid]["af_map"] = c[1]
             self.dics[uid]["af_classes"] = c[2]
         else:
+            print("Parsing {}’s aff rules file.".format(uid))
             self.parse_aff(self.dics[uid], aff)
             if DO_CACHE:
                 c = (self.dics[uid]["flag_mode"], self.dics[uid]["af_map"],
                      self.dics[uid]["af_classes"])
                 cache.cache.cache(self.dics[uid]["aff_hash"], c)
+            print("Done.")
         # dicc (base words) part.
         if DO_CACHE and self.dics[uid]["dic_hash"] in cache.cache:
             bw = cache.cache.get(self.dics[uid]["dic_hash"])
             self.dics[uid]["base_words"] = bw
         else:
+            print("Parsing {}’s dic base words file.".format(uid))
             self.parse_dic(self.dics[uid], dic)
             if DO_CACHE:
                 cache.cache.cache(self.dics[uid]["dic_hash"],
                                   self.dics[uid]["base_words"])
+            print("Done.")
 
     def load_dic_file(self, dic_path, aff_path=None, uid=None):
         """

@@ -125,6 +125,7 @@ class MatchDic(object):
                 if hsh in cache.cache:
                     self.ids[uid] = cache.cache.get(hsh)
                     continue
+            print("Building {}’s list of words.".format(uid))
             lst = self.ids[uid] = []
             lst_ln = len(lst)
             for w in (self.preprocess(w) for w in self.word_gen.gen_words(dics=(uid,))):
@@ -137,6 +138,7 @@ class MatchDic(object):
                 lst[ln - 1].add(w)
             if DO_CACHE:
                 cache.cache.cache(hsh, lst)
+            print("Done.")
 
     def get_match_level(self, uid, text):
         """
