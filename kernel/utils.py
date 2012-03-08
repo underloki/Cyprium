@@ -4,7 +4,7 @@
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
 #   www.thehackademy.fr                                                #
-#   Copyright Ã‚Â© 2012                                                   #
+#   Copyright © 2012                                                   #
 #   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
 #   afranck64, Tyrtamos.                                               #
 #   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
@@ -322,7 +322,7 @@ def all_primes(n):
     if n < 2:
         return
     # NOTE: This is Sieve of Eratosthenes, but only on odd numbers.
-    #       ItÃ¢â‚¬â„¢s a bit more complex to grasp, but takes half of memory,
+    #       It's a bit more complex to grasp, but takes half of memory,
     #       and tends to be somewhat quicker when reaching high numbers
     #       (1000000 and over).
 
