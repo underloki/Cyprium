@@ -100,10 +100,12 @@ class UI(app.ui.UI):
     ###########################################################################
     # Simple message.
     ###########################################################################
-    def message(self, message="", level=app.ui.UI.INFO):
-        """Print a message to the user, with some formatting given
-           the level value.
+    def message(self, message="", indent=0, level=app.ui.UI.INFO):
         """
+        Print a message to the user, with some formatting given the level
+        value.
+        """
+        idt = self.INDENT * indent
         if level == app.ui.UI.WARNING:
             message = "".join((self.CLI_BOLD, self.CLI_YELLOW, "WARNING: ",
                                self.CLI_CLEAR, message))
@@ -113,12 +115,13 @@ class UI(app.ui.UI):
         elif level == app.ui.UI.FATAL:
             message = "".join((self.CLI_BOLD, self.CLI_RED, "FATAL ERROR: ",
                                self.CLI_CLEAR, message))
-        self.cprint(message, "\n")
+        self.cprint(idt + message, "\n")
 
     ###########################################################################
     # Text input.
     ###########################################################################
-    def get_data(self, message="", sub_type=app.ui.UI.STRING, allow_void=False,
+    def get_data(self, message="", indent=0, sub_type=app.ui.UI.STRING,
+                 allow_void=False, list_sep=',',
                  completion=None, completion_kwargs={},
                  validate=None, validate_kwargs={}):
         """
@@ -126,16 +129,21 @@ class UI(app.ui.UI):
         Will ensure data is valid given sub_type, and call
         If allow_void is True, return None or "" in case user types nothing,
         (else print a menu).
+        If sub_type is a list one (xx1 code), use list_sep as item separator.
         completion callback if user hits <tab>.
             completion(data_already_entered=None, **completion_kwargs)
             must return a list of (complete) possible data.
             NOT YET IMPLEMENTED!
         validate callback to check entry is valid:
             validate(data=None, **validate_kwargs)
-            must return a tupple (valid, "valid_msg", "invalid_msg")
+            must return a tuple (valid, "valid_msg", "invalid_msg")
         """
+        idt = self.INDENT * indent
+        message = idt + message
         while 1:
             data = self.cinput(message)
+            if data and not (sub_type - 1) % 10:  # XXX_LIST sub-type.
+                data = data.split(list_sep)
             while not data:
                 if allow_void:
                     return None
@@ -145,7 +153,7 @@ class UI(app.ui.UI):
                 msg = "Nothing typed".format(data)
                 options = [("retry", "$retry", ""),
                            ("abort", "or *abort", "")]
-                answ = self.get_choice(msg, options, oneline=True)
+                answ = self.get_choice(msg, options, indent=indent, oneline=True)
                 if answ == "retry":
                     data = self.cinput(message)
                 else:
@@ -156,13 +164,13 @@ class UI(app.ui.UI):
                 t_data = data.lower()
                 if t_data != data:
                     self.message("Your input has been converted to lowercase: "
-                                 "{}".format(t_data))
+                                 "{}".format(t_data), indent=indent)
                     data = t_data
             elif sub_type == app.ui.UI.UPPER:
                 t_data = data.upper()
                 if t_data != data:
                     self.message("Your input has been converted to uppercase: "
-                                 "{}".format(t_data))
+                                 "{}".format(t_data), indent=indent)
                     data = t_data
             elif sub_type == self.INT:
                 try:
@@ -171,8 +179,23 @@ class UI(app.ui.UI):
                     msg = "Could not convert {} to an integer".format(data)
                     options = [("retry", "$retry", ""),
                                ("abort", "or *abort", "")]
-                    answ = self.get_choice(msg, options, start_opt="(",
-                                           end_opt=")", oneline=True)
+                    answ = self.get_choice(msg, options, indent=indent,
+                                           start_opt="(", end_opt=")",
+                                           oneline=True)
+                    if answ == "retry":
+                        continue
+                    return
+            elif sub_type == self.INT_LIST:
+                try:
+                    return [int(d) for d in data]
+                except:
+                    msg = "Could not convert {} to a list of integers" \
+                          "".format(data)
+                    options = [("retry", "$retry", ""),
+                               ("abort", "or *abort", "")]
+                    answ = self.get_choice(msg, options, indent=indent,
+                                           start_opt="(", end_opt=")",
+                                           oneline=True)
                     if answ == "retry":
                         continue
                     return
@@ -183,8 +206,23 @@ class UI(app.ui.UI):
                     msg = "Could not convert {} to a float".format(data)
                     options = [("retry", "$retry", ""),
                                ("abort", "or *abort", "")]
-                    answ = self.get_choice(msg, options, start_opt="(",
-                                           end_opt=")", oneline=True)
+                    answ = self.get_choice(msg, options, indent=indent,
+                                           start_opt="(", end_opt=")",
+                                           oneline=True)
+                    if answ == "retry":
+                        continue
+                    return
+            elif sub_type == self.FLOAT_LIST:
+                try:
+                    return [float(d) for d in data]
+                except:
+                    msg = "Could not convert {} to a list of floats" \
+                          "".format(data)
+                    options = [("retry", "$retry", ""),
+                               ("abort", "or *abort", "")]
+                    answ = self.get_choice(msg, options, indent=indent,
+                                           start_opt="(", end_opt=")",
+                                           oneline=True)
                     if answ == "retry":
                         continue
                     return
@@ -196,7 +234,7 @@ class UI(app.ui.UI):
                     if vald[1]:
                         self.message(vald[1])
                 else:
-                    self.message(vald[2] or "Invalid entry")
+                    self.message(vald[2] or "Invalid entry", indent=indent)
                     continue  # Go back to beginning!
 
             # Return valid data!
@@ -226,9 +264,11 @@ class UI(app.ui.UI):
         return (txt[:key_start], txt[key_start + 1:key_start + 2],
                 txt[key_start + 2:], default)
 
-    def get_choice(self, message="", options=[], start_opt="", end_opt="",
-                   oneline=False, multichoices=None):
+    def get_choice(self, msg="", options=[], indent=0, start_opt="",
+                   end_opt="", oneline=False, multichoices=None):
         """Gives some choices to the user, and get its answer."""
+        idt = self.INDENT * indent
+        iidt = idt + self.INDENT
         # Parse the options...
         msg_chc = []
         chc_map = {}
@@ -239,14 +279,15 @@ class UI(app.ui.UI):
             if key:
                 name = start + '[' + key + ']' + end
                 if key.lower() in chc_map:
-                    self.message("Option {} wants the already used '{}' key!"
-                                 "".format(name, key.lower()), self.WARNING)
+                    self.message("Option {} wants the already used  '{}' key!"
+                                 "".format(name, key.lower()),
+                                 indent=indent, level=self.WARNING)
                     continue
                 if do_default:
                     if "" in chc_map:
-                        self.message("Option {} wants to be default, while "
-                                     "we already have one!"
-                                     "".format(name), self.WARNING)
+                        self.message("Option {} wants to be default, while we "
+                                     "already have one!".format(name),
+                                     indent=indent, level=self.WARNING)
                         continue
                     chc_map[""] = c[0]
                     name = " ".join((name, "(default)"))
@@ -262,39 +303,40 @@ class UI(app.ui.UI):
 
         mc = ""
         if isinstance(multichoices, str):
-            mc = "(multiple choices possible, '{}'-separated)" \
+            mc = " (multiple choices possible, '{}'-separated)" \
                  "".format(multichoices)
         if oneline:
             txt_msg = "".join((start_opt, ", ".join(msg_chc), mc, end_opt))
-            if message:
-                message = " ".join((message, txt_msg))
+            if msg:
+                msg = " ".join((msg, txt_msg))
             else:
-                message = txt_msg
-            message = "".join((message, ": "))
+                msg = txt_msg
+            msg = "".join((msg, ": "))
         else:
-            txt_msg = "".join((start_opt, "\n    ".join(msg_chc), end_opt))
+            txt_msg = "".join((start_opt, ("\n" + iidt).join(msg_chc), end_opt))
             if mc:
-                message = " ".join(message, mc)
-            message = ":\n    ".join((message, txt_msg))
-            message = "".join((message, "\n"))
+                msg = " ".join(msg, mc)
+            msg = (":\n" + iidt).join((msg, txt_msg))
+            msg = "".join((msg, "\n"))
+        msg = idt + msg
 
         # TODO: use a getch()-like!
-        key = self.cinput(message).lower()
+        key = self.cinput(msg).lower()
         if mc:
             ret = key.split(multichoices)
-            while set(ret) > set(chc_map.keys()):
+            while not set(ret) <= set(chc_map.keys()):
                 if key == "+m":
-                    key = self.cinput(message).lower()
+                    key = self.cinput(msg).lower()
                 else:
-                    key = self.cinput("Invalid choice(s), please try "
+                    key = self.cinput(idt + "Invalid choice(s), please try "
                                       "(or show [+m]enu) again: ").lower()
                 ret = key.split(multichoices)
             return [chc_map[k] for k in ret]
         else:
             while key not in chc_map:
                 if key == "+m":
-                    key = self.cinput(message).lower()
+                    key = self.cinput(msg).lower()
                 else:
-                    key = self.cinput("Invalid choice, please try "
+                    key = self.cinput(idt + "Invalid choice, please try "
                                       "(or show [+m]enu) again: ").lower()
             return chc_map[key]

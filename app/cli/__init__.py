@@ -197,7 +197,7 @@ class Tree:
                             ("back", "*back", "Go back one level"),
                             ("quit", "*quit", "Quit Cyprium")]
                 msg = "Cyprium -*- {}".format(self.breadcrumbs())
-                answ = ui.get_choice(msg, options)
+                answ = ui.get_choice(msg, options=options)
                 if answ == 'quit':
                     quit = True
                 elif answ == 'tree':

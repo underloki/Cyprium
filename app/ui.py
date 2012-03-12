@@ -27,6 +27,9 @@
 ########################################################################
 
 
+import string
+
+
 class UI:
     """Base, "None" UI class (also used as "interface").
        NOTE: All those functions might return None, in addition
@@ -40,12 +43,18 @@ class UI:
     FATAL = 40
 
     # Sub-types of get_data.
-    STRING = None  # Default...
-    UPPER = 10     # Only upper chars.
-    LOWER = 20     # Only lower chars.
-    PATH = 30      # Check is format-valid, and autocompletion?
+    # XX1 sub-types are lists.
+    STRING = 0        # Default...
+    UPPER = 10        # Only upper chars.
+    LOWER = 20        # Only lower chars.
+    PATH = 30         # Check is format-valid, and autocompletion?
     INT = 100
+    INT_LIST = 101
     FLOAT = 110
+    FLOAT_LIST = 111
+
+    # What to use as level marker in UI...
+    INDENT = "    "
 
     ###########################################################################
     # Init.
@@ -56,13 +65,15 @@ class UI:
     ###########################################################################
     # UI itself.
     ###########################################################################
-    def message(self, message="", level=INFO):
-        """Print a message to the user, with some formatting given
-           the level value.
+    def message(self, message="", indent=0, level=INFO):
+        """
+        Print a message to the user, with some formatting given the level
+        value.
         """
         pass
 
-    def get_data(self, message="", sub_type=STRING, allow_void=False,
+    def get_data(self, message="", indent=0, sub_type=STRING,
+                 allow_void=False, list_sep=',',
                  completion=None, completion_kwargs={},
                  validate=None, validate_kwargs={}):
         """
@@ -70,17 +81,18 @@ class UI:
         Will ensure data is valid given sub_type, and call
         If allow_void is True, return None or "" in case user types nothing,
         (else print a menu).
+        If sub_type is a list one (xx1 code), use list_sep as item separator.
         completion callback if user hits <tab>.
             completion(data_already_entered=None, **completion_kwargs)
             must return a list of (complete) possible data.
         validate callback to check entry is valid:
             validate(data=None, **validate_kwargs)
-            must return a tupple (valid, "valid_msg", "invalid_msg")
+            must return a tuple (valid, "valid_msg", "invalid_msg")
         """
         return None
 
-    def get_choice(self, message="", choices=[], start_opt="", end_opt="",
-                   oneline=False, multichoices=None):
+    def get_choice(self, msg="", options=[], indent=0, start_opt="",
+                   end_opt="", oneline=False, multichoices=None):
         """
         Give some choices to the user, and get its answer.
         Message is printed once. Then, choices is a list of tuples:
@@ -95,7 +107,7 @@ class UI:
                        * (or $) after the last letter of that key.
                 tip: short help.
             One choice a line.
-        opt_start and opt_end are optional string to put before/after the
+        start_opt and end_opt are optional string to put before/after the
         option list.
         If the optional oneline is True, all menu choices are concatenated
         on a single line, e.g. "Go back to (M)enu or (T)ry again!".
@@ -103,28 +115,51 @@ class UI:
         multichoices value as separator).
         """
         # Return the default element, if present.
-        for c in choices:
+        for c in options:
             if '$' in c[1]:
                 return c[0]
         return None
+
+    ###########################################################################
+    # Helper callbacks.
+    ###########################################################################
+
+    @staticmethod
+    def validate_charset(data, charset=set(string.printable)):
+        return (set(data) <= charset, "",
+                "“{}” contains invalid chars ({})."
+                "".format(data, ", ".join(set(data) - charset)))
+
+    @staticmethod
+    def validate_number_range(data, minnbr, maxnbr):
+        if hasattr(data, "__iter__"):
+            invalids = {n for n in data if minnbr > n > maxnbr}
+            return (bool(invalids), "",
+                    "“({})” contains values out of range [{}, {}] ({})."
+                    "".format(", ".join(data), minnbr, maxnbr,
+                              ", ".join(invalids)))
+        else:
+            return (minnbr > n > maxnbr, "",
+                    "“{}” is out of range [{}, {}]."
+                    "".format(data, minnbr, maxnbr))
 
     ###########################################################################
     # Util text/file functions.
     ###########################################################################
 
     # Misc.
-    def text_file_get_path(self, msg, codec):
+    def text_file_get_path(self, msg, codec, indent=0):
         """Get a text path (with codec)."""
         msg = " ".join((msg, "(if not using the current encoding, “{}”, " \
                              "add the desired one after a “;”, like this: " \
                              "“my/file.txt;latin1”): ".format(codec)))
-        path = self.get_data(msg)
+        path = self.get_data(msg, indent=indent)
         if ';' in path:
             path, codec = path.split(';', 1)
         return path, codec
 
     # Read/Get.
-    def text_file_ropen(self, path=None, codec=None):
+    def text_file_ropen(self, path=None, codec=None, indent=0):
         """Helper to open a text file in read mode."""
         import locale
         default_codec = locale.getpreferredencoding()
@@ -132,7 +167,7 @@ class UI:
             codec = default_codec
         if not path:
             path, codec = self.text_file_get_path("Choose an input text file",
-                                                  codec)
+                                                  codec, indent=indent)
             if path is None:  # No user interaction, return.
                 return
 
@@ -152,12 +187,12 @@ class UI:
                 path, codec = self.text_file_get_path("Choose an input text "
                                                       "file", codec)
 
-    def text_file_read(self, path=None, codec=None):
+    def text_file_read(self, path=None, codec=None, indent=0):
         """Helper to read the whole content of a text file."""
         ifile = None
         while 1:
             try:
-                ifile = self.text_file_ropen(path, codec)
+                ifile = self.text_file_ropen(path, codec, indent=indent)
                 if ifile is None:
                     return
                 return ifile.read()
@@ -166,17 +201,18 @@ class UI:
                 options = [("retry", "$try again", ""),
                            ("menu", "or go back to *menu", "")]
                 answ = self.get_choice("Could not read that file, please",
-                                       options, online=True)
+                                       options, indent=indent, online=True)
                 if answ != "retry":
                     return
             finally:
                 if ifile:
                     ifile.close()
 
-    def text_input(self, msg, sub_type=STRING, allow_void=False,
-                   completion=None, completion_kwargs={},
+    def text_input(self, msg, indent=0, sub_type=STRING, allow_void=False,
+                   completion=None, completion_kwargs={}, no_file=False,
                    validate=None, validate_kwargs={}):
         """Helper to get some text, either from console or from a file."""
+        idt = self.INDENT * indent
         if sub_type == self.UPPER:
             prompt = "(Text, uppercase): "
         elif sub_type == self.LOWER:
@@ -185,24 +221,35 @@ class UI:
             prompt = "(Text, path): "
         elif sub_type == self.INT:
             prompt = "(Integer number): "
+        elif sub_type == self.INT_LIST:
+            prompt = "(Integer numbers, ','-separated): "
         elif sub_type == self.FLOAT:
             prompt = "(Float number): "
+        elif sub_type == self.FLOAT_LIST:
+            prompt = "(Float numbers, ','-separated): "
         else:
             prompt = "(Text): "
         while 1:
+            if no_file:
+                return self.get_data(" ".join((msg, prompt)), indent=indent,
+                                     sub_type=sub_type, allow_void=allow_void,
+                                     completion=completion,
+                                     completion_kwargs=completion_kwargs,
+                                     validate=validate,
+                                     validate_kwargs=validate_kwargs)
             options = [("console", "directly from $console", ""),
                        ("file", "or reading a *file", "")]
-            answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
-                                   oneline=True)
+            answ = self.get_choice(msg, options, indent=indent, start_opt="(",
+                                   end_opt=")", oneline=True)
             if answ == "console":
-                return self.get_data(prompt,
+                return self.get_data(prompt, indent=indent,
                                      sub_type=sub_type, allow_void=allow_void,
                                      completion=completion,
                                      completion_kwargs=completion_kwargs,
                                      validate=validate,
                                      validate_kwargs=validate_kwargs)
             elif answ == "file":
-                ret = self.text_file_read()
+                ret = self.text_file_read(indent=indent)
                 if sub_type == self.UPPER:
                     return ret.upper()
                 elif sub_type == self.LOWER:
@@ -214,8 +261,9 @@ class UI:
                         msg = "Could not convert {} to an integer".format(ret)
                         options = [("retry", "$retry", ""),
                                    ("abort", "or *abort", "")]
-                        answ = self.get_choice(msg, options, start_opt="(",
-                                               end_opt=")", oneline=True)
+                        answ = self.get_choice(msg, options, indent=indent,
+                                               start_opt="(", end_opt=")",
+                                               oneline=True)
                         if answ == "retry":
                             continue
                         return
@@ -226,8 +274,9 @@ class UI:
                         msg = "Could not convert {} to a float".format(ret)
                         options = [("retry", "$retry", ""),
                                    ("abort", "or *abort", "")]
-                        answ = self.get_choice(msg, options, start_opt="(",
-                                               end_opt=")", oneline=True)
+                        answ = self.get_choice(msg, options, indent=indent,
+                                               start_opt="(", end_opt=")",
+                                               oneline=True)
                         if answ == "retry":
                             continue
                         return
@@ -276,7 +325,7 @@ class UI:
             path, codec = self.text_file_get_path("Choose an input text file",
                                                   codec)
 
-    def text_file_write(self, data, path=None, codec=None):
+    def text_file_write(self, data, indent=0, path=None, codec=None):
         """Helper to write the whole content of a text file."""
         ofile = None
         while 1:
@@ -298,14 +347,100 @@ class UI:
                 if ofile:
                     ofile.close()
 
-    def text_output(self, msg, data, print_msg=""):
-        """Helper to output some text, either into console or into a file."""
-        options = [("console", "print to $console", ""),
-                   ("file", "write into a *file", ""),
-                   ("both", "or *both", "")]
-        answ = self.get_choice(msg, options, start_opt="(", end_opt=")",
-                               oneline=True)
-        if answ in {"console", "both"}:
-            self.message(": ".join((print_msg, data)))
-        if answ in {"file", "both"}:
-            self.text_file_write(data)
+    def text_output(self, msg, data="", print_msg="", indent=0, maxlen=None,
+                    multiline=False, multiblocks=10):
+        """
+        Helper to output some text, either into console or into a file.
+        All following parameters are console-only:
+            indent is a number of indentations to add to output.
+            maxlen is the max length to print out data, if not None.
+                   User will then be asked whether he wants to see the whole
+                   output.
+            If multiline is True, data must be a subscriptable, which each item
+            will be printed on a new line.
+            If multiline is True, multiblocks specifies the number of lines to
+            display at once, user will then be asked whether he wants to see
+            more lines or not.
+        """
+        options = [({"console"}, "print to $console", ""),
+                   ({"file"}, "write into a *file", ""),
+                   ({"console", "file"}, "or *both", "")]
+        answ = self.get_choice(msg, options, indent=indent, start_opt="(",
+                               end_opt=")", oneline=True)
+        idt = self.INDENT * indent
+        if "console" in answ:
+            if multiline:
+                self.message(print_msg + ":", indent=indent)
+                nextblock = True
+                bstart = 0
+                if multiblocks:
+                    bend = multiblocks
+                else:
+                    bend = len(data)
+                tindent = indent + 1
+                maxlenmap = []
+                while nextblock and bstart < len(data):
+                    for idx, d in enumerate(data[bstart:bend]):
+                        if maxlen and len(d) > maxlen:
+                            maxlenmap.append(idx + bstart)
+                            maxlenidx = str(len(maxlenmap))
+                            self.message("[{}] {}"
+                                         "".format(maxlenidx, d[:maxlen]),
+                                         indent=tindent)
+                        else:
+                            self.message(d, indent=tindent)
+                    if maxlenmap:
+                        options = [(1, "get *whole version of some lines",
+                                    ""),
+                                   (False, "see *next block of lines", ""),
+                                   (-1, "or *continue", "")]
+                        t = True
+                        while t:
+                            t = self.get_choice(msg, options,
+                                                indent=tindent,
+                                                start_opt="(", end_opt=")",
+                                                oneline=True)
+                            if t == 1:
+                                v = self.validate_number_range
+                                vkw = {"minnbr": 1,
+                                       "maxnbr": len(maxlenmap)}
+                                tk = self.text_input("Line(s) to print "
+                                                     "([1 … {}])"
+                                                     "".format(vkw["maxnbr"]),
+                                                     indent=tindent,
+                                                     no_file=True,
+                                                     sub_type=self.INT_LIST,
+                                                     validate=v,
+                                                     validate_kwargs=vkw)
+                                for k in tk:
+                                    k = maxlenmap[k - 1]
+                                    self.message(data[k], indent=tindent)
+                            elif t == -1:
+                                nextblock = t = False
+                    else:
+                        options = [(True, "see *next block of lines", ""),
+                                   (False, "or *continue", "")]
+                        nextblock = self.get_choice(msg, options,
+                                                    indent=tindent,
+                                                    start_opt="(",
+                                                    end_opt=")",
+                                                    oneline=True)
+                    if nextblock:
+                        bstart = bend
+                        bend += multiblocks
+            else:
+                if maxlen and len(data) > maxlen:
+                    self.message(": ".join((print_msg, data[:maxlen])),
+                                 indent=indent)
+                    options = [(True, "get *whole data", ""),
+                               (False, "or *continue", "")]
+                    if (self.get_choice(msg, options, indent=indent,
+                                        start_opt="(", end_opt=")",
+                                        oneline=True)):
+                        self.message(data, indent=indent)
+                else:
+                    self.message(": ".join((print_msg, data)),
+                                 indent=indent)
+
+        if "file" in answ:
+            self.text_file_write(data, indent=indent)
