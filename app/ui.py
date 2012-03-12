@@ -125,23 +125,42 @@ class UI:
     ###########################################################################
 
     @staticmethod
-    def validate_charset(data, charset=set(string.printable)):
-        return (set(data) <= charset, "",
-                "“{}” contains invalid chars ({})."
-                "".format(data, ", ".join(set(data) - charset)))
+    def validate_charset(data, charset=set(string.printable), charmap={}):
+        """
+        Helper callback used to validate a string input.
+        charset contains all allowed chars.
+        charmap, if not void, contains a one2one mapping to convert some
+        validated chars to others. It is applied *after* checking against
+        charset.
+        Returns a boolean, the org or processed data, and an optional message.
+        """
+        if set(data) <= charset:
+            if charmap:
+                charmap = str.maketrans(charmap)
+                data = data.translate(charmap)
+            return True, data, ""
+        return (False, data, "“{}” contains invalid chars ({})."
+                             "".format(data, ", ".join(set(data) - charset)))
 
     @staticmethod
     def validate_number_range(data, minnbr, maxnbr):
+        """
+        Helper callback used to validate a number (or iterable of numbers)
+        input.
+        minnbr and maxnbr are the lower and upper bounds of allowed values.
+        """
         if hasattr(data, "__iter__"):
-            invalids = {n for n in data if minnbr > n > maxnbr}
-            return (bool(invalids), "",
-                    "“({})” contains values out of range [{}, {}] ({})."
-                    "".format(", ".join(data), minnbr, maxnbr,
-                              ", ".join(invalids)))
-        else:
-            return (minnbr > n > maxnbr, "",
-                    "“{}” is out of range [{}, {}]."
-                    "".format(data, minnbr, maxnbr))
+            invalids = {n for n in data if minnbr > n or n > maxnbr}
+            if invalids:
+                return (False, data,
+                        "“({})” contains values out of range [{}, {}] ({})."
+                        "".format(", ".join(str(i) for i in data), minnbr,
+                                  maxnbr, ", ".join(str(i) for i in invalids)))
+            return True, data, ""
+        elif minnbr > n > maxnbr:
+            return (False, data, "“{}” is out of range [{}, {}]."
+                                 "".format(data, minnbr, maxnbr))
+        return True, data, ""
 
     ###########################################################################
     # Util text/file functions.

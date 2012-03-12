@@ -148,9 +148,12 @@ class UI(app.ui.UI):
                 if allow_void:
                     return None
                 elif validate:
-                    if validate(data, **validate_kwargs)[0]:
+                    valid, data, msg = validate(data, **validate_kwargs)
+                    if valid:
+                        if msg:
+                            self.message(msg, indent=indent)
                         return data
-                msg = "Nothing typed".format(data)
+                msg = "Nothing typed"
                 options = [("retry", "$retry", ""),
                            ("abort", "or *abort", "")]
                 answ = self.get_choice(msg, options, indent=indent, oneline=True)
@@ -159,22 +162,15 @@ class UI(app.ui.UI):
                 else:
                     return None
 
+            org_data = data
             # Validate sub-types.
             if sub_type == app.ui.UI.LOWER:
-                t_data = data.lower()
-                if t_data != data:
-                    self.message("Your input has been converted to lowercase: "
-                                 "{}".format(t_data), indent=indent)
-                    data = t_data
+                data = data.lower()
             elif sub_type == app.ui.UI.UPPER:
-                t_data = data.upper()
-                if t_data != data:
-                    self.message("Your input has been converted to uppercase: "
-                                 "{}".format(t_data), indent=indent)
-                    data = t_data
+                data = data.upper()
             elif sub_type == self.INT:
                 try:
-                    return int(data)
+                    data = int(data)
                 except:
                     msg = "Could not convert {} to an integer".format(data)
                     options = [("retry", "$retry", ""),
@@ -187,7 +183,7 @@ class UI(app.ui.UI):
                     return
             elif sub_type == self.INT_LIST:
                 try:
-                    return [int(d) for d in data]
+                    data = tuple(int(d) for d in data)
                 except:
                     msg = "Could not convert {} to a list of integers" \
                           "".format(data)
@@ -201,7 +197,7 @@ class UI(app.ui.UI):
                     return
             elif sub_type == self.FLOAT:
                 try:
-                    return float(data)
+                    data = float(data)
                 except:
                     msg = "Could not convert {} to a float".format(data)
                     options = [("retry", "$retry", ""),
@@ -214,7 +210,7 @@ class UI(app.ui.UI):
                     return
             elif sub_type == self.FLOAT_LIST:
                 try:
-                    return [float(d) for d in data]
+                    data = tuple(float(d) for d in data)
                 except:
                     msg = "Could not convert {} to a list of floats" \
                           "".format(data)
@@ -229,15 +225,19 @@ class UI(app.ui.UI):
 
             # Call given validating callback, if any.
             if validate:
-                vald = validate(data, **validate_kwargs)
-                if vald[0]:
-                    if vald[1]:
-                        self.message(vald[1])
+                valid, data, msg = validate(data, **validate_kwargs)
+                if valid:
+                    if msg:
+                        self.message(msg, indent=indent)
                 else:
-                    self.message(vald[2] or "Invalid entry", indent=indent)
+                    self.message(msg or "Invalid entry", indent=indent,
+                                 level=self.ERROR)
                     continue  # Go back to beginning!
 
             # Return valid data!
+            if data != org_data:
+                self.message("Your input has been converted to: "
+                             "{}".format(data), indent=indent)
             return data
 
     ###########################################################################

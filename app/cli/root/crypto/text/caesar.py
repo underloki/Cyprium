@@ -172,18 +172,12 @@ class Caesar(app.cli.Tool):
 
     @staticmethod
     def _cypher(txt, algos, methods, keys, ui):
-        _txt = {caesar.ALGO_BASIC:
-                    ("Basic",
-                     {caesar.BASIC_BASIC: ["", None]}),
-                caesar.ALGO_PROGRESS:
-                    ("Progressive",
-                     {caesar.PROGRESS_GEOMETRIC: ["geometric", None],
-                      caesar.PROGRESS_SHIFT: ["shifted", None]}),
-                caesar.ALGO_SQUARE:
-                    ("Square",
-                     {caesar.SQUARE_SQUARE: ["squarish", None],
-                      caesar.SQUARE_CONSTWIDTH: ["const width", None],
-                      caesar.SQUARE_CONSTHIGH: ["const high", None]}),
+        _txt = {caesar.ALGO_BASIC: {caesar.BASIC_BASIC: []},
+                caesar.ALGO_PROGRESS: {caesar.PROGRESS_GEOMETRIC: [],
+                                       caesar.PROGRESS_SHIFT: []},
+                caesar.ALGO_SQUARE: {caesar.SQUARE_SQUARE: [],
+                                     caesar.SQUARE_CONSTWIDTH: [],
+                                     caesar.SQUARE_CONSTHIGH: []},
                }
         nbr = 0
         for algo in algos:
@@ -191,26 +185,26 @@ class Caesar(app.cli.Tool):
                 # XXX This is rather hackish, ugly and weak...
                 #     But simplest solution I found so far. :/
                 if method == caesar.SQUARE_SQUARE:
-                    _txt[algo][1][method][1] = \
+                    _txt[algo][method] = \
                         [("", caesar.cypher(txt, algo, None, method))]
                 else:
-                    _txt[algo][1][method][1] = \
+                    _txt[algo][method] = \
                         [(k, caesar.cypher(txt, algo, k, method))
                          for k in keys[algo]]
-                nbr += len(_txt[algo][1][method][1])
+                nbr += len(_txt[algo][method])
 
         txt = []
         for algo in algos:
             for method in methods[algo]:
-                if not _txt[algo][1][method][1]:
+                if not _txt[algo][method]:
                     continue
                 elif nbr > 1:
-                    txt.append(" ".join((_txt[algo][0],
-                                         _txt[algo][1][method][0])))
+                    txt.append(" ".join((caesar.TXT_ALGOS_MAP[algo],
+                                         caesar.TXT_METHODS_MAP[method])))
                     txt += ("{}{: >4}: {}".format(ui.INDENT, k, t)
-                            for k, t in _txt[algo][1][method][1])
+                            for k, t in _txt[algo][method])
                 else:
-                    txt += (t for k, t in _txt[algo][1][method][1])
+                    txt += (t for k, t in _txt[algo][method])
         return "\n".join(txt)
 
     def cypher(self, ui):
@@ -221,7 +215,8 @@ class Caesar(app.cli.Tool):
         while 1:
             done = False
             while 1:
-                v, vkw = ui.validate_charset, {"charset": caesar.VALID_CHARSET}
+                v, vkw = ui.validate_charset, {"charset": caesar.DIC_CHARSET,
+                                               "charmap": caesar.DIC_CHARMAP}
                 txt = ui.text_input("Text to cypher with caesar",
                                     sub_type=ui.UPPER,
                                     validate=v, validate_kwargs=vkw)
@@ -338,7 +333,10 @@ class Caesar(app.cli.Tool):
         ui.message("===== Decypher Mode =====")
 
         while 1:
-            txt = ui.text_input("Please choose some caesar text")
+            v, vkw = ui.validate_charset, {"charset": caesar.VALID_CHARSET}
+            txt = ui.text_input("Text to uncypher with caesar",
+                                sub_type=ui.UPPER,
+                                validate=v, validate_kwargs=vkw)
 
             algos = None
             methods = None  # Always tray all methods!
@@ -442,7 +440,7 @@ class Caesar(app.cli.Tool):
                     traceback.print_tb(sys.exc_info()[2])
                 ui.message(str(e), level=ui.ERROR)
 
-            if algos and len(algos) == 1:
+            if algos and len(algos) == 1 and keys and len(keys) == 1:
                 ui.text_output("Text successfully decyphered", out,
                                "The decyphered text is")
             else:
