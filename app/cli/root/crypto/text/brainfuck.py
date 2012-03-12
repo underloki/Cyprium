@@ -121,7 +121,7 @@ class Brainfuck(app.cli.Tool):
             ui.message("The decypherd data is: {}"
                        "".format(brainfuck.decypher(htext)))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
         ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
@@ -186,7 +186,7 @@ class Brainfuck(app.cli.Tool):
                     if utils.DEBUG:
                         import traceback
                         traceback.print_tb(sys.exc_info()[2])
-                    ui.message(str(e), ui.ERROR)
+                    ui.message(str(e), level=ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
@@ -231,7 +231,7 @@ class Brainfuck(app.cli.Tool):
                 if utils.DEBUG:
                     import traceback
                     traceback.print_tb(sys.exc_info()[2])
-                ui.message(str(e), ui.ERROR)
+                ui.message(str(e), level=ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]
@@ -290,7 +290,7 @@ class Brainfuck(app.cli.Tool):
                     if utils.DEBUG:
                         import traceback
                         traceback.print_tb(sys.exc_info()[2])
-                    ui.message(str(e), ui.ERROR)
+                    ui.message(str(e), level=ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that code into "

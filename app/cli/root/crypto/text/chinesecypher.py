@@ -121,7 +121,7 @@ class ChineseCypher(app.cli.Tool):
                        "".format(chinesecypher.cypher("Hello World!",
                                                       chinese=True)))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
         ui.message("+ The input text to decypher must be phone digits only:")
@@ -131,7 +131,7 @@ class ChineseCypher(app.cli.Tool):
             ui.message("The decyphered data is: {}"
                        "".format(chinesecypher.decypher(htext)))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
@@ -166,7 +166,7 @@ class ChineseCypher(app.cli.Tool):
                     if utils.DEBUG:
                         import traceback
                         traceback.print_tb(sys.exc_info()[2])
-                    ui.message(str(e), ui.ERROR)
+                    ui.message(str(e), level=ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
@@ -206,7 +206,7 @@ class ChineseCypher(app.cli.Tool):
                 if utils.DEBUG:
                     import traceback
                     traceback.print_tb(sys.exc_info()[2])
-                ui.message(str(e), ui.ERROR)
+                ui.message(str(e), level=ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]

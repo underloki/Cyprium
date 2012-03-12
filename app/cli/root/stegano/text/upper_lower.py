@@ -102,7 +102,7 @@ class Upper_Lower(app.cli.Tool):
             ui.message("Text with hidden data (output file): {}"
                        "".format(upper_lower.hide(text, data)))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            ui.message(str(e), level=ui.ERROR)
 
         ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
 
@@ -134,7 +134,7 @@ class Upper_Lower(app.cli.Tool):
                         if utils.DEBUG:
                             import traceback
                             traceback.print_tb(sys.exc_info()[2])
-                        ui.message(str(e), ui.ERROR)
+                        ui.message(str(e), level=ui.ERROR)
                         options = [("retry", "*try again", ""),
                                    ("file", "choose another *input file", ""),
                                    ("menu", "or go back to *menu", "")]
@@ -174,7 +174,7 @@ class Upper_Lower(app.cli.Tool):
                     if utils.DEBUG:
                         import traceback
                         traceback.print_tb(sys.exc_info()[2])
-                    ui.message(str(e), ui.ERROR)
+                    ui.message(str(e), level=ui.ERROR)
 
             options = [("redo", "*unhide another data", ""),
                        ("quit", "or go back to *menu", "")]

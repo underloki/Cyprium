@@ -120,7 +120,7 @@ class Octopus(app.cli.Tool):
                        "".format(octopus.decypher(htext, codec="ascii",
                                                   base=2)))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
         ui.message("+ The input text to decypher must have an integer number "
@@ -133,7 +133,7 @@ class Octopus(app.cli.Tool):
                        "".format(octopus.decypher(htext, codec="ascii",
                                                   base=2)))
         except Exception as e:
-            ui.message(str(e), ui.ERROR)
+            ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
         ui.message("+ Auto-detection of the base might fail, especially with "
@@ -190,7 +190,7 @@ class Octopus(app.cli.Tool):
                     if utils.DEBUG:
                         import traceback
                         traceback.print_tb(sys.exc_info()[2])
-                    ui.message(str(e), ui.ERROR)
+                    ui.message(str(e), level=ui.ERROR)
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
@@ -249,7 +249,7 @@ class Octopus(app.cli.Tool):
                 if utils.DEBUG:
                     import traceback
                     traceback.print_tb(sys.exc_info()[2])
-                ui.message(str(e), ui.ERROR)
+                ui.message(str(e), level=ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]
