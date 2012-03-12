@@ -147,14 +147,8 @@ SQUARE_CONSTHIGH = 33
 VALID_CHARSET = set(string.ascii_uppercase) | {' '}
 
 # Used to adapt dics, for hacking.
-DIC_CHARSET = set("ABCDEFGHIJKLMNOPQRSTUVWXYZÆŒÀÉÈÙÊÂÎÔÛËÏÜÇÑß")
-DIC_CHARMAP = {"Æ": "AE", "Œ": "OE", "À": "A", "É": "E", "È": "E", "Ù": "U",
-               "Ê": "E", "Â": "A", "Î": "I", "Ô": "O", "Û": "U", "Ë": "E",
-               "Ï": "I", "Ü": "U", "Ç": "C", "Ñ": "N", "ß": "SS"}
-DIC_CHARMAP.update({k.lower(): v for k, v in DIC_CHARMAP.items()})
-DIC_CHARMAP.update({k.lower(): k for k in DIC_CHARSET if k not in DIC_CHARMAP})
-DIC_CHARSET |= {c.lower() for c in DIC_CHARSET}
-DIC_CHARSET.add(" ")
+DIC_CHARSET = utils.WE2UASCII_CHARSET
+DIC_CHARMAP = utils.WE2UASCII_CHARMAP
 
 
 # Printing helpers.
