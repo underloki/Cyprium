@@ -1,4 +1,4 @@
-########################################################################
+﻿########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #
 #   cryptanalysis tool developped by members of The Hackademy.         #
@@ -322,7 +322,7 @@ def all_primes(n):
     if n < 2:
         return
     # NOTE: This is Sieve of Eratosthenes, but only on odd numbers.
-    #       It’s a bit more complex to grasp, but takes half of memory,
+    #       It's a bit more complex to grasp, but takes half of memory,
     #       and tends to be somewhat quicker when reaching high numbers
     #       (1000000 and over).
 
@@ -378,3 +378,25 @@ def prime_range(end, start=2):
     for i in range(start, end + 1, 2):
         if is_prime(i):
             yield i
+
+
+###############################################################################
+# CHARSETS - CHARMAPS
+###############################################################################
+WE2UASCII_CHARSET = set("ABCDEFGHIJKLMNOPQRSTUVWXYZÆŒÀÁÂÄÇÉÈÊËÙÎÏÑÔÛÜß")
+
+WE2UASCII_CHARMAP = {"Æ": "AE", "Œ": "OE", "À": "A", "É": "E", "È": "E", "Ù": "U",
+
+           "Ê": "E", "Â": "A", "Î": "I", "Ô": "O", "Û": "U", "Ë": "E",
+
+           "Ï": "I", "Ü": "U", "Ç": "C", "Ñ": "N", "ß": "SS", "Ú": "U",
+
+           "Á": "A", "Ü": "U", "Ä": "A", "Ö": "O", "Ó": "O"}
+
+WE2UASCII_CHARMAP.update({k.lower(): v for k, v in WE2UASCII_CHARMAP.items()})
+
+WE2UASCII_CHARMAP.update({k.lower(): k for k in WE2UASCII_CHARSET if k not in WE2UASCII_CHARMAP})
+
+WE2UASCII_CHARSET |= {c.lower() for c in WE2UASCII_CHARSET}
+
+WE2UASCII_CHARSET.add(" ")
