@@ -131,37 +131,69 @@ ALGO_BASIC = 1  # Basic, classical constant-shift caesar code.
 ALGO_PROGRESS = 2  # Variable-shift caesar code.
 ALGO_SQUARE = 3  # Caesar's square code.
 
-# Variants of Progressive algo.
-PROGRESS_GEOMETRIC = 1  # Also "basic", which is a geometric suite based on 1.
-PROGRESS_SHIFT = 2
+# Variants of Basic algo (for sake of consistency...).
+BASIC_BASIC = 11
 
+# Variants of Progressive algo.
+PROGRESS_GEOMETRIC = 21  # Also "basic", which is a geometric suite based on 1.
+PROGRESS_SHIFT = 22
+
+# Variants of Square algo.
+SQUARE_SQUARE = 31
+SQUARE_CONSTWIDTH = 32
+SQUARE_CONSTHIGH = 33
+
+
+VALID_CHARSET = set(string.ascii_uppercase) | {' '}
 
 # Used to adapt dics, for hacking.
-CHARSET = set("ABCDEFGHIJKLMNOPQRSTUVWXYZÆŒÀÉÈÙÊÂÎÔÛËÏÜÇÑß")
-CHARMAP = {"Æ": "AE", "Œ": "OE", "À": "A", "É": "E", "È": "E", "Ù": "U",
-           "Ê": "E", "Â": "A", "Î": "I", "Ô": "O", "Û": "U", "Ë": "E",
-           "Ï": "I", "Ü": "U", "Ç": "C", "Ñ": "N", "ß": "SS"}
-CHARMAP.update({k.lower(): v for k, v in CHARMAP.items()})
-CHARMAP.update({k.lower(): k for k in CHARSET if k not in CHARMAP})
-CHARSET |= {c.lower() for c in CHARSET}
-CHARSET.add(" ")
+DIC_CHARSET = set("ABCDEFGHIJKLMNOPQRSTUVWXYZÆŒÀÉÈÙÊÂÎÔÛËÏÜÇÑß")
+DIC_CHARMAP = {"Æ": "AE", "Œ": "OE", "À": "A", "É": "E", "È": "E", "Ù": "U",
+               "Ê": "E", "Â": "A", "Î": "I", "Ô": "O", "Û": "U", "Ë": "E",
+               "Ï": "I", "Ü": "U", "Ç": "C", "Ñ": "N", "ß": "SS"}
+DIC_CHARMAP.update({k.lower(): v for k, v in DIC_CHARMAP.items()})
+DIC_CHARMAP.update({k.lower(): k for k in DIC_CHARSET if k not in DIC_CHARMAP})
+DIC_CHARSET |= {c.lower() for c in DIC_CHARSET}
+DIC_CHARSET.add(" ")
+
+
+# Printing helpers.
+TXT_ALGOS_MAP = {ALGO_BASIC: "Basic",
+                 ALGO_PROGRESS: "Progressive",
+                 ALGO_SQUARE: "Square"}
+TXT_ALGO_MAP_MAXLEN = max(len(n) for n in TXT_ALGOS_MAP.values())
+TXT_METHODS_MAP = {BASIC_BASIC: "Basic",
+                   PROGRESS_GEOMETRIC: "Geometric",
+                   PROGRESS_SHIFT: "Shifted",
+                   SQUARE_SQUARE: "Squarish",
+                   SQUARE_CONSTWIDTH: "Constant width",
+                   SQUARE_CONSTHIGH: "Constant high"}
+TXT_MATHODS_MAP_MAXLEN = max(len(n) for n in TXT_METHODS_MAP.values())
+TXT_HACKSOLUTIONS_PATTERN = "Match: {:<4.2}  Lang: {: <6}  ALGO: " \
+                            "{: <{alg_len}}  METHOD: {: <{met_len}}  " \
+                            "KEY: {: > 6}"
+
+
+def square_max_key(text):
+    """Compute max key for a given text, in square algo."""
+    return int(len(text.replace(' ', ''))**0.5)
 
 
 def _char_shift(c, base, modulo, shift):
     return chr(((ord(c) - base + shift) % modulo) + base)
 
 
-def _process_progressive(text, key, mode, _reverse=False):
+def _process_progressive(text, key, method, _reverse=False):
     """
     (De)cypher message to progressive caesar (increasing offset).
     """
     base = ord('A')
     modulo = ord('Z') - base + 1
 
-    if mode == PROGRESS_GEOMETRIC:
+    if method == PROGRESS_GEOMETRIC:
         # Basic is a specific case of geometric, with key = 1!
         delta = key
-    elif mode == PROGRESS_SHIFT:
+    elif method == PROGRESS_SHIFT:
         delta = key
         key = 1
 
@@ -217,8 +249,8 @@ def _process_square(text, key, _reverse=False):
         # We need a "square" where empty places are on the rightest column,
         # not the lowest row!
         dlt = key - (len(text) % key)
-        height = (len(text) + key - 1) // key
-        f_ln = key * (height - dlt)
+        high = (len(text) + key - 1) // key
+        f_ln = key * (high - dlt)
         square = tuple(utils.grouper(text[:f_ln], key, '')) + \
                  tuple(g + ('',)
                        for g in utils.grouper(text[f_ln:], key - 1, ''))
@@ -239,24 +271,28 @@ def do_cypher_basic(text, key):
     return "".join(_map[c] for c in text)
 
 
-def do_cypher_progressive(text, key, mode):
+def do_cypher_progressive(text, key, method):
     """
     Cypher message to progressive caesar (increasing offset).
     """
-    return _process_progressive(text, key, mode, False)
+    return _process_progressive(text, key, method, False)
 
 
-def do_cypher_square(text, key):
+def do_cypher_square(text, key, method):
     """
     Cypher message to caesar's square.
     key = 0 -> square.
     key > 0 -> fixed-width rectangle.
-    key < 0 -> fixed-height rectangle.
+    key < 0 -> fixed-high rectangle.
     """
+    if method == SQUARE_SQUARE:
+        key = 0
+    elif method == SQUARE_CONSTHIGH:
+        key = -key
     return _process_square(text, key, False)
 
 
-def cypher(text, algo, key, mode=PROGRESS_GEOMETRIC):
+def cypher(text, algo, key, method=PROGRESS_GEOMETRIC):
     """Just a wrapper around do_cypher_xxx, with some checks."""
     if not text:
         raise ValueError("No text given!")
@@ -277,15 +313,15 @@ def cypher(text, algo, key, mode=PROGRESS_GEOMETRIC):
         if 1 > key > 25:
             raise ValueError("Invalid key value, {} is out of [1, 25] range."
                              "".format(key))
-        if mode not in {PROGRESS_GEOMETRIC, PROGRESS_SHIFT}:
+        if method not in {PROGRESS_GEOMETRIC, PROGRESS_SHIFT}:
             raise ValueError("Invalid mode for progressive algorithm ({})."
-                             "".format(mode))
-        return do_cypher_progressive(text, key, mode)
+                             "".format(method))
+        return do_cypher_progressive(text, key, method)
     elif algo == ALGO_SQUARE:
-        if -1000 > key > 1000:
+        if key and 2 > abs(key) > square_max_key(text):
             raise ValueError("Invalid key value (size), {} is out of "
                              "[-1000, 1000] range.".format(key))
-        return do_cypher_square(text, key)
+        return do_cypher_square(text, key, method)
     else:
         raise ValueError("Unknown algorithm specified ({})."
                          "".format(algo))
@@ -307,7 +343,7 @@ def do_decypher_progressive(text, key, mode):
     return _process_progressive(text, key, mode, True)
 
 
-def do_decypher_square(text, key):
+def do_decypher_square(text, key, method):
     """
     Decypher message to caesar’s square.
     key = 0 -> square.
@@ -315,53 +351,66 @@ def do_decypher_square(text, key):
     key < 0 -> fixed-height rectangle.
     """
     # It's just a matter of applying reversed cypher operation...
-    return _process_square(text, -key, True)
+    if method == SQUARE_SQUARE:
+        key = 0
+    elif method == SQUARE_CONSTWIDTH:
+        key = -key
+    return _process_square(text, key, True)
 
 
-def do_hack(text, algo):
+def do_hack(text, algos=None, methods=None, keys=None):
     """
+    Brute-force hacking of caesar-cyphered text...
     """
     h = hunspell.Hunspell()
     h.load_dic_zip(hunspell.ZIP_DICS)
     m = matchdic.MatchDic(h)
-    m.init(charset=CHARSET, charmap=CHARMAP, minlen=3)
+    m.init(charset=DIC_CHARSET, charmap=DIC_CHARMAP, minlen=3)
 
-    if algo == ALGO_BASIC:
-        generator = ((k, ALGO_BASIC, None, do_decypher_basic(text, k))
-                     for k in range(1, 26))
-    elif algo == ALGO_PROGRESS:
-        def _gen(text):
-            for k in range(1, 26):
-                yield (k, ALGO_PROGRESS, PROGRESS_GEOMETRIC,
-                       do_decypher_progressive(text, k, PROGRESS_GEOMETRIC))
-                yield (k, ALGO_PROGRESS, PROGRESS_SHIFT,
-                       do_decypher_progressive(text, k, PROGRESS_SHIFT))
-        generator = _gen(text)
-    elif algo == ALGO_SQUARE:
-        def _gen(text):
-            maxkey = (len(text) + 1) // 2
+    def _gen(text, algos, methods, keys):
+        if algos:
+            algos = set(algos)
+        else:
+            algos = {ALGO_BASIC, ALGO_PROGRESS, ALGO_SQUARE}
+        if keys:
+            ks = (k for k in keys if 0 < k < 26)
+        else:
+            ks = range(1, 26)
+        meths = {PROGRESS_GEOMETRIC, PROGRESS_SHIFT}
+        if methods:
+            meths = set(methods) & meths
+        for k in ks:
+            if ALGO_BASIC in algos:
+                yield (ALGO_BASIC, BASIC_BASIC, k, do_decypher_basic(text, k))
+            if ALGO_PROGRESS in algos:
+                if PROGRESS_GEOMETRIC in meths:
+                    yield (ALGO_PROGRESS, PROGRESS_GEOMETRIC, k,
+                           do_decypher_progressive(text, k,
+                                                   PROGRESS_GEOMETRIC))
+                if PROGRESS_SHIFT in meths and k != 1:
+                    yield (ALGO_PROGRESS, PROGRESS_SHIFT, k,
+                           do_decypher_progressive(text, k, PROGRESS_SHIFT))
+        if ALGO_SQUARE in algos:
+            maxkey = square_max_key(text)
+            if keys:
+                ks = (k for k in keys if 2 < k <= maxkey)
+            else:
+                ks = range(2, maxkey + 1)
+            meths = {SQUARE_SQUARE, SQUARE_CONSTWIDTH, SQUARE_CONSTHIGH}
+            if methods:
+                meths = set(methods) & meths
             # Squarish square!
-            yield (0, ALGO_SQUARE, None, do_decypher_square(text, 0))
-            for k in range(1, maxkey + 1):
-                yield (k, ALGO_SQUARE, None, do_decypher_square(text, k))
-                yield (-k, ALGO_SQUARE, None, do_decypher_square(text, -k))
-        generator = _gen(text)
-    # test everything!
-    else:
-        def _gen(text):
-            for k in range(1, 26):
-                yield (ALGO_BASIC, None, k, do_decypher_basic(text, k))
-                yield (ALGO_PROGRESS, PROGRESS_GEOMETRIC, k,
-                       do_decypher_progressive(text, k, PROGRESS_GEOMETRIC))
-                yield (ALGO_PROGRESS, PROGRESS_SHIFT, k,
-                       do_decypher_progressive(text, k, PROGRESS_SHIFT))
-            maxkey = (len(text) + 1) // 2
-            # Squarish square!
-            yield (ALGO_SQUARE, None, 0, do_decypher_square(text, 0))
-            for k in range(1, maxkey + 1):
-                yield (ALGO_SQUARE, None, k, do_decypher_square(text, k))
-                yield (ALGO_SQUARE, None, -k, do_decypher_square(text, -k))
-        generator = _gen(text)
+            if SQUARE_SQUARE in meths:
+                yield (ALGO_SQUARE, SQUARE_SQUARE, 0,
+                       do_decypher_square(text, None, SQUARE_SQUARE))
+            for k in ks:
+                if SQUARE_CONSTWIDTH in meths:
+                    yield (ALGO_SQUARE, SQUARE_CONSTWIDTH, k,
+                           do_decypher_square(text, k, SQUARE_CONSTWIDTH))
+                if SQUARE_CONSTHIGH in meths:
+                    yield (ALGO_SQUARE, SQUARE_CONSTHIGH, k,
+                           do_decypher_square(text, k, SQUARE_CONSTHIGH))
+    generator = _gen(text, algos, methods, keys)
 
     # Make three probes in results...
     slice_len = 50
@@ -378,7 +427,7 @@ def do_hack(text, algo):
         yield (algo, method, key, res, lng, avg)
 
 
-def decypher(text, algo, key, mode=PROGRESS_GEOMETRIC):
+def decypher(text, algos, methods, keys):
     """Just a wrapper around do_decypher_xxx, with some checks."""
     if not text:
         raise ValueError("No text given!")
@@ -390,9 +439,11 @@ def decypher(text, algo, key, mode=PROGRESS_GEOMETRIC):
                          "strict ASCII chars and spaces are allowed): '{}'!"
                          "".format("', '".join(sorted(c_text - c_allowed))))
 
-    if key is None:
-        return do_hack(text, algo)
-    elif algo == ALGO_BASIC:
+    if ((algos is None or getattr(algos, "__iter__", None)) and
+        (methods is None or getattr(methods, "__iter__", None)) and
+        (keys is None or getattr(keys, "__iter__", None))):
+        return do_hack(text, algos, methods, keys)
+    elif algos == ALGO_BASIC:
         if 1 > key > 25:
             raise ValueError("Invalid key value, {} is out of [1, 25] range."
                              "".format(key))
@@ -401,17 +452,20 @@ def decypher(text, algo, key, mode=PROGRESS_GEOMETRIC):
         if 1 > key > 25:
             raise ValueError("Invalid key value, {} is out of [1, 25] range."
                              "".format(key))
-        if mode not in {PROGRESS_GEOMETRIC, PROGRESS_SHIFT}:
-            raise ValueError("Invalid mode for progressive algorithm ({})."
-                             "".format(mode))
-        return do_decypher_progressive(text, key, mode)
+        if methods not in {PROGRESS_GEOMETRIC, PROGRESS_SHIFT}:
+            raise ValueError("Invalid variant for progressive algorithm ({})."
+                             "".format(methods))
+        return do_decypher_progressive(text, key, methods)
     elif algo == ALGO_SQUARE:
-        maxkey = (len(text) + 1) // 2
-        if -maxkey > key > maxkey:
-            raise ValueError("Invalid key value (size), {} is out of "
-                             "valid range for this text ([-{}, {}])."
-                             "".format(key, -maxkey, maxkey))
-        return do_decypher_square(text, key)
+        maxkey = square_max_key(text)
+        if key and 2 > abs(key) > maxkey:
+            raise ValueError("Invalid key value (size), {} is out of valid "
+                             "ranges for this text (None or [2, {}])."
+                             "".format(key, maxkey))
+        if methods not in {SQUARE_SQUARE, SQUARE_CONSTWIDTH, SQUARE_CONSTHIGH}:
+            raise ValueError("Invalid variant for square algorithm ({})."
+                             "".format(methods))
+        return do_decypher_square(text, key, methods)
     else:
         raise ValueError("Unknown algorithm specified ({})."
                          "".format(algo))
@@ -457,6 +511,12 @@ def main():
     cparser.add_argument('--shift', action='store_true',
                          help="Progressive algo only, use shift mode instead "
                               "of usual geometric one.")
+    cparser.add_argument('--constwidth', action='store_true',
+                         help="Square algo only, use constant width grid "
+                              "instead squarish one.")
+    cparser.add_argument('--consthigh', action='store_true',
+                         help="Square algo only, use constant high grid "
+                              "instead squarish one.")
 
     dparser = sparsers.add_parser('decypher',
                                           help="Decypher biliteral to text.")
@@ -489,10 +549,17 @@ def main():
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            mode = PROGRESS_GEOMETRIC
-            if args.shift:
-                mode = PROGRESS_SHIFT
-            out = cypher(data, args.algo, args.key, mode)
+            if args.algo == ALGO_PROGRESSIVE:
+                method = PROGRESS_GEOMETRIC
+                if args.shift:
+                    method = PROGRESS_SHIFT
+            else:
+                method = SQUARE_SQUARE
+                if args.constwidth:
+                    method = SQUARE_CONSTWIDTH
+                elif args.consthigh:
+                    method = SQUARE_CONSTHIGH
+            out = cypher(data, args.algo, args.key, method)
             if args.ofile:
                 args.ofile.write(out)
             else:
@@ -513,17 +580,30 @@ def main():
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            mode = PROGRESS_GEOMETRIC
-            if args.shift:
-                mode = PROGRESS_SHIFT
-            out = decypher(data, args.algo, args.key, mode)
+            if args.algo == ALGO_PROGRESSIVE:
+                method = PROGRESS_GEOMETRIC
+                if args.shift:
+                    method = PROGRESS_SHIFT
+            else:
+                method = SQUARE_SQUARE
+                if args.constwidth:
+                    method = SQUARE_CONSTWIDTH
+                elif args.consthigh:
+                    method = SQUARE_CONSTHIGH
+            if args.key is None:
+                if args.algo:
+                    args.algo = (args.algo,)
+                method = None
+            out = decypher(data, args.algo, method, args.key)
             if args.key is None:
                 out = sorted(out, key=lambda o: o[5], reverse=True)
                 if not args.ofile:
                     out = out[:10]
-                out = "\n".join(("Match: {:<4.2}  Lang: {: <6}  ALGO: {}  "
-                                 "METHOD: {:4}  KEY: {: > 6}     {}"
-                                 "".format(avg, lng, algo, method, key, res)
+                out = "\n".join((TXT_HACKSOLUTIONS_PATTERN + "\n    {}"
+                                 "".format(avg, lng, TXT_ALGOS_MAP[algo],
+                                           TXT_METHODS_MAP[method], key, res,
+                                           alg_len=TXT_ALGOS_MAP_MAXLEN,
+                                           met_len=TXT_METHODS_MAP_MAXLEN)
                                  for algo, method, key, res, lng, avg in out))
             if args.ofile:
                 args.ofile.write(out)
