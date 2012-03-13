@@ -301,7 +301,7 @@ class MorseWabun(app.cli.Tool):
                 return
 
 
-NAME = "*morse|wabun"
+NAME = "morse|wabun"
 TIP = "Tool to convert text to/from morse/wabun code."
 TYPE = app.cli.Node.TOOL
 CLASS = MorseWabun

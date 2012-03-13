@@ -73,7 +73,7 @@ class Biliteral(app.cli.Tool):
 
     def about(self, ui):
         ui.message(biliteral.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -118,7 +118,7 @@ class Biliteral(app.cli.Tool):
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -188,7 +188,7 @@ class Biliteral(app.cli.Tool):
                 return
 
 
-NAME = "b*iliteral"
+NAME = "biliteral"
 TIP = "Tool to convert text to/from biliteral code."
 TYPE = app.cli.Node.TOOL
 CLASS = Biliteral

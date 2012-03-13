@@ -73,7 +73,7 @@ class CodeABC(app.cli.Tool):
 
     def about(self, ui):
         ui.message(codeabc.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -110,7 +110,7 @@ class CodeABC(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), level=ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -178,7 +178,7 @@ class CodeABC(app.cli.Tool):
                 return
 
 
-NAME = "*codeABC"
+NAME = "codeABC"
 TIP = "Tool to convert text to/from codeABC code."
 TYPE = app.cli.Node.TOOL
 CLASS = CodeABC

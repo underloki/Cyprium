@@ -71,7 +71,7 @@ class Upper_Lower(app.cli.Tool):
 
     def about(self, ui):
         ui.message(upper_lower.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -104,7 +104,7 @@ class Upper_Lower(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), level=ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def hide(self, ui):
         """Interactive version of hide()."""
@@ -183,7 +183,7 @@ class Upper_Lower(app.cli.Tool):
                 return
 
 
-NAME = "*upper_lower"
+NAME = "upper/lower"
 TIP = "Tool to hide some text into a much bigger one, " \
       "by modifying the case of its letters."
 TYPE = app.cli.Node.TOOL

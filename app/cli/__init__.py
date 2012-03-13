@@ -179,7 +179,13 @@ class Tree:
         quit = False
         while not quit:
             if self._current.obj:
-                self._current.obj.main(ui)
+                try:
+                    self._current.obj.main(ui)
+                except Exception as e:
+                    if utils.DEBUG:
+                        import traceback
+                        traceback.print_tb(sys.exc_info()[2])
+                    ui.message(str(e), level=ui.ERROR)
             else:
                 options = []
                 idx = 1

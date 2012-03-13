@@ -73,7 +73,7 @@ class Braille(app.cli.Tool):
 
     def about(self, ui):
         ui.message(braille.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -119,7 +119,7 @@ class Braille(app.cli.Tool):
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -187,7 +187,7 @@ class Braille(app.cli.Tool):
                 return
 
 
-NAME = "b*raille"
+NAME = "braille"
 TIP = "Tool to convert text to/from Braille us-437 code."
 TYPE = app.cli.Node.TOOL
 CLASS = Braille

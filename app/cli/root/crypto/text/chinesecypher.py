@@ -71,7 +71,7 @@ class ChineseCypher(app.cli.Tool):
 
     def about(self, ui):
         ui.message(chinesecypher.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -134,7 +134,7 @@ class ChineseCypher(app.cli.Tool):
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -215,7 +215,7 @@ class ChineseCypher(app.cli.Tool):
                 return
 
 
-NAME = "c*hinese cypher"
+NAME = "chinese cypher"
 TIP = "Tool to convert text to/from chinese cypher code."
 TYPE = app.cli.Node.TOOL
 CLASS = ChineseCypher

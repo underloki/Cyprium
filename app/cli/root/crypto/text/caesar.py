@@ -124,7 +124,7 @@ class Caesar(app.cli.Tool):
 
         htext = "JSEAUAOUANERSLLRCSACIITOPNETOANATNICMSNESCABCASOOEIODUP"
         ui.message("--- Decyphering ---")
-        ui.message("In addition to usual known aglo/key uncyphering, Caesar "
+        ui.message("In addition to usual known algo/key uncyphering, Caesar "
                    "can also hack himself! It will then propose you all "
                    "possible outputs, sorted by relevance.")
         ui.message("Caesar text used as input: {}".format(htext))
@@ -168,7 +168,7 @@ class Caesar(app.cli.Tool):
 #            ui.message(str(e), level=ui.ERROR)
 #        ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     @staticmethod
     def _cypher(txt, algos, methods, keys, ui):
@@ -346,7 +346,7 @@ class Caesar(app.cli.Tool):
                        (caesar.ALGO_PROGRESS, "*progressive", ""),
                        (caesar.ALGO_SQUARE, "*square", ""),
                        (None, "and/or *all", ""))
-            t = set(ui.get_choice("Which uncyphering algorithm(s) do you"
+            t = set(ui.get_choice("Which uncyphering algorithm(s) do you "
                                   "want to try,", options,
                                   oneline=True, multichoices=','))
             if None not in t:

@@ -62,6 +62,7 @@ class DiskCache(object):
                       "a file ({})!".format(CCH_DIR))
         else:
             os.mkdir(CCH_DIR)
+            self._cached = {}
 
     def __contains__(self, uid):
         """

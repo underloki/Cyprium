@@ -102,7 +102,7 @@ class AtomicDigits(app.cli.Tool):
 
     def about(self, ui):
         ui.message(atomicdigits.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -168,7 +168,7 @@ class AtomicDigits(app.cli.Tool):
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -258,7 +258,7 @@ class AtomicDigits(app.cli.Tool):
                 return
 
 
-NAME = "ato*mic"
+NAME = "atomic"
 TIP = "Tool to convert text to/from atomic digits code."
 TYPE = app.cli.Node.TOOL
 CLASS = AtomicDigits

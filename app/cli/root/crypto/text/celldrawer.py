@@ -71,7 +71,7 @@ class Celldrawer(app.cli.Tool):
 
     def about(self, ui):
         ui.message(celldrawer.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -114,7 +114,7 @@ class Celldrawer(app.cli.Tool):
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -182,7 +182,7 @@ class Celldrawer(app.cli.Tool):
                 return
 
 
-NAME = "ce*lldrawer"
+NAME = "celldrawer"
 TIP = "Tool to convert text to/from celldrawer code."
 TYPE = app.cli.Node.TOOL
 CLASS = Celldrawer

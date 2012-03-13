@@ -73,7 +73,7 @@ class PostalBarcode(app.cli.Tool):
 
     def about(self, ui):
         ui.message(postalbarcode.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -135,7 +135,7 @@ class PostalBarcode(app.cli.Tool):
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def cypher(self, ui):
         """Interactive version of cypher()."""
@@ -231,7 +231,7 @@ class PostalBarcode(app.cli.Tool):
                 return
 
 
-NAME = "*postal bar code"
+NAME = "postal bar code"
 TIP = "Tool to convert number to/from postal bar code."
 TYPE = app.cli.Node.TOOL
 CLASS = PostalBarcode

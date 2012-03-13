@@ -71,7 +71,7 @@ class Spaces(app.cli.Tool):
 
     def about(self, ui):
         ui.message(spaces.__about__)
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
         ui.message("===== Demo Mode =====")
@@ -115,7 +115,7 @@ class Spaces(app.cli.Tool):
         except Exception as e:
             ui.message(str(e), level=ui.ERROR)
 
-        ui.get_choice("", [("", "Go back to *menu", "")], oneline=True)
+        ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def hide(self, ui):
         """Interactive version of hide()."""
@@ -190,7 +190,7 @@ class Spaces(app.cli.Tool):
                 return
 
 
-NAME = "*Spaces"
+NAME = "spaces"
 TIP = "Tool to hide some text into a much bigger one, " \
       "by spacing words with one or two spaces"
 TYPE = app.cli.Node.TOOL

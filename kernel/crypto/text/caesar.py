@@ -105,8 +105,9 @@ E.g. “CAIVSIVLIVSCAESAR” with a width of 4 gives
 … hence “CSIARAIVEIVSSVLCA”
 
 That tool implements the three variants of this algo, Square itself (i.e. using
-a table of n*n dimension, as small as possible for the given text) [when key=0],
-constant width [when key > 0], and constant high [when key < 0].
+a table of n*n dimension, as small as possible for the given text)
+[when key=0], constant width, and constant high (which is also known as the
+Cytale cyphering).
 
 
 
