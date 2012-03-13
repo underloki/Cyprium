@@ -392,6 +392,7 @@ class UI:
                 self.message(print_msg + ":", indent=indent)
                 nextblock = True
                 bstart = 0
+                nlines = len(data)
                 if multiblocks:
                     bend = multiblocks
                 else:
@@ -399,7 +400,7 @@ class UI:
                 tindent = indent + 1
                 maxlenmap = []
                 while nextblock:
-                    if bstart < len(data):
+                    if bstart < nlines:
                         for idx, d in enumerate(data[bstart:bend]):
                             if maxlen and len(d) > maxlen:
                                 maxlenmap.append(idx + bstart)
@@ -412,10 +413,14 @@ class UI:
                         bstart = bend
                         bend += multiblocks
                     if maxlenmap:
-                        options = [(1, "get *whole version of some lines",
-                                    ""),
-                                   (False, "see *next block of lines", ""),
-                                   (-1, "or *return", "")]
+                        options = [(1, "get *whole version of some lines", "")]
+                        if bstart < nlines:
+                            options.append((False,
+                                            "show *more lines ({} to {} over "
+                                            "{})".format(bstart,
+                                                         min(bend, nlines),
+                                                         nlines), ""))
+                        options.append((-1, "or *return", ""))
                         t = True
                         while t:
                             t = self.get_choice(msg, options,
@@ -440,8 +445,14 @@ class UI:
                             elif t == -1:
                                 nextblock = t = False
                     else:
-                        options = [(True, "see *next block of lines", ""),
-                                   (False, "or *return", "")]
+                        if bstart < nlines:
+                            options = [(True,
+                                        "show *more lines ({} to {} over {})"
+                                        "".format(bstart, min(bend, nlines),
+                                                  nlines), ""),
+                                       (False, "or *return", "")]
+                        else:
+                            options = [(False, "*return", "")]
                         nextblock = self.get_choice(msg, options,
                                                     indent=tindent,
                                                     start_opt="(",

@@ -141,9 +141,9 @@ class Caesar(app.cli.Tool):
                                    methods[method], key,
                                    alg_len=alg_len, met_len=met_len),
                     ui.INDENT + res)
-        ui.text_output("Text successfully decyphered", out,
-                       "Best solutions found are", maxlen=200,
-                       multiline=True, multiblocks=20)
+        ui.message("Best solutions found are:\n\n" + "\n\n".join(out[:20]))
+        ui.message("Note: In real situation, you’ll have the choice to see "
+                   "more solutions if you like! ;)")
         ui.message("")
 
 #        ui.message("--- Won’t work ---")
