@@ -398,21 +398,24 @@ class UI:
                     bend = len(data)
                 tindent = indent + 1
                 maxlenmap = []
-                while nextblock and bstart < len(data):
-                    for idx, d in enumerate(data[bstart:bend]):
-                        if maxlen and len(d) > maxlen:
-                            maxlenmap.append(idx + bstart)
-                            maxlenidx = str(len(maxlenmap))
-                            self.message("[{}] {}"
-                                         "".format(maxlenidx, d[:maxlen]),
-                                         indent=tindent)
-                        else:
-                            self.message(d, indent=tindent)
+                while nextblock:
+                    if bstart < len(data):
+                        for idx, d in enumerate(data[bstart:bend]):
+                            if maxlen and len(d) > maxlen:
+                                maxlenmap.append(idx + bstart)
+                                maxlenidx = str(len(maxlenmap))
+                                self.message("[{}] {}"
+                                             "".format(maxlenidx, d[:maxlen]),
+                                             indent=tindent)
+                            else:
+                                self.message(d, indent=tindent)
+                        bstart = bend
+                        bend += multiblocks
                     if maxlenmap:
                         options = [(1, "get *whole version of some lines",
                                     ""),
                                    (False, "see *next block of lines", ""),
-                                   (-1, "or *continue", "")]
+                                   (-1, "or *return", "")]
                         t = True
                         while t:
                             t = self.get_choice(msg, options,
@@ -438,15 +441,12 @@ class UI:
                                 nextblock = t = False
                     else:
                         options = [(True, "see *next block of lines", ""),
-                                   (False, "or *continue", "")]
+                                   (False, "or *return", "")]
                         nextblock = self.get_choice(msg, options,
                                                     indent=tindent,
                                                     start_opt="(",
                                                     end_opt=")",
                                                     oneline=True)
-                    if nextblock:
-                        bstart = bend
-                        bend += multiblocks
             else:
                 if maxlen and len(data) > maxlen:
                     self.message(": ".join((print_msg, data[:maxlen])),
