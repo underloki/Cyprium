@@ -1,4 +1,4 @@
-﻿########################################################################
+########################################################################
 #                                                                      #
 #   Cyprium is a multifunction cryptographic, steganographic and       #
 #   cryptanalysis tool developped by members of The Hackademy.         #

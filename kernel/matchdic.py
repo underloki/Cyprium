@@ -128,7 +128,8 @@ class MatchDic(object):
             print("Building {}’s list of words.".format(uid))
             lst = self.ids[uid] = []
             lst_ln = len(lst)
-            for w in (self.preprocess(w) for w in self.word_gen.gen_words(dics=(uid,))):
+            for w in (self.preprocess(w)
+                      for w in self.word_gen.gen_words(dics=(uid,))):
                 if not w:
                     continue
                 ln = len(w)
@@ -159,7 +160,7 @@ class MatchDic(object):
             # Simple obvious test!
             if chk in self.ids[uid][width]:
                 continue
-            # Else, for each possible word length, use a sliding window 
+            # Else, for each possible word length, use a sliding window
             # over the chunk to search for a matching word (starting from
             # longest ones).
             for wlst in reversed(self.ids[uid][:width]):

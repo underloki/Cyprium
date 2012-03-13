@@ -45,7 +45,8 @@ HUNSPELL_ZIP_DICS = os.path.join(ROOT_DIR, "kernel", "dics.zip")
 
 ## Cache settings.
 
-# Use disk cache to save processed versions of heavy data which creation is CPU-intensive.
+# Use disk cache to save processed versions of heavy data which creation is
+# CPU-intensive.
 # Used e.g. by language-words code (hunspell.py and matchdic.py).
 # Warning: these files will take quite some room (currently ~60Mo).
 CCH_USE = True
@@ -62,4 +63,3 @@ CHC_HASH_TYPE = "sha512"
 
 # The pause between each draw of splash info, at launch time (in ms).
 UI_SPLASH_DELAY = 1000
-

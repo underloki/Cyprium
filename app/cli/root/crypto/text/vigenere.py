@@ -79,7 +79,7 @@ class Prime(app.cli.Tool):
         ui.message("===== Demo Mode =====")
         ui.message("Running a small demo/testing!")
         ui.message("--- Cyphering ---")
-        
+
         keys = ["HACK", "HACK", "1024", "HACK"]
         algo_names = ["vigenere", "autoclave", "gronsfeld", "beaufort"]
         algos = [vigenere.ALGO_VIGENERE, vigenere.ALGO_AUTOCLAVE,
@@ -87,8 +87,9 @@ class Prime(app.cli.Tool):
         plain_text = "HELLO WORLD 1024"
         ui.message("plain-text  <->  key  <->  algorithm")
         for index, algo in enumerate(algos):
-            ui.message(plain_text  + " - " + keys[index]  + " - " + algo_names[index])
-            ui.message("\t" + vigenere.cypher(plain_text, keys[index], algo) )
+            ui.message(plain_text + " - " + keys[index] + " - " +
+                       algo_names[index])
+            ui.message("\t" + vigenere.cypher(plain_text, keys[index], algo))
         #ui.message("--- Decyphering ---")
 
         ui.message("Won't work!")
@@ -118,15 +119,15 @@ class Prime(app.cli.Tool):
                     break  # Go back to main Cypher menu.
 
                 # Get algo.
-                
+
                 options = [(vigenere.ALGO_VIGENERE, "$vigenere", ""),
                            (vigenere.ALGO_BEAUFORT, "*beaufort", ""),
                            (vigenere.ALGO_GRONSFELD, "*gronsfeld", ""),
                            (vigenere.ALGO_AUTOCLAVE, "auto*clave", "")]
                 algo = ui.get_choice("Algorithm to use : ", options)
-                
+
                 # Get key
-                key = ui.get_data("Enter the key : ", sub_type=ui.UPPER)                
+                key = ui.get_data("Enter the key : ", sub_type=ui.UPPER)
 
                 try:
                     ui.message(txt + " - " + key + " - " + str(algo))
@@ -163,16 +164,17 @@ class Prime(app.cli.Tool):
         ui.message("===== Decypher Mode =====")
 
         while 1:
-            txt = ui.text_input("Please input the cyphered text ", sub_type=ui.UPPER)
+            txt = ui.text_input("Please input the cyphered text ",
+                                sub_type=ui.UPPER)
 
             # Get algo.
-            
+
             options = [(vigenere.ALGO_VIGENERE, "*vigenere", ""),
                        (vigenere.ALGO_BEAUFORT, "*beaufort", ""),
                        (vigenere.ALGO_GRONSFELD, "*gronsfeld", ""),
                        (vigenere.ALGO_AUTOCLAVE, "auto*clave", "")]
             algo = ui.get_choice("Algorithm to use : ", options)
-            
+
             # Get key
             key = ui.get_data("Enter the key : ", sub_type=ui.UPPER)
             try:

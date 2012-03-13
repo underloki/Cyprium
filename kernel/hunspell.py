@@ -35,7 +35,7 @@ import re
 import settings
 import kernel.cache as cache
 
-__about__="""
+__about__ = """
 Cyprium currently uses Hunspell dictionaries to generate lists of words on a
 per-language basis.
 
@@ -189,7 +189,7 @@ class Hunspell(object):
             ln = len(clss)
             # XXX This will cut last char in case of odd number...
             #     But this is not supposed to happen!
-            return (clss[i:i+2] for i in range(0, ln, 2))
+            return (clss[i:i + 2] for i in range(0, ln, 2))
         elif fmode == "num":
             return clss.split(',')
 

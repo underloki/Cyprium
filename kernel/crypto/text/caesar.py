@@ -171,7 +171,7 @@ TXT_HACKSOLUTIONS_PATTERN = "Match: {:<4.2}  Lang: {: <6}  ALGO: " \
 
 def square_max_key(text):
     """Compute max key for a given text, in square algo."""
-    return int(len(text.replace(' ', ''))**0.5)
+    return int(len(text.replace(' ', '')) ** 0.5)
 
 
 def _char_shift(c, base, modulo, shift):

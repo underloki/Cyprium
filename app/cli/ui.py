@@ -156,7 +156,8 @@ class UI(app.ui.UI):
                 msg = "Nothing typed"
                 options = [("retry", "$retry", ""),
                            ("abort", "or *abort", "")]
-                answ = self.get_choice(msg, options, indent=indent, oneline=True)
+                answ = self.get_choice(msg, options, indent=indent,
+                                       oneline=True)
                 if answ == "retry":
                     data = self.cinput(message)
                 else:
@@ -313,7 +314,8 @@ class UI(app.ui.UI):
                 msg = txt_msg
             msg = "".join((msg, ": "))
         else:
-            txt_msg = "".join((start_opt, ("\n" + iidt).join(msg_chc), end_opt))
+            txt_msg = "".join((start_opt, ("\n" + iidt).join(msg_chc),
+                               end_opt))
             if mc:
                 msg = " ".join(msg, mc)
             msg = (":\n" + iidt).join((msg, txt_msg))
