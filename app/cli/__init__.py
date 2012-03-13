@@ -186,6 +186,10 @@ class Tree:
                         import traceback
                         traceback.print_tb(sys.exc_info()[2])
                     ui.message(str(e), level=ui.ERROR)
+                    # Go back one level (security, to avoid infinite looping
+                    # in some cases!).
+                    if self._current.parent:
+                        self._current = self._current.parent
             else:
                 options = []
                 idx = 1
