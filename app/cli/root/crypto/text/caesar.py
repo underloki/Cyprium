@@ -230,7 +230,7 @@ class Caesar(app.cli.Tool):
                 options = ((caesar.ALGO_BASIC, "*basic", ""),
                            (caesar.ALGO_PROGRESS, "*progressive", ""),
                            (caesar.ALGO_SQUARE, "and/or *square", ""))
-                t = set(ui.get_choice("Which cyphering algorithm(s) do you"
+                t = set(ui.get_choice("Which cyphering algorithm(s) do you "
                                       "want to use,", options,
                                       oneline=True, multichoices=','))
                 if caesar.ALGO_BASIC in t:
@@ -238,7 +238,7 @@ class Caesar(app.cli.Tool):
                     algos.append(a)
                     v = ui.validate_number_range
                     vkw = {"minnbr": 1, "maxnbr": 25}
-                    tk = ui.text_input("Key(s) to use for basic caesar"
+                    tk = ui.text_input("Key(s) to use for basic caesar "
                                        "([1 … 25])", indent=1,
                                        no_file=True, sub_type=ui.INT_LIST,
                                        validate=v, validate_kwargs=vkw)
@@ -262,7 +262,7 @@ class Caesar(app.cli.Tool):
                         methods[a].append(caesar.PROGRESS_GEOMETRIC)
                     if caesar.PROGRESS_SHIFT in tt:
                         methods[a].append(caesar.PROGRESS_SHIFT)
-                    tk = ui.text_input("Key(s) to use for progressive"
+                    tk = ui.text_input("Key(s) to use for progressive "
                                        "caesar ([1 … 25])", no_file=True,
                                        indent=1, sub_type=ui.INT_LIST,
                                        validate=v, validate_kwargs=vkw)
@@ -287,7 +287,7 @@ class Caesar(app.cli.Tool):
                         methods[a].append(caesar.SQUARE_SQUARE)
                     if ({caesar.SQUARE_CONSTWIDTH, caesar.SQUARE_CONSTHIGH} &
                         tt):
-                        tk = ui.text_input("Key(s) to use for non-squarish"
+                        tk = ui.text_input("Key(s) to use for non-squarish "
                                            "square caesar ([2 … {}])"
                                            "".format(vkw["maxnbr"]),
                                            sub_type=ui.INT_LIST,
@@ -356,7 +356,7 @@ class Caesar(app.cli.Tool):
                 if caesar.ALGO_BASIC in algos:
                     v = ui.validate_number_range
                     vkw = {"minnbr": 1, "maxnbr": 25}
-                    tk = ui.text_input("Key(s) to use for basic caesar"
+                    tk = ui.text_input("Key(s) to use for basic caesar "
                                        "([1 … 25])", indent=1, no_file=True,
                                        sub_type=ui.INT_LIST,
                                        validate=v, validate_kwargs=vkw)
@@ -378,7 +378,7 @@ class Caesar(app.cli.Tool):
                         methods.append(caesar.PROGRESS_GEOMETRIC)
                     if caesar.PROGRESS_SHIFT in tt:
                         methods.append(caesar.PROGRESS_SHIFT)
-                    tk = ui.text_input("Key(s) to use for progressive"
+                    tk = ui.text_input("Key(s) to use for progressive "
                                        "caesar ([1 … 25])", no_file=True,
                                        indent=1, sub_type=ui.INT_LIST,
                                        validate=v, validate_kwargs=vkw)
@@ -401,7 +401,7 @@ class Caesar(app.cli.Tool):
                         methods.append(caesar.SQUARE_SQUARE)
                     if ({caesar.SQUARE_CONSTWIDTH, caesar.SQUARE_CONSTHIGH} &
                         tt):
-                        tk = ui.text_input("Key(s) to use for non-squarish"
+                        tk = ui.text_input("Key(s) to use for non-squarish "
                                            "square caesar ([2 … {}])"
                                            "".format(vkw["maxnbr"]),
                                            sub_type=ui.INT_LIST,

@@ -236,7 +236,8 @@ class UI(app.ui.UI):
                     continue  # Go back to beginning!
 
             # Return valid data!
-            if data != org_data:
+            if (data != org_data and
+                sub_type in {self.STRING, self.UPPER, self.LOWER, self.PATH}):
                 self.message("Your input has been converted to: "
                              "{}".format(data), indent=indent)
             return data
