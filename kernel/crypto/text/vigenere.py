@@ -43,7 +43,7 @@ if __name__ == '__main__':
 import kernel.utils as utils
 
 __version__ = "0.5.0"
-__date__ = "2012/03/5"
+__date__ = "2012/03/16"
 __python__ = "3.x"  # Required Python version
 __about__ = ""\
 """Cyprium.Vigenere version {} ({}).
@@ -181,7 +181,7 @@ def do_cypher_beaufort(text, key):
     return _process_beaufort(text, key, False)
 
 
-def cypher(text, key, algo):
+def cypher(text, key, algo, with_spaces=True):
     '''Just a wrapper around do_cypher_xxx, whit some checks.'''
     if not text:
         raise ValueError("No text given!")
@@ -212,7 +212,10 @@ def cypher(text, key, algo):
     else:
         raise ValueError("Unknow algorithm specified ({})."
                         "".format(algo))
-    return "".join(res_gen)
+    if with_spaces:
+        return "".join(res_gen)
+    else:
+        return "".join(c for c in res_gen if c != " ")
 
 
 def do_decypher_vigenere(text, key):
@@ -235,7 +238,7 @@ def do_decypher_beaufort(text, key):
     return _process_beaufort(text, key, True)
 
 
-def decypher(text, key, algo, bloc=None):
+def decypher(text, key, algo, with_spaces=True):
     '''Just a wrapper around do_decypher_xxx, whit some checks.'''
     if not text:
         raise ValueError("No text given!")
@@ -268,7 +271,10 @@ def decypher(text, key, algo, bloc=None):
     else:
         raise ValueError("Unknow algorithm specified ({})."
                         "".format(algo))
-    return "".join(res_gen)
+    if with_spaces:
+        return "".join(res_gen)
+    else:
+        return "".join(c for c in res_gen if c != " ")
 
 
 def test():
@@ -338,7 +344,7 @@ def main():
                          choices=_algos.values(), default=_algos['v'],
                          help="Which algorithm to use for decyphering.")
 
-    sparsers.add_parser('about', help="About Vigenereâ€¦")
+    sparsers.add_parser('about', help="About VigenereÃ¢â‚¬Â¦")
 
     args = parser.parse_args()
     utils.DEBUG = args.debug
