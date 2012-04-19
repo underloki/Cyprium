@@ -34,6 +34,7 @@ import re
 
 import settings
 import kernel.cache as cache
+import kernel.utils as utils
 
 __about__ = """
 Cyprium currently uses Hunspell dictionaries to generate lists of words on a
@@ -50,6 +51,7 @@ spaces, though (several tens of Mb).
 
 ZIP_DICS = settings.HUNSPELL_ZIP_DICS
 DO_CACHE = settings.CCH_USE
+CACHE_PREFIX = "hunspell"
 
 
 class Hunspell(object):
@@ -59,7 +61,7 @@ class Hunspell(object):
     """
 
     # Used to ensure cached data was cached with same version.
-    # Change that when modifying parse code!
+    # Change that when modifying parsing code!
     _hash_salt = b"1.0.0"
 
     def __init__(self):
@@ -97,29 +99,32 @@ class Hunspell(object):
         Helper func.
         """
         # aff (rules) part.
-        if DO_CACHE and self.dics[uid]["aff_hash"] in cache.cache:
-            c = cache.cache.get(self.dics[uid]["aff_hash"])
+        key = (CACHE_PREFIX, uid, self.dics[uid]["aff_hash"])
+        if DO_CACHE and key in cache.cache:
+            c = cache.cache[key]
             self.dics[uid]["flag_mode"] = c[0]
             self.dics[uid]["af_map"] = c[1]
             self.dics[uid]["af_classes"] = c[2]
         else:
-            print("Parsing {}’s aff rules file.".format(uid))
+            utils.printf("Parsing {}’s aff rules file... ".format(uid), end="")
             self.parse_aff(self.dics[uid], aff)
             if DO_CACHE:
                 c = (self.dics[uid]["flag_mode"], self.dics[uid]["af_map"],
                      self.dics[uid]["af_classes"])
-                cache.cache.cache(self.dics[uid]["aff_hash"], c)
+                key = (CACHE_PREFIX, uid, self.dics[uid]["aff_hash"])
+                cache.cache[key] = c
             print("Done.")
         # dicc (base words) part.
-        if DO_CACHE and self.dics[uid]["dic_hash"] in cache.cache:
-            bw = cache.cache.get(self.dics[uid]["dic_hash"])
+        key = (CACHE_PREFIX, uid, self.dics[uid]["dic_hash"])
+        if DO_CACHE and key in cache.cache:
+            bw = cache.cache[key]
             self.dics[uid]["base_words"] = bw
         else:
-            print("Parsing {}’s dic base words file.".format(uid))
+            utils.printf("Parsing {}’s dic base words file... ".format(uid), end="")
             self.parse_dic(self.dics[uid], dic)
             if DO_CACHE:
-                cache.cache.cache(self.dics[uid]["dic_hash"],
-                                  self.dics[uid]["base_words"])
+                key = (CACHE_PREFIX, uid, self.dics[uid]["dic_hash"])
+                cache.cache[key] = self.dics[uid]["base_words"]
             print("Done.")
 
     def load_dic_file(self, dic_path, aff_path=None, uid=None):
@@ -145,7 +150,7 @@ class Hunspell(object):
     def load_dic_zip(self, zip_path, names=[]):
         """
         Load some dics from a zip archive.
-        names is an iterable of dic names (withour .dic/.aff extensions), if
+        names is an iterable of dic names (without .dic/.aff extensions), if
         empty all dics from archive will be loaded.
         """
         def bytes2str(lines):

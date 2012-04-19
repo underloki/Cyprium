@@ -33,11 +33,13 @@ import time
 import string
 import pickle
 
-import kernel.cache as cache
 import settings
+import kernel.cache as cache
+import kernel.utils as utils
 
 
 DO_CACHE = settings.CCH_USE
+CACHE_PREFIX = "matchdic"
 
 
 class MatchDic(object):
@@ -122,10 +124,11 @@ class MatchDic(object):
                 hsh.update(hsh_param)
                 hsh.update(self._hash_salt)
                 hsh = hsh.hexdigest()
-                if hsh in cache.cache:
-                    self.ids[uid] = cache.cache.get(hsh)
+                key = (CACHE_PREFIX, uid, hsh)
+                if key in cache.cache:
+                    self.ids[uid] = cache.cache[key]
                     continue
-            print("Building {}’s list of words.".format(uid))
+            utils.printf("Building {}’s list of words... ".format(uid), end="")
             lst = self.ids[uid] = []
             lst_ln = len(lst)
             for w in (self.preprocess(w)
@@ -138,7 +141,7 @@ class MatchDic(object):
                     lst_ln = ln
                 lst[ln - 1].add(w)
             if DO_CACHE:
-                cache.cache.cache(hsh, lst)
+                cache.cache[key] = lst
             print("Done.")
 
     def get_match_level(self, uid, text):

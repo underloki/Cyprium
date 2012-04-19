@@ -94,6 +94,17 @@ def int8_to_bytes(int8):
     return bytes.fromhex(hex_s)
 
 
+def printf(*args, **kwargs):
+    """
+    A print() that always flushes!
+    """
+    print(*args, **kwargs)
+    if "file" in kwargs:
+        kwargs["file"].flush()
+    else:
+        sys.stdout.flush()
+
+
 ###############################################################################
 # Bases ops.
 ###############################################################################
