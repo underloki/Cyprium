@@ -54,8 +54,11 @@ CCH_USE = True
 # Where to store cache files.
 CCH_BASE_DIR = os.path.join(ROOT_DIR, ".cache")
 
+# Maximum size of cache, in Mo.
+CCH_MAX_SIZE = 256
+
 # Hash algo to use as cache id.
-CHC_HASH_TYPE = "sha512"
+CCH_HASH_TYPE = "sha512"
 
 
 ###############################################################################
@@ -63,3 +66,11 @@ CHC_HASH_TYPE = "sha512"
 
 # The pause between each draw of splash info, at launch time (in ms).
 UI_SPLASH_DELAY = 1000
+
+
+###############################################################################
+# Override with custom user settings, if available.
+try:
+    from user_settings import *
+except ImportError:  # If no user_settings available, it’s no error!
+    pass
