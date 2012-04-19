@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+﻿#! /usr/bin/python3
 
 ########################################################################
 #                                                                      #
@@ -44,22 +44,22 @@ import kernel.crypto.text.vigenere as vigenere
 import kernel.utils as utils
 
 
-class Prime(app.cli.Tool):
+class Vigenere(app.cli.Tool):
     """CLI wrapper for vigenere crypto text tool."""
     def main(self, ui):
-        ui.message("********** Welcome to Cyprium.Prime! **********")
+        ui.message("********** Welcome to Cyprium.Vigenere! **********")
         quit = False
         while not quit:
             options = [(self.about, "*about", "Show some help!"),
                        (self.demo, "*demo", "Show some examples"),
                        (self.cypher, "*cypher",
-                                     "Cypher some text in Prime"),
+                                     "Cypher some text in Vigenere"),
                        (self.decypher, "d*ecypher",
-                                       "Decypher Prime into text"),
+                                       "Decypher Vigenere into text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
-                       ("quit", "*quit", "Quit Cyprium.Prime")]
-            msg = "Cyprium.Prime"
+                       ("quit", "*quit", "Quit Cyprium.Vigenere")]
+            msg = "Cyprium.Vigenere"
             answ = ui.get_choice(msg, options)
 
             if answ == 'tree':
@@ -114,9 +114,11 @@ class Prime(app.cli.Tool):
             done = False
             while 1:
                 txt = ui.text_input("Please input text to cypher",
-                                    sub_type=ui.UPPER)
+                                    sub_type=ui.STRING)
                 if txt is None:
                     break  # Go back to main Cypher menu.
+
+                txt = txt.upper()
 
                 # Get algo.
 
@@ -127,11 +129,15 @@ class Prime(app.cli.Tool):
                 algo = ui.get_choice("Algorithm to use : ", options)
 
                 # Get key
-                key = ui.get_data("Enter the key : ", sub_type=ui.UPPER)
+                key = ui.get_data("Enter the key : ", sub_type=ui.STRING)
+                key = key.upper()
+            
+                spaces = ui.get_choice("Conserve spaces ?", options=[
+                        (True, "$yes", ""), (False, "*no", "")],
+                        oneline=True)
 
                 try:
-                    ui.message(txt + " - " + key + " - " + str(algo))
-                    txt = vigenere.cypher(txt, key, algo)
+                    txt = vigenere.cypher(txt, key, algo, spaces)
                     done = True  # Out of those loops, output result.
                     break
                 except Exception as e:
@@ -142,7 +148,7 @@ class Prime(app.cli.Tool):
                     options = [("retry", "*try again", ""),
                                ("menu", "or go back to *menu", "")]
                     answ = ui.get_choice("Could not convert that data into "
-                                         "Prime, please", options,
+                                         "Vigenere, please", options,
                                          oneline=True)
                     if answ in {None, "menu"}:
                         return  # Go back to main Sema menu.
@@ -165,7 +171,11 @@ class Prime(app.cli.Tool):
 
         while 1:
             txt = ui.text_input("Please input the cyphered text ",
-                                sub_type=ui.UPPER)
+                                sub_type=ui.STRING)
+            if txt is None:
+                break
+            
+            txt = txt.upper()
 
             # Get algo.
 
@@ -176,10 +186,15 @@ class Prime(app.cli.Tool):
             algo = ui.get_choice("Algorithm to use : ", options)
 
             # Get key
-            key = ui.get_data("Enter the key : ", sub_type=ui.UPPER)
+            key = ui.get_data("Enter the key : ", sub_type=ui.STRING)
+            key = key.upper()
+            
+            spaces = ui.get_choice("Conserve spaces ?", options=[
+                        (True, "$yes", ""), (False, "*no", "")],
+                        oneline=True)
             try:
                 ui.text_output("Text successfully decyphered",
-                               vigenere.decypher(txt, key, algo),
+                               vigenere.decypher(txt, key, algo, spaces),
                                "The decyphered text is")
             except Exception as e:
                 if utils.DEBUG:
@@ -195,13 +210,13 @@ class Prime(app.cli.Tool):
 
 
 NAME = "vigenere"
-TIP = "Tool to convert text to/from Prime numbers code."
+TIP = "Tool to convert text to/from Vigenere code."
 TYPE = app.cli.Node.TOOL
-CLASS = Prime
+CLASS = Vigenere
 
 # Allow tool to be used directly, without using Cyprium menu.
 if __name__ == "__main__":
     import app.cli.ui
     ui = app.cli.ui.UI()
-    tree = app.cli.NoTree("Prime")
-    Prime(tree).main(ui)
+    tree = app.cli.NoTree("vigenere")
+    Vigenere(tree).main(ui)
