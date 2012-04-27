@@ -271,8 +271,8 @@ def case_variants(txt):
     TXT = txt.swapcase()
     # Nice comprehension! :p
     return ("".join(v) for v in
-                       itertools.product(*(tuple(set(c)) for c in
-                                                         zip(txt, TXT))))
+                       itertools.product(*(tuple(set(c))
+                                         for c in zip(txt, TXT))))
 
 
 ###############################################################################
@@ -340,7 +340,7 @@ def all_primes(n):
     # Create a list for all odd numbers.
     # Note: theorically, 1 is not prime, but as we never test it...
     lst = [True] * ((n // 2) + [0, 1][n % 2])
-    yield 2  # 2 is a prime number.
+    yield 2  # 2 is the first prime number, and only even one.
     # Use **0.5 instead of Math.sqrt().
     root = int(n ** 0.5) // 2
     root = root + [1, 0][root % 2]  # Get an odd root.
@@ -394,6 +394,16 @@ def prime_range(end, start=2):
 ###############################################################################
 # CHARSETS - CHARMAPS
 ###############################################################################
+# Common charsets…
+UTF8 = "utf-8"
+ASCII = "ascii"
+ASCII7 = "ascii7"
+EBCDIC = "cp500"
+
+DEFAULT = UTF8
+
+
+
 # Western European to upper ASCII.
 WE2UASCII_CHARSET = set("ABCDEFGHIJKLMNOPQRSTUVWXYZÆŒÀÁÂÄÇÉÈÊËÙÎÏÑÔÛÜß")
 

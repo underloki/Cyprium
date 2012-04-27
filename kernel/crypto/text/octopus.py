@@ -70,10 +70,10 @@ Current execution context:
 """.format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 
-ASCII7 = "ascii7"
-ASCII = "ascii"
-DEFAULT = "utf-8"
-EBCDIC = "cp500"
+ASCII7 = utils.ASCII7
+ASCII = utils.ASCII
+DEFAULT = utils.UTF8
+EBCDIC = utils.EBCDIC
 
 N_DIGITS = {2: 8, 8: 3, 10: 3, 16: 2}
 D_ALLOWED = utils.BASE_DIGITS_ALLOWED
