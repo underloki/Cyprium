@@ -1,4 +1,4 @@
-﻿#! /usr/bin/python3
+#! /usr/bin/python3
 
 ########################################################################
 #                                                                      #
@@ -56,6 +56,7 @@ class Vigenere(app.cli.Tool):
                                      "Cypher some text in Vigenere"),
                        (self.decypher, "d*ecypher",
                                        "Decypher Vigenere into text"),
+                       (self.hack, "*hack", "Hack some Vigenere text"),
                        ("", "-----", ""),
                        ("tree", "*tree", "Show the whole tree"),
                        ("quit", "*quit", "Quit Cyprium.Vigenere")]
@@ -131,7 +132,7 @@ class Vigenere(app.cli.Tool):
                 # Get key
                 key = ui.get_data("Enter the key : ", sub_type=ui.STRING)
                 key = key.upper()
-            
+
                 spaces = ui.get_choice("Conserve spaces ?", options=[
                         (True, "$yes", ""), (False, "*no", "")],
                         oneline=True)
@@ -174,7 +175,7 @@ class Vigenere(app.cli.Tool):
                                 sub_type=ui.STRING)
             if txt is None:
                 break
-            
+
             txt = txt.upper()
 
             # Get algo.
@@ -188,7 +189,7 @@ class Vigenere(app.cli.Tool):
             # Get key
             key = ui.get_data("Enter the key : ", sub_type=ui.STRING)
             key = key.upper()
-            
+
             spaces = ui.get_choice("Conserve spaces ?", options=[
                         (True, "$yes", ""), (False, "*no", "")],
                         oneline=True)
@@ -203,6 +204,64 @@ class Vigenere(app.cli.Tool):
                 ui.message(str(e), level=ui.ERROR)
 
             options = [("redo", "*decypher another data", ""),
+                       ("quit", "or go back to $menu", "")]
+            answ = ui.get_choice("Do you want to", options, oneline=True)
+            if answ == "quit":
+                return
+
+    def hack(self, ui):
+        """Interactive version of hack()."""
+        txt = ""
+        ui.message("===== Hack Mode =====")
+
+        while 1:
+            txt = ui.text_input("Please input the cyphered text ",
+                                sub_type=ui.STRING)
+            if txt is None:
+                break
+
+            txt = txt.upper()
+
+            # Get algo.
+
+            options = [(vigenere.ALGO_VIGENERE, "$vigenere", ""),
+                       #(vigenere.ALGO_BEAUFORT, "*beaufort", ""),
+                       #(vigenere.ALGO_GRONSFELD, "*gronsfeld", ""),
+                       #(vigenere.ALGO_AUTOCLAVE, "auto*clave", "")
+                       ]
+            algo = ui.get_choice("Algorithm to use", options)
+
+            # Get key
+            options = [(1, "*1 the key length and the language", ""),
+                       (2, "*2 the key length", ""),
+                       (3, "*3 the language", ""),
+                       (4, "$4 have no clue", ""),]
+            mode = ui.get_choice("You know... ", options)
+            language = key_length = None
+            if mode in (1, 3):
+                languages = vigenere.LANGUAGES
+                options = []
+                for i, lang in enumerate(languages):
+                    if lang=="fr":
+                        option = (lang, "$%d %s" % (i, languages[lang]), "")
+                    else:
+                        option = (lang, "*%d %s" % (i, languages[lang]), "")
+                    options.append(option)
+                language = ui.get_choice("The language is", options)
+            if mode in (1, 2):
+                key_length = ui.get_data("The key's length is ", ui.INT)
+            try:
+                key = vigenere.do_hack(txt, algo, key_length, language)
+                ui.text_output("Text successfully decyphered",
+                               vigenere.decypher(txt, key, algo),
+                               "")
+            except Exception as e:
+                if utils.DEBUG:
+                    import traceback
+                    traceback.print_tb(sys.exc_info()[2])
+                ui.message(str(e), level=ui.ERROR)
+
+            options = [("redo", "*hack another data", ""),
                        ("quit", "or go back to $menu", "")]
             answ = ui.get_choice("Do you want to", options, oneline=True)
             if answ == "quit":
