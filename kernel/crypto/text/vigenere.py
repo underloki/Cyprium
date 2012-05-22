@@ -33,6 +33,7 @@ import sys
 import os
 import string
 import itertools
+from difflib import SequenceMatcher
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -43,17 +44,17 @@ if __name__ == '__main__':
 import kernel.utils as utils
 
 __version__ = "0.5.0"
-__date__ = "2012/03/16"
+__date__ = "2012/05/22"
 __python__ = "3.x"  # Required Python version
 __about__ = ""\
-"""Cyprium.Vigenere version {} ({}).
+'''Cyprium.Vigenere version {} ({}).
 Licence GPL3
 Software distributed on the site: http://thehackademy.fr
 
 Current execution context:
 Operating System: {}
 Python version: {}
-""".format(__version__, __date__, utils.__pf__, utils.__pytver__)
+'''.format(__version__, __date__, utils.__pf__, utils.__pytver__)
 
 # Algorithms
 ALGO_VIGENERE = 1
@@ -62,7 +63,42 @@ ALGO_GRONSFELD = 3
 ALGO_BEAUFORT = 4
 
 # Maps
-WHITESMAP = set("0123456789.,;!? ")
+WHITESMAP = set("0123456789.,;!?+-*/ ")
+
+def clean(text, map=None, spaces=False):
+    '''clean a text, using the charmap <map> and return:
+        the cleaned text, if spaces==False
+        the cleaned text and the spaces, if spaces==True'''
+    if not map:
+        map = utils.WE2UASCII_CHARMAP
+    max = len(text)
+    index = 0
+    cleaned = []
+    whites = []
+    new_spaces = 0
+    while index < max:
+        c = text[index]
+        repr_c = c
+        if c.isalpha():
+            if c in map:
+                repr_c = map[c]
+                if len(repr_c)>1:
+                    new_spaces += 1
+            cleaned.extend(repr_c)
+        else:
+            whites.append((text[index], new_spaces+index))
+        index +=1
+    if spaces:
+        return cleaned, whites
+    else:
+        return cleaned
+
+
+def pack(text, whites):
+    '''pack <text> with <whites> and return a list'''
+    for i in whites:
+        text.insert(i[1], i[0])
+    return text
 
 
 def _char_shift(c, k, negativ=False, base=ord('A'), modulo=26):
@@ -185,9 +221,9 @@ def cypher(text, key, algo, with_spaces=True):
     '''Just a wrapper around do_cypher_xxx, whit some checks.'''
     if not text:
         raise ValueError("No text given!")
+    #text = clean(text, utils.WE2UASCII_CHARMAP)
     c_text = set(text)
     c_allowed = set(WHITESMAP)
-    utils.WE2UASCII_CHARSET
     c_allowed.update(utils.WE2UASCII_CHARSET)
     if not (c_text <= c_allowed):
         raise ValueError("Text contains unallowed chars (only uppercase "
@@ -277,16 +313,283 @@ def decypher(text, key, algo, with_spaces=True):
         return "".join(c for c in res_gen if c != " ")
 
 
-def test():
-    keys = ["ANF", "ANF", "1024", "ANF"]
-    for i in range(4):
-        print("".join(decypher(cypher("HI HELLO WORLD. THIS IS MY SUPER ALGO"
-                                      " 1024", keys[i], i + 1),
-                               keys[i], i + 1)), " <== algo", i + 1)
+############ Hack Section ###############
+def _count(key, most, lang, limit=5):
+    lst = []
+    for c in most[:limit]:
+        lst.append(r_square[key][c])
+    return get_ratio(lst, STATS[lang][:limit])
 
 
-#test()
+def _compare(key, most, lang, limit=5):
+    lst = []
+    for c in most[:limit]:
+        lst.append(r_square[key][c])
+    return SequenceMatcher(None, lst, STATS[lang][:limit]).ratio()
 
+
+def get_ratio(lst1, lst2):
+    '''return the containing ratio of lst1 in lst2'''
+    count = 1.0
+    for i in lst1:
+        if i in lst2:
+            count += 1
+    return count/len(lst1)
+
+
+def get_IC(text):
+    '''determines the IC of the given text'''
+    occurences = [0]*26
+    for i in range(26):
+        occurences[i] += text.count(chr(65 + i))
+        occurences[i] += text.count(chr(97 + i))
+    total = float(sum(occurences))
+    return sum((n*(n-1))/(total*(total-1)) for n in occurences if n>1)
+
+def find_key_length(text, algo, size=6, nb_values=None):
+    '''finds the key-length of a vigenere's like cyphered text'''
+    if algo == ALGO_VIGENERE:
+        MAX = 2000
+        MIN = 500
+        NB_ELEMENTS = 5
+        if len(text)<MIN:
+            size = 2
+        dic = {}
+        index = 0
+        alpha_index = 0
+        limit = len(text)
+        if limit>MAX:
+            limit = MAX
+        while ((index + size) < limit):
+            item = text[index: index+size]
+            if item in dic:
+                dic[item].append(index)
+            else:
+                dic[item] = [alpha_index]
+            alpha_index += 1
+            index += 1
+        res = [i for i in dic.values() if len(i)>1]
+        nRes = []
+        for lst in res:
+            cLst = []
+            for i in range(len(lst) - 1):
+                nRes.extend(set(_factorize(lst[i+1] - lst[i])))
+        ens = set(nRes)
+        dic = {}
+        res = [];
+        for i in ens:
+            dic[i] = nRes.count(i)
+            res.append((nRes.count(i), i))
+        res.sort()
+        res.reverse()
+        if res:
+            if size<4:
+                return int(max(i[1] for i in res[:NB_ELEMENTS]))
+            else:
+                return int(res[0][1])
+        else:
+            return find_key_length(text, algo, size-1, nb_values)
+
+def _factorize(n):
+    dividends = [n]
+    for i in range(2, int(n**0.5) + 1):
+        if (n%i == 0):
+            dividends.append(i)
+            dividends.append(n/i)
+    return dividends
+
+LANGUAGES = {
+            "fr": "French",
+            "en": "English",
+            "de": "Deutsch",
+            "es": "Spanish",
+            "fi": "Finnish",
+            "it": "Italian",
+            "nl": "Dutch",
+            "pe": "Spanish-Peru"
+            }
+ICS = {
+    "fr": 0.0778,
+    "es": 0.0770,
+    "de": 0.0762,
+    "en": 0.0667,
+    "fi": 0.0737,
+    "nl": 0.0798,
+    "it": 0.0738,
+    "pe": 0.0745}
+
+STATS = {
+        "fr": ["E", "A", "S", "T", "I", "R", "N", "U", "L", "O",
+         "D", "M", "C", "P", "V", "H", "G", "F", "B", "Q", "J",
+          "X", "Z", "Y", "K", "W"],
+        "en": ["E", "T", "A", "O", "I", "N", "S", "H", "R", "L",
+         "D", "U", "C", "M", "W", "Y", "F", "G", "P", "B", "V",
+          "K", "J", "X", "Q", "Z"],
+        "de": ["E", "N", "I", "S", "R", "A", "T", "D", "H", "U",
+         "L", "C", "G", "M", "O", "B", "W", "F", "K", "Z", "V",
+          "P", "J", "Y", "X", "A"],
+        "es": ["E", "A", "O", "S", "N", "R", "I", "L", "D", "U",
+         "T", "C", "M", "P", "B", "H", "Q", "Y", "V", "G", "F",
+          "J", "Z", "X", "K", "W"],
+        "pe": ["E", "A", "O", "S", "R", "I", "T", "M", "N", "U",
+         "D", "C", "P", "L", "V", "H", "A", "G", "F", "B", "Z",
+          "J", "X", "K", "W", "Y"],
+        "fi": ["A", "I", "T", "N", "E", "S", "L", "O", "K", "U",
+         "M", "H", "V", "R", "J", "P", "Y", "D", "G", "C", "B",
+          "F", "W", "Z", "X", "A"],
+        "ca": ["E", "A", "S", "R", "L", "T", "I", "N", "O", "U",
+         "M", "D", "C", "P", "V", "B", "Q", "G", "F", "H", "X",
+          "J", "Y", "K", "Z", "W"],
+        "cs": ["E", "O", "A", "N", "T", "L", "S", "I", "V", "D",
+         "K", "R", "M", "P", "U", "Y", "H", "J", "C", "B", "Z",
+          "G", "F", "X", "W", "Q"],
+        "af": ["E", "I", "N", "A", "S", "R", "O", "D", "T", "L",
+         "G", "K", "V", "U", "M", "W", "H", "B", "P", "Y", "F",
+          "J", "C", "Z", "X", "Q"],
+        "da": ["E", "R", "N", "T", "D", "A", "I", "S", "L", "G",
+         "O", "M", "K", "V", "H", "F", "U", "B", "P", "J", "Y",
+          "C", "W", "X", "Z", "Q"],
+        "pe": ["E", "A", "O", "S", "R", "I", "T", "M", "N", "U",
+         "D", "C", "P", "L", "V", "H", "Q", "G", "F", "B", "Z",
+          "J", "X", "K", "W", "Y"],
+        "nl": ["E", "N", "A", "T", "I", "O", "R", "D", "S", "L",
+         "H", "G", "K", "M", "V", "U", "J", "W", "Z", "P", "B",
+          "C", "F", "Y", "X", "Q"],
+        "it": ["E", "A", "I", "O", "N", "T", "R", "L", "S", "C",
+         "D", "U", "P", "M", "V", "G", "H", "B", "F", "Z", "Q"]}
+
+
+def square():
+    '''returns a vigenere's square, where item[i][k] represents the
+    key-char that have been used to cypher i and have k'''
+    lst = list(string.ascii_uppercase)
+    map = {}
+    for c in lst:
+        tmp = {}
+        for i in lst:
+            tmp[_char_shift(c, i)] = i
+        map[c] = tmp
+    return map
+
+r_square = square()
+
+def order(lst, limit=5):
+    '''returns in order the <limit> most appearing chars'''
+    ords = []
+    for i in string.ascii_uppercase:
+        ords.append((lst.count(i), i))
+    ords.sort()
+    ords.reverse()
+    return [item[1] for item in ords][:limit]
+
+def find_language(text):
+    '''determines the language of text using its IC'''
+    ic = get_IC(text)
+    res = []
+    for i, k in ICS.items():
+        res.append((abs(ic-k), i))
+    res.sort()
+    return res[0][1]
+
+
+def _find_k(most_chars, language, limit=5, probas=((3, 0), (2, 1), (2, 2))):
+    lst = []
+    for item in probas:
+        for i in range(item[0]):
+            lst.append( r_square[STATS[language][item[1]]][most_chars[i]])
+    res = []
+    for c in lst:
+        res.append((_count(c, most_chars, language, limit), c))
+    res = _get_mosts(res)
+    return res
+
+def _get_mosts(lst):
+    lst.sort()
+    lst.reverse()
+    res = []
+    for val, item in lst:
+        if val==lst[0][0]:
+            res.append(item)
+    return res
+
+def _process_hack_vigenere(text, key_length, language, limit=10, ratio=0.75):
+    '''return a possibly key for the given text,
+    the key's length == key_length'''
+    groups = list(utils.grouper2(text, key_length))
+    keys = []
+    result = []
+    tmp_limit = limit
+    for i in range(key_length):
+        limit = tmp_limit
+        char = []
+        ls =  []
+        for item in groups:
+            if len(item)>i:
+                ls.append(item[i])
+        most_chars = order(ls, limit=26)
+        vars = []
+        #this tuple represents the probabilities:
+        #use two times the first char, 1 time the second...
+        probas = ((6, 0), (1, 1))
+        for item in probas:
+            for i in range(item[0]):
+                vars.append( r_square[STATS[language][item[1]]][most_chars[i]])
+        lst = []
+        for k in vars:
+            cur = "".join(_process_vigenere(STATS[language][:limit], k))
+            if get_ratio(cur, most_chars[:limit]) >= ratio:
+                if k not in char:
+                    char.append(k)
+
+        ### NEW LIMIT
+        if not char:
+            lst_keys = []
+            limit = 10
+            lst = _find_k(most_chars, language, limit)
+            lst_keys.extend(lst)
+
+            limit = 20
+            lst = []
+            for c in vars:
+                lst.append((_count(c, most_chars, language, limit), c))
+            lst = _get_mosts(lst)
+            lst_keys.extend(lst)
+            lst = []
+            for c in set(lst_keys):
+                lst.append((lst_keys.count(c), c))
+            lst = _get_mosts(lst)
+            char.append(lst[0])
+        keys.append(vars)
+        result.append(char)
+    return result
+
+
+def _clear(text):
+    '''return a upper-case text, just containing ascii letters'''
+    return "".join((c.upper() for c in text if c in string.ascii_letters))
+
+
+def do_hack(text, algo, key_length=None, language=None):
+    c_text = set(text)
+    c_allowed = set(WHITESMAP)
+    c_allowed.update(string.ascii_uppercase)
+    if not (c_text <= c_allowed):
+        raise ValueError("Text contains unallowed chars (only uppercase "
+                        "chars, digits and poctuation): '{}'!"
+                        "".format("', '".join(sorted(c_text - c_allowed))))
+    if algo==ALGO_VIGENERE:
+        if not key_length:
+            key_length = find_key_length(text, algo)
+        if not language:
+            language = find_language(text)
+        return "".join(i[0] for i in _process_hack_vigenere(_clear(text),
+                        key_length, language))
+
+
+
+
+
+#################### main ###############
 def main():
     # The argparse is much nicer than directly using sys.argv...
     # Try 'program.py -h' to see! ;)
@@ -344,7 +647,7 @@ def main():
                          choices=_algos.values(), default=_algos['v'],
                          help="Which algorithm to use for decyphering.")
 
-    sparsers.add_parser('about', help="About VigenereÃ¢â‚¬Â¦")
+    sparsers.add_parser('about', help="About VigenereÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦")
 
     args = parser.parse_args()
     utils.DEBUG = args.debug
@@ -402,6 +705,8 @@ def main():
     elif args.command == "about":
         print(__about__)
         return
+
+
 
 
 if __name__ == "__main__":
