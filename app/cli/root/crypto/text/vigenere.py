@@ -243,13 +243,14 @@ class Vigenere(app.cli.Tool):
                 options = []
                 for i, lang in enumerate(languages):
                     if lang=="fr":
-                        option = (lang, "$%d %s" % (i, languages[lang]), "")
+                        option = (lang, "$%d %s" % (i+1, languages[lang]), "")
                     else:
-                        option = (lang, "*%d %s" % (i, languages[lang]), "")
+                        option = (lang, "*%d %s" % (i+1, languages[lang]), "")
                     options.append(option)
                 language = ui.get_choice("The language is", options)
             if mode in (1, 2):
-                key_length = ui.get_data("The key's length is ", ui.INT)
+                key_length = ui.get_data("The key's length is ",
+                        sub_type=ui.INT)
             try:
                 key = vigenere.do_hack(txt, algo, key_length, language)
                 ui.text_output("Text successfully decyphered",
