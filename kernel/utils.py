@@ -392,6 +392,25 @@ def prime_range(end, start=2):
 
 
 ###############################################################################
+# CHARS - STRINGS
+###############################################################################
+def char_shift(c, base, modulo, shift, reverse=False):
+    """
+    Shift char c.
+    base, modulo and shift might be either an integer or a char.
+    """
+    if isinstance(base, str) and len(base) == 1:
+        base = ord(base)
+    if isinstance(modulo, str) and len(modulo) == 1:
+        modulo = ord(modulo) - base
+    if isinstance(shift, str) and len(shift) == 1:
+        shift = ord(shift) - base
+    if reverse:
+        return chr(((ord(c) - base - shift) % modulo) + base)
+    return chr(((ord(c) - base + shift) % modulo) + base)
+
+
+###############################################################################
 # CHARSETS - CHARMAPS
 ###############################################################################
 # Common charsets…
@@ -401,7 +420,6 @@ ASCII7 = "ascii7"
 EBCDIC = "cp500"
 
 DEFAULT = UTF8
-
 
 
 # Western European to upper ASCII.

@@ -174,10 +174,6 @@ def square_max_key(text):
     return int(len(text.replace(' ', '')) ** 0.5)
 
 
-def _char_shift(c, base, modulo, shift):
-    return chr(((ord(c) - base + shift) % modulo) + base)
-
-
 def _process_progressive(text, key, method, _reverse=False):
     """
     (De)cypher message to progressive caesar (increasing offset).
@@ -200,14 +196,14 @@ def _process_progressive(text, key, method, _reverse=False):
     if ' ' in text:
         ret = []
         for w in text.split():
-            ret.append("".join(_char_shift(c, base, modulo, delta * s)
+            ret.append("".join(utils.char_shift(c, base, modulo, delta * s)
                                for c in w))
             delta = (delta + key) % modulo
         return " ".join(ret)
     else:  # Mono-word...
         ret = []
         for c in text:
-            ret.append(_char_shift(c, base, modulo, delta * s))
+            ret.append(utils.char_shift(c, base, modulo, delta * s))
             delta = (delta + key) % modulo
         return "".join(ret)
 
@@ -261,7 +257,7 @@ def do_cypher_basic(text, key):
     # Let’s use a dict here (as it’s a constant one to one mapping).
     base = ord('A')
     modulo = ord('Z') - base + 1
-    _map = {c: _char_shift(c, base, modulo, key) for c in set(text)}
+    _map = {c: utils.char_shift(c, base, modulo, key) for c in set(text)}
     _map[' '] = ' '
     return "".join(_map[c] for c in text)
 
