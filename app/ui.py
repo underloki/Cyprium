@@ -45,6 +45,7 @@ class UI:
     # Sub-types of get_data.
     # XX1 sub-types are lists.
     STRING = 0        # Default...
+    STR_LIST = 1
     UPPER = 10        # Only upper chars.
     LOWER = 20        # Only lower chars.
     PATH = 30         # Check is format-valid, and autocompletion?
@@ -143,6 +144,26 @@ class UI:
                              "".format(data, ", ".join(set(data) - charset)))
 
     @staticmethod
+    def validate_codecs(data):
+        """
+        Helper callback used to validate a codec (or iterable of codecs) input.
+        """
+        import codecs
+        if isinstance(data, str):
+            tdata = (data,)
+        else:
+            tdata = data
+        err = []
+        try:
+            for dt in tdata:
+                codecs.lookup(dt)
+            return True, data, ""
+        except Exception as e:
+            err.append(str(e))
+        return (False, data, "“{}” contains invalid encoding(s) ({})."
+                             "".format(tdata, ", ".join(err)))
+
+    @staticmethod
     def validate_number_range(data, minnbr, maxnbr):
         """
         Helper callback used to validate a number (or iterable of numbers)
@@ -232,7 +253,9 @@ class UI:
                    validate=None, validate_kwargs={}):
         """Helper to get some text, either from console or from a file."""
         idt = self.INDENT * indent
-        if sub_type == self.UPPER:
+        if sub_type == self.STR_LIST:
+            prompt = "(Texts, ','-separated): "
+        elif sub_type == self.UPPER:
             prompt = "(Text, uppercase): "
         elif sub_type == self.LOWER:
             prompt = "(Text, lowercase): "
@@ -249,19 +272,13 @@ class UI:
         else:
             prompt = "(Text): "
         while 1:
-            if no_file:
+            if not no_file:
+                options = [("console", "directly from $console", ""),
+                           ("file", "or reading a *file", "")]
+                answ = self.get_choice(msg, options, indent=indent, start_opt="(",
+                                       end_opt=")", oneline=True)
+            if no_file or answ == "console":
                 return self.get_data(" ".join((msg, prompt)), indent=indent,
-                                     sub_type=sub_type, allow_void=allow_void,
-                                     completion=completion,
-                                     completion_kwargs=completion_kwargs,
-                                     validate=validate,
-                                     validate_kwargs=validate_kwargs)
-            options = [("console", "directly from $console", ""),
-                       ("file", "or reading a *file", "")]
-            answ = self.get_choice(msg, options, indent=indent, start_opt="(",
-                                   end_opt=")", oneline=True)
-            if answ == "console":
-                return self.get_data(prompt, indent=indent,
                                      sub_type=sub_type, allow_void=allow_void,
                                      completion=completion,
                                      completion_kwargs=completion_kwargs,

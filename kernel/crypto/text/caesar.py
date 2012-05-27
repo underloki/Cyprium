@@ -156,14 +156,14 @@ DIC_CHARMAP = utils.WE2UASCII_CHARMAP
 TXT_ALGOS_MAP = {ALGO_BASIC: "Basic",
                  ALGO_PROGRESS: "Progressive",
                  ALGO_SQUARE: "Square"}
-TXT_ALGO_MAP_MAXLEN = max(len(n) for n in TXT_ALGOS_MAP.values())
+TXT_ALGOS_MAP_MAXLEN = max(len(n) for n in TXT_ALGOS_MAP.values())
 TXT_METHODS_MAP = {BASIC_BASIC: "Basic",
                    PROGRESS_GEOMETRIC: "Geometric",
                    PROGRESS_SHIFT: "Shifted",
                    SQUARE_SQUARE: "Squarish",
                    SQUARE_CONSTWIDTH: "Constant width",
                    SQUARE_CONSTHIGH: "Constant high"}
-TXT_MATHODS_MAP_MAXLEN = max(len(n) for n in TXT_METHODS_MAP.values())
+TXT_METHODS_MAP_MAXLEN = max(len(n) for n in TXT_METHODS_MAP.values())
 TXT_HACKSOLUTIONS_PATTERN = "Match: {:<4.2}  Lang: {: <6}  ALGO: " \
                             "{: <{alg_len}}  METHOD: {: <{met_len}}  " \
                             "KEY: {: > 6}"
@@ -529,6 +529,12 @@ def main():
     dparser.add_argument('--shift', action='store_true',
                          help="Progressive algo only, use shift mode instead "
                               "of usual geometric one.")
+    dparser.add_argument('--constwidth', action='store_true',
+                         help="Square algo only, use constant width grid "
+                              "instead squarish one.")
+    dparser.add_argument('--consthigh', action='store_true',
+                         help="Square algo only, use constant high grid "
+                              "instead squarish one.")
 
     sparsers.add_parser('about', help="About Caesar…")
 
@@ -540,7 +546,7 @@ def main():
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            if args.algo == ALGO_PROGRESSIVE:
+            if args.algo == ALGO_PROGRESS:
                 method = PROGRESS_GEOMETRIC
                 if args.shift:
                     method = PROGRESS_SHIFT
@@ -571,7 +577,7 @@ def main():
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
-            if args.algo == ALGO_PROGRESSIVE:
+            if args.algo == ALGO_PROGRESS:
                 method = PROGRESS_GEOMETRIC
                 if args.shift:
                     method = PROGRESS_SHIFT
@@ -590,11 +596,11 @@ def main():
                 out = sorted(out, key=lambda o: o[5], reverse=True)
                 if not args.ofile:
                     out = out[:10]
-                out = "\n".join((TXT_HACKSOLUTIONS_PATTERN + "\n    {}"
-                                 "".format(avg, lng, TXT_ALGOS_MAP[algo],
-                                           TXT_METHODS_MAP[method], key, res,
-                                           alg_len=TXT_ALGOS_MAP_MAXLEN,
-                                           met_len=TXT_METHODS_MAP_MAXLEN)
+                fmt = TXT_HACKSOLUTIONS_PATTERN + "\n    {}"
+                out = "\n".join((fmt.format(avg, lng, TXT_ALGOS_MAP[algo],
+                                            TXT_METHODS_MAP[method], key, res,
+                                            alg_len=TXT_ALGOS_MAP_MAXLEN,
+                                            met_len=TXT_METHODS_MAP_MAXLEN)
                                  for algo, method, key, res, lng, avg in out))
             if args.ofile:
                 args.ofile.write(out)

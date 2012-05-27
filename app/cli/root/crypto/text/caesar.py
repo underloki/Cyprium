@@ -132,9 +132,9 @@ class Caesar(app.cli.Tool):
         t = sorted(out, key=lambda o: o[5], reverse=True)
         out = []
         algos = caesar.TXT_ALGOS_MAP
-        alg_len = caesar.TXT_ALGO_MAP_MAXLEN
+        alg_len = caesar.TXT_ALGOS_MAP_MAXLEN
         methods = caesar.TXT_METHODS_MAP
-        met_len = caesar.TXT_MATHODS_MAP_MAXLEN
+        met_len = caesar.TXT_METHODS_MAP_MAXLEN
         pattern = caesar.TXT_HACKSOLUTIONS_PATTERN
         for algo, method, key, res, lng, avg in t:
             out += (pattern.format(avg, lng, algos[algo],
@@ -339,7 +339,7 @@ class Caesar(app.cli.Tool):
                                 validate=v, validate_kwargs=vkw)
 
             algos = None
-            methods = None  # Always tray all methods!
+            methods = None  # Always try all methods!
             keys = None  # Keys common to all algos.
 
             options = ((caesar.ALGO_BASIC, "*basic", ""),
@@ -447,9 +447,9 @@ class Caesar(app.cli.Tool):
                 t = sorted(out, key=lambda o: o[5], reverse=True)
                 out = []
                 algos = caesar.TXT_ALGOS_MAP
-                alg_len = caesar.TXT_ALGO_MAP_MAXLEN
+                alg_len = caesar.TXT_ALGOS_MAP_MAXLEN
                 methods = caesar.TXT_METHODS_MAP
-                met_len = caesar.TXT_MATHODS_MAP_MAXLEN
+                met_len = caesar.TXT_METHODS_MAP_MAXLEN
                 pattern = caesar.TXT_HACKSOLUTIONS_PATTERN
                 for algo, method, key, res, lng, avg in t:
                     out += (pattern.format(avg, lng, algos[algo],

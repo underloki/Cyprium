@@ -55,7 +55,7 @@ class MatchDic(object):
 
     # Used to ensure cached data was cached with same version.
     # Change that when modifying parse code!
-    _hash_salt = b"1.0.0"
+    _hash_salt = b"1.1.0"
 
     def __init__(self, word_gen):
         """
@@ -81,18 +81,22 @@ class MatchDic(object):
             txt = "".join(c for c in txt if c in self.charset)
         elif self.charmap:
             txt = txt.translate(self.charmap)
+        if self.func:
+            txt = self.func(txt)
         if not self.do_minmax_len or self.minlen <= len(txt) < self.maxlen:
             return txt
         # else return None.
 
-    def init(self, ids=None, charset=None, charmap=None, minlen=None,
-             maxlen=None):
+    def init(self, ids=None, charset=None, charmap=None, func=None,
+             minlen=None, maxlen=None):
         """
         Inits this MatchDic object, by getting all words generated from set
         generator for the given ids (or all, if None).
         It will optionnaly apply to each generated word, before storing it:
-            * charset and charmap operations (i.e. removing from all char
+            * charset and charmap operations (i.e. removing all chars
               not in charset, and then calling str.translate with charmap).
+            * If func is not None, it must be a callable taking one str arg,
+              and returning an str (can be e.g. str.lower()...).
             * length operation (i.e. rejecting words smaller than minlen
               (defaults to 1) or longer than maxlen (defaults to 32767).
         """
@@ -104,6 +108,7 @@ class MatchDic(object):
             self.charmap = str.maketrans(charmap)
         else:
             self.charmap = None
+        self.func = func
         if minlen or maxlen:
             if not minlen:
                 minlen = 1
@@ -113,7 +118,9 @@ class MatchDic(object):
         self.maxlen = maxlen
         self.do_minmax_len = bool(minlen or maxlen)
         if DO_CACHE:
+            # XXX Eeek! func.__name__ is weak. :(
             hsh_param = pickle.dumps((self.charset, self.charmap,
+                                      func.__name__ if func else None,
                                       minlen, maxlen))
 
         if ids == None:
