@@ -217,35 +217,86 @@ class Gray(app.cli.Tool):
             txt = ui.text_input("Please choose some binary numbers text")
 
             # Get codec to use.
-            options = [(gray.DEFAULT, "$utf-8", ""),
+            options = [(gray.DEFAULT, "*utf-8", ""),
                        (gray.ASCII, "*ascii", ""),
-                       (None, "or specify another *codec", "")]
-            codec = ui.get_choice("Do you want to use", options,
-                                  oneline=True)
-            if codec is None:
-                codec = ui.get_data("Type the codec you want to use "
-                                    "(e.g. 'latin-9'): ")
+                       (..., "a$ll", ""),
+                       (None, "and/or specify *others", "")]
+            codecs = set(ui.get_choice("Which codecs do you want to try",
+                                       options, oneline=True,
+                                       multichoices=','))
+            if ... in codecs:
+                codecs = set(utils.ALL_CODECS)
+            elif None in codecs:
+                v = ui.validate_codecs
+                codecs.remove(None)
+                codecs |= set(ui.text_input("Type the codec you want to use "
+                                            "(e.g. 'latin-9'), or nothing to "
+                                            "use all: ",indent=1,
+                                            no_file=True, sub_type=ui.STR_LIST,
+                                            validate=v, validate_kwargs={},
+                                            allow_void=True) or
+                              utils.ALL_CODECS)
 
             # Get word length.
             options = [(3, "*three", ""),
                        (4, "*four", ""),
-                       (5, "f$ive", ""),
+                       (5, "f*ive", ""),
                        (8, "*height (byte)", ""),
-                       (None, "or an*other word length", "")]
-            length = ui.get_choice("Do you want to use", options, oneline=True)
-            if length is None:
-                length = ui.get_data("Type the word length used to encode: ",
-                                     sub_type=ui.INT)
+                       (..., "$all possible", ""),
+                       (None, "and/or *others", "")]
+            lengths = set(ui.get_choice("Which word lengths do you want to "
+                                        "try", options, oneline=True,
+                                        multichoices=','))
+            if ... in lengths:
+                lengths = None
+            elif None in lengths:
+                def v(data, ln):
+                    err = []
+                    for dt in data:
+                        if ln % dt:
+                            err.append(str(dt))
+                    if err:
+                        return (False, data, "“{}” contains invalid lengths "
+                                             "({}).".format(data,
+                                                            ", ".join(err)))
+                    return True, data, ""
+                kwargs = {"ln": len(txt)}
+                lengths.remove(None)
+                lengths |= set(ui.text_input("Type the word lengths you want "
+                                             "to use, or nothing to try all "
+                                             "possible: ",indent=1,
+                                             no_file=True,
+                                             sub_type=ui.INT_LIST,
+                                             validate=v,
+                                             validate_kwargs=kwargs,
+                                             allow_void=True) or ())
+                if not lengths:
+                    lengths = None
 
             try:
-                ui.text_output("Data successfully decypherd",
-                               gray.decypher(txt, codec, length),
-                               "The hidden data is")
+                out = gray.decypher(txt, codecs, lengths)
             except Exception as e:
                 if utils.DEBUG:
                     import traceback
                     traceback.print_tb(sys.exc_info()[2])
                 ui.message(str(e), level=ui.ERROR)
+
+            if codecs and len(codecs) == 1 and lengths and len(lengths) == 1:
+                ui.text_output("Text successfully decyphered", out,
+                               "The decyphered text is")
+            else:
+                t = sorted(out, key=lambda o: o[4], reverse=True)
+                out = []
+                cdc_len = gray.TXT_CODECS_MAXLEN
+                len_len = gray.TXT_LENGTHS_MAXLEN
+                pattern = gray.TXT_HACKSOLUTIONS_PATTERN
+                for codec, length, res, lng, avg in t:
+                    out += (pattern.format(avg, lng, codec, length,
+                                           cdc_len=cdc_len, len_len=len_len),
+                            ui.INDENT + res)
+                ui.text_output("Text successfully decyphered", out,
+                               "Best solutions found are", maxlen=200,
+                               multiline=True, multiblocks=20)
 
             options = [("redo", "*decypher another data", ""),
                        ("quit", "or go back to *menu", "")]

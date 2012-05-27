@@ -31,6 +31,7 @@
 
 import sys
 import os
+import codecs as mod_codecs
 
 # In case we directly run that file, we need to add the kernel to path,
 # to get access to generic stuff in kernel.utils!
@@ -39,6 +40,8 @@ if __name__ == '__main__':
                                                  "..", "..", "..")))
 
 import kernel.utils as utils
+import kernel.hunspell as hunspell
+import kernel.matchdic as matchdic
 
 __version__ = "0.1.0"
 __date__ = "2012/04/27"
@@ -76,13 +79,36 @@ Current execution context:
 
 DEFAULT = utils.UTF8
 ASCII = utils.ASCII
+ALL = "ALL_CODECS"
+
+# Used to adapt dics, for hacking.
+DIC_CHARSET = utils.WE2UASCII_CHARSET
+DIC_CHARMAP = utils.WE2UASCII_CHARMAP
+
+# Printing helpers.
+TXT_CODECS_MAXLEN = max(len(c) for c in utils.ALL_CODECS)
+TXT_LENGTHS_MAXLEN = 9  # Should be more than enough!
+TXT_HACKSOLUTIONS_PATTERN = "Match: {:<4.2}  Lang: {: <6}  CODEC: " \
+                            "{: <{cdc_len}}  LENGTH: {: <{len_len}}"
 
 
 def bin2gray_n(n):
     """
     Generates a mapping (binary code: gray code (text)), for words of length n.
+    Note: if n is too large (> 8), returns a pseudo-dict, to save mem space!
     """
+    class B2G(object):
+        def __init__(self, n, fmt):
+            self.n = n
+            self.fmt = fmt
+        def __getitem__(self, k):
+            if 0 > k > 2**self.n:
+                raise KeyError
+            return self.fmt.format((k >> 1) ^ k)
+
     fmt = "{{:0>{}b}}".format(n)
+    if n > 8:
+        return B2G(n, fmt)
     return {i: fmt.format((i >> 1) ^ i) for i in range(2**n)}
 
 
@@ -90,8 +116,26 @@ def gray2bin_n(n):
     """
     Generates a mapping (gray code (text): binary code (text)),
     for words of length n.
+    Note: if n is too large (> 8), returns a pseudo-dict, to save mem space!
     """
+    class G2B(object):
+        def __init__(self, n, fmt):
+            self.n = n
+            self.fmt = fmt
+        def __getitem__(self, k):
+            # XXX This is *very* ugly, but see no other way for now. :/
+            k = int(k, 2)
+            shift = 1
+            while shift < self.n:
+                k = k ^ (k >> shift)
+                shift *= 2
+            if 0 > k > 2**self.n:
+                raise KeyError
+            return self.fmt.format(k)
+
     fmt = "{{:0>{}b}}".format(n)
+    if n > 8:
+        return G2B(n, fmt)
     return {fmt.format((i >> 1) ^ i): fmt.format(i) for i in range(2**n)}
 
 
@@ -141,22 +185,74 @@ def do_decypher(text, codec=DEFAULT, length=8):
     return bytes.decode(codec)
 
 
-def decypher(text, codec=DEFAULT, length=8):
+def do_hack(text, codecs=None, lengths=None):
+    """
+    Brute-force hacking of Gray-cyphered text...
+    """
+    h = hunspell.Hunspell()
+    h.load_dic_zip(hunspell.ZIP_DICS)
+    m = matchdic.MatchDic(h)
+#    m.init(charset=DIC_CHARSET, charmap=DIC_CHARMAP, minlen=3)
+    m.init(charset=None, charmap=None, func=str.lower, minlen=3)
+
+    def _gen(text, codecs, lengths):
+        if codecs:
+            cds = set(codecs)
+        else:
+            cds = set(utils.ALL_CODECS)
+        lntxt = len(text)
+        lns = set(i for i in range(2, lntxt + 1) if not lntxt % i)
+        if lengths:
+            lns &= set(lengths)
+        for c in cds:
+            for l in lns:
+                try:
+                    yield (c, l, do_decypher(text, c, l))
+                except UnicodeError:
+                    pass
+    generator = _gen(text, codecs, lengths)
+
+    slice_len = 50
+    for codec, length, res in generator:
+        # Make at most three probes in results...
+        slice_nbr = max(1, min(3, (len(res) + slice_len - 1) // slice_len))
+        slice_step = max((len(res) - slice_len) // slice_nbr, 1)
+        # The first probe determines the language!
+        maxmatch = m.find_best_dic(res[:slice_len])
+        lng = max(maxmatch, key=lambda k: maxmatch[k])
+        avg = maxmatch[lng]
+        for i in range(slice_step, slice_nbr * slice_step, slice_step):
+            avg += m.get_match_level(lng, res[i:i + slice_len])
+        avg /= slice_nbr
+        yield (codec, length, res, lng, avg)
+
+
+def decypher(text, codecs=DEFAULT, lengths=8):
     """Just a wrapper around do_decypher, with some checks."""
     # Test length (*without* the spaces!).
     text = text.replace(' ', '')
     c_data = set(text)
 
-    if len(text) % length != 0:
-        raise ValueError("No integer number of bytes, please add some "
-                         "bits, to get a total length multiple of {}."
-                         "".format(length))
     # Get allowed digits.
     c_allowed = utils.get_allowed_digits(2)
     if not (c_data <= c_allowed):
         raise ValueError("Only binary digits and spaces are allowed, no '{}'!"
                          .format("', '".join(sorted(c_data - c_allowed))))
-    return do_decypher(text, codec, length)
+
+    if ((codecs is None or (not isinstance(codecs, str) and
+                            getattr(codecs, "__iter__", None))) and
+        (lengths is None or getattr(lengths, "__iter__", None))):
+        return do_hack(text, codecs, lengths)
+
+    if len(text) % lengths != 0:
+        raise ValueError("No integer number of bytes, please add some "
+                         "bits, to get a total length multiple of {}."
+                         "".format(lengths))
+    try:
+        mod_codecs.lookup(codecs)
+    except:
+        raise ValueError("Invalid {} codec.".format(codecs))
+    return do_decypher(text, codecs, lengths)
 
 
 def main():
@@ -191,10 +287,9 @@ def main():
     dparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
                          help="A file into which write the decyphered text.")
     dparser.add_argument('-d', '--data', help="The text to decypher.")
-    dparser.add_argument('-c', '--codec', default=DEFAULT,
+    dparser.add_argument('-c', '--codec', default=None,
                          help="The codec to use for decyphering.")
-    dparser.add_argument('-l', '--length', type=int,
-                         default=8,
+    dparser.add_argument('-l', '--length', type=int, default=0,
                          help="Which word length is the Gray code "
                               "(defaults to 8, one byte).")
 
@@ -230,7 +325,20 @@ def main():
             data = args.data
             if args.ifile:
                 data = args.ifile.read()
+            if args.length == 0:
+                args.length = None
+                if args.codec:
+                    args.codec = (args.codec,)
             out = decypher(data, args.codec, args.length)
+            if args.length is None:
+                out = sorted(out, key=lambda o: o[4], reverse=True)
+                if not args.ofile:
+                    out = out[:10]
+                fmt = TXT_HACKSOLUTIONS_PATTERN + "\n    {}"
+                out = "\n".join((fmt.format(avg, lng, codec, length, res,
+                                            cdc_len=TXT_CODECS_MAXLEN,
+                                            len_len=TXT_LENGTHS_MAXLEN)
+                                 for codec, length, res, lng, avg in out))
             if args.ofile:
                 args.ofile.write(out)
             else:
