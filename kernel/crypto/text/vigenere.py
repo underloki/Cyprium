@@ -44,13 +44,47 @@ if __name__ == '__main__':
 import kernel.utils as utils
 
 __version__ = "0.5.0"
-__date__ = "2012/05/22"
+__date__ = "2012/05/31"
 __python__ = "3.x"  # Required Python version
 __about__ = ""\
 '''Cyprium.Vigenere version {} ({}).
 Licence GPL3
 Software distributed on the site: http://thehackademy.fr
 
+Vigenere is a tool that allows you to cypher a text into another one,
+using the vigenere-cypher. It also contains 3 variants:
+    Autoclave: uses the plain text to make the key so much longer
+as the plain text.
+
+    Beaufort: uses classic vigenere but process the key-letter as clear
+text and the clear-text letter as key.
+
+    Gronsfeld: uses digits, where the classic vigenere uses letters.
+it uses a string of digits as key.
+
+Allowed chars are ascii-letters, digits and ascii-punctuation
+
+Example
+    text = "AN HACKADEMY"
+    key = "KEY"
+    cypher(text, key, ALGO_VIGENERE)
+            = "KR FKGIKHCWC"
+
+    cypher(text, key, ALGO_BEAUFORT)
+            = "KR RKCOKBUYG"
+
+    cypher(text, key, ALGO_AUTOCLAVE)
+            = "KR FAPRAFOMB"
+
+    cyphper(text, "789", ALGO_GRONSFELD)
+            = "HV QHKTHLNTG"
+
+    An option "with_spaces" determines if spaces and punctuation should
+be store.
+    cypher(text, key, ALGO_VIGENERE, with_spaces=False)
+        = "KRFKGIKHCWC"
+
+decypher methods haven the same parameters.
 Current execution context:
 Operating System: {}
 Python version: {}
@@ -63,7 +97,7 @@ ALGO_GRONSFELD = 3
 ALGO_BEAUFORT = 4
 
 # Maps
-WHITESMAP = set("0123456789.,;!?+-*/ ")
+WHITESMAP = set(string.punctuation + string.digits)
 
 def clean(text, map=None, spaces=False):
     '''clean a text, using the charmap <map> and return:
@@ -125,11 +159,8 @@ def _process_vigenere(text, key, decrypt=False):
     limit = len(key)
     res = []
     for c in text:
-        if c in WHITESMAP:
-            yield c
-        else:
-            yield _char_shift(c, key[index], negativ=decrypt)
-            index = (index + 1) % limit
+        yield _char_shift(c, key[index], negativ=decrypt)
+        index = (index + 1) % limit
 
 
 def _process_autoclave(text, key, decrypt=False):
@@ -190,11 +221,8 @@ def _process_beaufort(text, key, decrypt=False):
     limit = len(key)
     res = []
     for c in text:
-        if c in WHITESMAP:
-            yield c
-        else:
-            yield _char_shift(key[index], c, True)
-            index = (index + 1) % limit
+        yield _char_shift(key[index], c, True)
+        index = (index + 1) % limit
 
 
 def do_cypher_vigenere(text, key):
@@ -221,7 +249,7 @@ def cypher(text, key, algo, with_spaces=True):
     '''Just a wrapper around do_cypher_xxx, whit some checks.'''
     if not text:
         raise ValueError("No text given!")
-    #text = clean(text, utils.WE2UASCII_CHARMAP)
+    text, spaces = clean(text, spaces=True)
     c_text = set(text)
     c_allowed = set(WHITESMAP)
     c_allowed.update(utils.WE2UASCII_CHARSET)
@@ -249,7 +277,7 @@ def cypher(text, key, algo, with_spaces=True):
         raise ValueError("Unknow algorithm specified ({})."
                         "".format(algo))
     if with_spaces:
-        return "".join(res_gen)
+        return "".join(pack(list(res_gen), spaces))
     else:
         return "".join(c for c in res_gen if c != " ")
 
@@ -285,7 +313,7 @@ def decypher(text, key, algo, with_spaces=True):
         raise ValueError("Text contains unallowed chars (only uppercase "
                         "chars, digits and poctuation): '{}'!"
                         "".format("', '".join(sorted(c_text - c_allowed))))
-
+    text, spaces = clean(text, spaces=True)
     c_key = set(key)
     if algo in (ALGO_VIGENERE, ALGO_AUTOCLAVE, ALGO_BEAUFORT):
         c_allowed = set(string.ascii_uppercase)
@@ -308,23 +336,27 @@ def decypher(text, key, algo, with_spaces=True):
         raise ValueError("Unknow algorithm specified ({})."
                         "".format(algo))
     if with_spaces:
-        return "".join(res_gen)
+        return "".join(pack(list(res_gen), spaces))
     else:
         return "".join(c for c in res_gen if c != " ")
 
 
 ############ Hack Section ###############
-def _count(key, most, lang, limit=5):
+def _count(key, most, lang, limit=5, map=None):
+    if not map:
+        map = reverse_v_square
     lst = []
     for c in most[:limit]:
-        lst.append(r_square[key][c])
+        lst.append(map[key][c])
     return get_ratio(lst, STATS[lang][:limit])
 
 
-def _compare(key, most, lang, limit=5):
+def _compare(key, most, lang, limit=5, map=None):
+    if not map:
+        map = reverse_v_square
     lst = []
     for c in most[:limit]:
-        lst.append(r_square[key][c])
+        lst.append(map[key][c])
     return SequenceMatcher(None, lst, STATS[lang][:limit]).ratio()
 
 
@@ -346,49 +378,51 @@ def get_IC(text):
     total = float(sum(occurences))
     return sum((n*(n-1))/(total*(total-1)) for n in occurences if n>1)
 
-def find_key_length(text, algo, size=6, nb_values=None):
+def find_key_length(text, size=6, nb_values=None, recursiv=False):
     '''finds the key-length of a vigenere's like cyphered text'''
-    if algo == ALGO_VIGENERE:
-        MAX = 2000
-        MIN = 500
-        NB_ELEMENTS = 5
-        if len(text)<MIN:
-            size = 2
-        dic = {}
-        index = 0
-        alpha_index = 0
-        limit = len(text)
-        if limit>MAX:
-            limit = MAX
-        while ((index + size) < limit):
-            item = text[index: index+size]
-            if item in dic:
-                dic[item].append(index)
-            else:
-                dic[item] = [alpha_index]
-            alpha_index += 1
-            index += 1
-        res = [i for i in dic.values() if len(i)>1]
-        nRes = []
-        for lst in res:
-            cLst = []
-            for i in range(len(lst) - 1):
-                nRes.extend(set(_factorize(lst[i+1] - lst[i])))
-        ens = set(nRes)
-        dic = {}
-        res = [];
-        for i in ens:
-            dic[i] = nRes.count(i)
-            res.append((nRes.count(i), i))
-        res.sort()
-        res.reverse()
-        if res:
-            if size<4:
-                return int(max(i[1] for i in res[:NB_ELEMENTS]))
-            else:
-                return int(res[0][1])
+    MAX = 2000
+    MIN = 500
+    NB_ELEMENTS = 5
+    if len(text)<MIN:
+        size = 2
+    dic = {}
+    index = 0
+    alpha_index = 0
+    limit = len(text)
+    if limit>MAX:
+        limit = MAX
+    while ((index + size) < limit):
+        item = text[index: index+size]
+        if item in dic:
+            dic[item].append(index)
         else:
-            return find_key_length(text, algo, size-1, nb_values)
+            dic[item] = [alpha_index]
+        alpha_index += 1
+        index += 1
+    res = [i for i in dic.values() if len(i)>1]
+    nRes = []
+    for lst in res:
+        cLst = []
+        for i in range(len(lst) - 1):
+            nRes.extend(set(_factorize(lst[i+1] - lst[i])))
+    ens = set(nRes)
+    dic = {}
+    res = [];
+    for i in ens:
+        dic[i] = nRes.count(i)
+        res.append((nRes.count(i), i))
+    res.sort()
+    res.reverse()
+    if res:
+        if size<4:
+            return int(max(i[1] for i in res[:NB_ELEMENTS]))
+        else:
+            return int(res[0][1])
+    else:
+        if not recursiv:
+            return find_key_length(text, size-1, nb_values, True)
+        else:
+            return 5
 
 def _factorize(n):
     dividends = [n]
@@ -459,9 +493,9 @@ STATS = {
          "D", "U", "P", "M", "V", "G", "H", "B", "F", "Z", "Q"]}
 
 
-def square():
-    '''returns a vigenere's square, where item[i][k] represents the
-    key-char that have been used to cypher i and have k'''
+def _get_reverse_v_square():
+    '''returns a vigenere's square, where item[c][i] represents the
+    key-char that have been used to cypher c and have i'''
     lst = list(string.ascii_uppercase)
     map = {}
     for c in lst:
@@ -471,7 +505,34 @@ def square():
         map[c] = tmp
     return map
 
-r_square = square()
+reverse_v_square = _get_reverse_v_square()
+
+def _get_reverse_g_square():
+    lst = list(string.ascii_uppercase)
+    map = {}
+    for c in lst:
+        tmp = {}
+        for i in lst:
+            tmp[_char_shift(c, i)] = i
+        map[c] = tmp
+    return map
+
+reverse_g_square = _get_reverse_v_square()
+
+def _get_reverse_b_square():
+    '''returns a vigenere's square, where item[c][i] represents the
+    key-char that have been used to cypher c and have i.
+    Using the beaufort's cypher'''
+    lst = list(string.ascii_uppercase)
+    map = {}
+    for c in lst:
+        tmp = {}
+        for i in lst:
+           tmp[_char_shift(i, c, True)] = i
+        map[c] = tmp
+    return map
+
+reverse_b_square = _get_reverse_b_square()
 
 def order(lst, limit=5):
     '''returns in order the <limit> most appearing chars'''
@@ -492,14 +553,17 @@ def find_language(text):
     return res[0][1]
 
 
-def _find_k(most_chars, language, limit=5, probas=((3, 0), (2, 1), (2, 2))):
+def _find_k(most_chars, language, limit=5, map=None,
+                                probas=((3, 0), (2, 1), (2, 2))):
+    if not map:
+        map = reverse_v_square
     lst = []
     for item in probas:
         for i in range(item[0]):
-            lst.append( r_square[STATS[language][item[1]]][most_chars[i]])
+            lst.append( map[STATS[language][item[1]]][most_chars[i]])
     res = []
     for c in lst:
-        res.append((_count(c, most_chars, language, limit), c))
+        res.append((_count(c, most_chars, language, limit, map), c))
     res = _get_mosts(res)
     return res
 
@@ -512,10 +576,20 @@ def _get_mosts(lst):
             res.append(item)
     return res
 
-def _process_hack_vigenere(text, key_length, language, limit=10, ratio=0.75):
+def _process_hack_vigenere(text, algo, key_length, language,
+                                        limit=10, ratio=0.75):
     '''return a possibly key for the given text,
     the key's length == key_length'''
     groups = list(utils.grouper2(text, key_length))
+    if algo==ALGO_BEAUFORT:
+        map = reverse_b_square
+        _process = _process_beaufort
+    elif algo==ALGO_GRONSFELD:
+        map = reverse_g_square
+        _process = _process_vigenere
+    else:
+        map = reverse_v_square
+        _process = _process_vigenere
     keys = []
     result = []
     tmp_limit = limit
@@ -533,25 +607,24 @@ def _process_hack_vigenere(text, key_length, language, limit=10, ratio=0.75):
         probas = ((6, 0), (1, 1))
         for item in probas:
             for i in range(item[0]):
-                vars.append( r_square[STATS[language][item[1]]][most_chars[i]])
+                vars.append( map[STATS[language][item[1]]][most_chars[i]])
         lst = []
         for k in vars:
-            cur = "".join(_process_vigenere(STATS[language][:limit], k))
-            if get_ratio(cur, most_chars[:limit]) >= ratio:
-                if k not in char:
-                    char.append(k)
-
-        ### NEW LIMIT
+            if (("J">= k and algo==ALGO_GRONSFELD) or algo!=ALGO_GRONSFELD):
+                cur = "".join(_process(STATS[language][:limit], k))
+                if get_ratio(cur, most_chars[:limit]) >= ratio:
+                    if k not in char:
+                        char.append(k)
         if not char:
             lst_keys = []
             limit = 10
-            lst = _find_k(most_chars, language, limit)
+            lst = _find_k(most_chars, language, limit, map)
             lst_keys.extend(lst)
 
             limit = 20
             lst = []
             for c in vars:
-                lst.append((_count(c, most_chars, language, limit), c))
+                lst.append((_count(c, most_chars, language, limit, map), c))
             lst = _get_mosts(lst)
             lst_keys.extend(lst)
             lst = []
@@ -569,7 +642,7 @@ def _clear(text):
     return "".join((c.upper() for c in text if c in string.ascii_letters))
 
 
-def do_hack(text, algo, key_length=None, language=None):
+def hack(text, algo, key_length=None, language=None):
     c_text = set(text)
     c_allowed = set(WHITESMAP)
     c_allowed.update(string.ascii_uppercase)
@@ -579,11 +652,27 @@ def do_hack(text, algo, key_length=None, language=None):
                         "".format("', '".join(sorted(c_text - c_allowed))))
     if algo==ALGO_VIGENERE:
         if not key_length:
-            key_length = find_key_length(text, algo)
+            key_length = find_key_length(text)
         if not language:
             language = find_language(text)
         return "".join(i[0] for i in _process_hack_vigenere(_clear(text),
-                        key_length, language))
+                        algo, key_length, language))
+    elif algo==ALGO_BEAUFORT:
+        if not key_length:
+            key_length = find_key_length(text)
+        if not language:
+            language = find_language(text)
+        return "".join(i[0] for i in _process_hack_vigenere(_clear(text),
+                        algo, key_length, language))
+    elif algo==ALGO_GRONSFELD:
+        if not key_length:
+            key_length = find_key_length(text)
+        if not language:
+            language = find_language(text)
+        alpha_key = "".join(i[0] for i in _process_hack_vigenere(_clear(text),
+                        algo, key_length, language))
+        return "".join(str((ord(c)-65)%10) for c in alpha_key)
+
 
 
 
@@ -647,7 +736,7 @@ def main():
                          choices=_algos.values(), default=_algos['v'],
                          help="Which algorithm to use for decyphering.")
 
-    sparsers.add_parser('about', help="About VigenereÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦")
+    sparsers.add_parser('about', help="About Vigenere")
 
     args = parser.parse_args()
     utils.DEBUG = args.debug
@@ -705,8 +794,6 @@ def main():
     elif args.command == "about":
         print(__about__)
         return
-
-
 
 
 if __name__ == "__main__":
