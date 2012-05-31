@@ -97,7 +97,7 @@ ALGO_GRONSFELD = 3
 ALGO_BEAUFORT = 4
 
 # Maps
-WHITESMAP = set(string.punctuation + string.digits)
+WHITESMAP = set(string.punctuation + string.digits + " ")
 
 def clean(text, map=None, spaces=False):
     '''clean a text, using the charmap <map> and return:
