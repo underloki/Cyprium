@@ -320,7 +320,7 @@ def cypher(text, algo, key, method=PROGRESS_GEOMETRIC):
 
 def do_decypher_basic(text, key):
     """
-    Decypher message to basic caesar (constant offset).
+    Decypher message from basic caesar (constant offset).
     """
     # It's just a matter of applying reversed cypher operation...
     return do_cypher_basic(text, -key)
@@ -328,7 +328,7 @@ def do_decypher_basic(text, key):
 
 def do_decypher_progressive(text, key, mode):
     """
-    Decypher message to progressive caesar (increasing offset).
+    Decypher message from progressive caesar (increasing offset).
     """
     # It's just a matter of applying reversed cypher operation...
     return _process_progressive(text, key, mode, True)
@@ -336,7 +336,7 @@ def do_decypher_progressive(text, key, mode):
 
 def do_decypher_square(text, key, method):
     """
-    Decypher message to caesar’s square.
+    Decypher message from caesar’s square.
     key = 0 -> square.
     key > 0 -> fixed-width rectangle.
     key < 0 -> fixed-height rectangle.
@@ -478,7 +478,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description=""
                                      "Cypher/decypher some lowercase-"
-                                     "no-space text to/from biliteral"
+                                     "no-space text to/from Caesar"
                                      "code.")
     parser.add_argument('--debug', action="store_true", default=False,
                         help="Enable debug mode.")
@@ -486,7 +486,7 @@ def main():
     sparsers = parser.add_subparsers(dest="command")
 
     cparser = sparsers.add_parser('cypher', help="Cypher text in some "
-                                                 "caesar’s code family.")
+                                                 "Caesar’s code family.")
     cparser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                          help="A file containing the text to cypher.")
     cparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
@@ -510,10 +510,10 @@ def main():
                               "instead squarish one.")
 
     dparser = sparsers.add_parser('decypher',
-                                          help="Decypher biliteral to text.")
+                                          help="Decypher Caesar to text.")
     dparser.add_argument('-i', '--ifile', type=argparse.FileType('r'),
                                  help="A file containing the text to convert "
-                                      "from biliteral.")
+                                      "from Caesar.")
     dparser.add_argument('-o', '--ofile', type=argparse.FileType('w'),
                                  help="A file into which write the decyphered "
                                       "text.")
