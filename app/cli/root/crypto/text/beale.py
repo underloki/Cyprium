@@ -72,7 +72,7 @@ class Beale(app.cli.Tool):
         ui.message("Back to Cyprium menus! Bye.")
 
     def about(self, ui):
-        ui.message(biliteral.__about__)
+        ui.message(beale.__about__)
         ui.get_choice("", [("", "Go back to $menu", "")], oneline=True)
 
     def demo(self, ui):
@@ -217,7 +217,7 @@ class Beale(app.cli.Tool):
                 key = ui.text_input("Cyphering key")
                 if key is None:
                     break  # Go back to main Cypher menu.
-                seed = ui.text_input("Random seed (defaults to 0)", sub_type=ui.INT, allow_void=TRUE)
+                seed = ui.get_data("Random seed (defaults to 0)", sub_type=ui.INT, allow_void=True)
                 if seed is None:
                     seed = 0
 

@@ -130,7 +130,7 @@ def cypher(text, key, seed=0):
                          "missing!"
                          "".format("', '".join(sorted(c_text - c_key))))
 
-    return do_cypher(text, mapp, seed)
+    return " ".join(str(n) for n in do_cypher(text, mapp, seed))
 
 
 def do_decypher(numbers, mapp):
