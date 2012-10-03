@@ -48,7 +48,23 @@ __date__ = "2012/10/02"
 __python__ = "3.x"  # Required Python version
 __about__ = "" \
 """===== About Beale =====
+This cyphering is rather simple, though nearly impossible to hack without the key.
 
+It simply takes each letter of the text to cypher, finds a word in the key starting with the same letter, and output
+this word’s index in the key. This implies it can only cypher letters (converted to upper-ASCII chars), everything
+else is dropped/lost.
+
+Historically, Beale is the name of the man who invented this cyphering, see wikipedia for more details!
+
+E.g. with both above paragraphs as key, “Beale” could be cyphered as “49, 43, 41, 21, 44”,
+“49, 43, 12, 37, 44”, “49, 44, 22, 47, 43”, etc.
+
+Obviously, you have to feature a key containing all the letters (i.e. words which first letters…)
+needed by the data to cypher, and preferably several times, to get a better cyphering.
+
+Please note that this tool uses a pseudo-random way of choosing an index for a given letter, driven by a seed number.
+This means that you will always get the same result for the same data/key/seed triple. Change the seed and you’ll
+get a different result!
 
 Cyprium.Beale version {} ({}).
 Licence GPL3
@@ -138,7 +154,7 @@ def decypher(text, key):
     c_key = set(n for n in mapp.keys() if isinstance(n, int))
     if not (c_numbers <= c_key):
         raise ValueError("Looks like you got the wrong key, pal! Those words’ indices are out of bound: '{}'!"
-                         "".format("', '".join(sorted(c_numbers - c_key))))
+                         "".format("', '".join(str(n) for n in sorted(c_numbers - c_key))))
 
     return do_decypher(numbers, mapp)
 
