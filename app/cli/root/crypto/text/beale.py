@@ -217,9 +217,7 @@ class Beale(app.cli.Tool):
                 key = ui.text_input("Cyphering key")
                 if key is None:
                     break  # Go back to main Cypher menu.
-                seed = ui.get_data("Random seed (any integer, defaults to 0): ", sub_type=ui.INT, allow_void=True)
-                if seed is None:
-                    seed = 0
+                seed = ui.get_data("Random seed (any integer, defaults to random!): ", sub_type=ui.INT, allow_void=True)
 
                 try:
                     # Will also raise an exception if data is None.
