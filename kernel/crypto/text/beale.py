@@ -180,7 +180,7 @@ def main():
                          help="The cyphering key, see about help for details.")
     cparser.add_argument('-K', '--keyfile', type=argparse.FileType('r'),
                          help="A file containing the cyphering key.")
-    cparser.add_argument('-s', '--seed', type=int, default=0,
+    cparser.add_argument('-s', '--seed', type=int, default=None,
                          help="The seed of the random choice of words for a given letter. "
                               "A same text/key/seed is guaranteed to always give the same cyphering!")
 
