@@ -96,7 +96,7 @@ class Gray(app.cli.Tool):
         ui.message("“Numbers” utf-8 text used as input (5 bits words): {}"
                    "".format(htext))
         ui.message("The decypherd data is: {}"
-                   "".format(gray.decypher(htext, codec="utf-8", length=5)))
+                   "".format(gray.decypher(htext, codecs="utf-8", lengths=5)))
         ui.message("")
 
         ui.message("+ The input text to decypher may have space-separated "
@@ -110,7 +110,7 @@ class Gray(app.cli.Tool):
         ui.message("“binary” utf-8, 8 bits words, text used as input: {}"
                    "".format(htext))
         ui.message("The decypherd data is: {}"
-                   "".format(gray.decypher(htext, codec="utf-8", length=8)))
+                   "".format(gray.decypher(htext, codecs="utf-8", lengths=8)))
         ui.message("")
 
         ui.message("--- Won’t work ---")
@@ -121,8 +121,8 @@ class Gray(app.cli.Tool):
         ui.message("“Numbers” text used as binary input: {}".format(htext))
         try:
             ui.message("The decypherd data is: {}"
-                       "".format(gray.decypher(htext, codec="ascii",
-                                               length=8)))
+                       "".format(gray.decypher(htext, codecs="ascii",
+                                               lengths=8)))
         except Exception as e:
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
@@ -134,8 +134,8 @@ class Gray(app.cli.Tool):
         ui.message("“Numbers” text used as input: {}".format(htext))
         try:
             ui.message("The decypherd data is: {}"
-                       "".format(gray.decypher(htext, codec="ascii",
-                                               length=8)))
+                       "".format(gray.decypher(htext, codecs="ascii",
+                                               lengths=8)))
         except Exception as e:
             ui.message(str(e), level=ui.ERROR)
         ui.message("")
@@ -216,6 +216,8 @@ class Gray(app.cli.Tool):
         while 1:
             txt = ui.text_input("Please choose some binary numbers text")
 
+            is_single_result = False
+
             # Get codec to use.
             options = [(gray.DEFAULT, "*utf-8", ""),
                        (gray.ASCII, "*ascii", ""),
@@ -273,6 +275,11 @@ class Gray(app.cli.Tool):
                 if not lengths:
                     lengths = None
 
+            if codecs and len(codecs) == 1 and lengths and len(lengths) == 1:
+                codecs = tuple(codecs)[0]
+                lengths = tuple(lengths)[0]
+                is_single_result = True
+
             try:
                 out = gray.decypher(txt, codecs, lengths)
             except Exception as e:
@@ -281,7 +288,7 @@ class Gray(app.cli.Tool):
                     traceback.print_tb(sys.exc_info()[2])
                 ui.message(str(e), level=ui.ERROR)
 
-            if codecs and len(codecs) == 1 and lengths and len(lengths) == 1:
+            if is_single_result:
                 ui.text_output("Text successfully decyphered", out,
                                "The decyphered text is")
             else:
