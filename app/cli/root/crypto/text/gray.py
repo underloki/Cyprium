@@ -243,7 +243,7 @@ class Gray(app.cli.Tool):
             options = [(3, "*three", ""),
                        (4, "*four", ""),
                        (5, "f*ive", ""),
-                       (8, "*height (byte)", ""),
+                       (8, "*eight (byte)", ""),
                        (..., "$all possible", ""),
                        (None, "and/or *others", "")]
             lengths = set(ui.get_choice("Which word lengths do you want to "
