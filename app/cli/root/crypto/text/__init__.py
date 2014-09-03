@@ -3,13 +3,11 @@
 #   Cyprium is a multifunction cryptographic, steganographic and       #
 #   cryptanalysis tool developped by members of The Hackademy.         #
 #   French White Hat Hackers Community!                                #
-#   www.thehackademy.fr                                                #
-#   Copyright © 2012                                                   #
-#   Authors: SAKAROV, Madhatter, mont29, Luxerails, PauseKawa, fred,   #
-#   afranck64, Tyrtamos.                                               #
-#   Contact: cyprium@thehackademy.fr, sakarov@thehackademy.fr,         #
-#   madhatter@thehackademy.fr, mont29@thehackademy.fr,                 #
-#   irc.thehackademy.fr #cyprium, irc.thehackademy.fr #hackademy       #
+#   cyprium.hackademics.fr                                             #                                                  #
+#   Authors: SAKAROV, mont29, afranck64                                #
+#   Contact: admin@hackademics.fr                                      #
+#   Forum: hackademics.fr                                              #
+#   Twitter: @hackademics_                                             #
 #                                                                      #
 #   Cyprium is free software: you can redistribute it and/or modify    #
 #   it under the terms of the GNU General Public License as published  #
