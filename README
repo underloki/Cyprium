@@ -1,10 +1,53 @@
-Cyprium is a multifunction cryptographic, steganographic and cryptanalysis tool developped by members of Hackademics.
-French White Hat Hackers Community!
-www.hackademics.fr
-Copyright © 2012
-Authors: SAKAROV, mont29, Luxerails, PauseKawa, fred, afranck64, Tyrtamos.
-Contact: cyprium@hackademics.fr, sakarov@hackademics.fr, mont29@hackademics.fr, #cyprium, #hackademics_
 
-This is free software under GNU GPL licence.
-You are welcome to redistribute it under the GNU GPL conditions.
+     01000   011  011  110010   111000   00111001 00    11 0      1   
+    00   10   11  10   10   10  11   01     10    10    01 00    00   
+   00     1    1000    10    01 11    10    01    00    10 000  001   
+   01           01     00   01  10   10     00    01    10 01 01 00   
+   10           00     00010    010000      11    00    00 10    11   
+   00     0     11     01       10    1     01    10    11 00    00   
+    10   11     00     10       00    11    00     1    0  10    11   
+     01101      01     11       10    01 00100000   0010   00    01   
+ 
 
+
+Authors: SAKAROV, mont29, afranck64
+Langage: Python 3.x
+Release: v0.6
+Licence: GNU GPL
+cyprium.hackademics.fr
+
+About:
+Cyprium is a multifunction cryptographic, steganographic and cryptanalysis tool developped by members of Hackademics - French White Hat Hackers Community.
+
+Tree:
+
+/cyprium
+    /cryptanalysis
+    /cryptography
+        /text
+            * argots
+            * atomic
+            * baudot
+            * beale
+            * biliteral
+            * braille
+            * brainfuck
+            * caesar
+            * celldrawer
+            * chinese cipher
+            * codeABC
+            * gray
+            * morse|wabun
+            * octopus
+            * postal bar code
+            * prime
+            * triliteral
+            * vigenere
+    /steganography
+        /audio
+        /picture
+        /text
+            * alphaspaces
+            * sema
+            * spaces
+            * upper/lower
